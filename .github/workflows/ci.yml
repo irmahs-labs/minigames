@@ -21,13 +21,10 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Type-check
-        run: npx tsc -b --noEmit
-
       - name: Tests
         run: npm test
 
-      - name: Build
+      - name: Type-check and build
         run: npm run build
 
       - name: Validate compose

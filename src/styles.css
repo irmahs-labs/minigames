@@ -108,7 +108,6 @@ a:hover {
   margin: 0;
   font-size: 40px;
   line-height: 1.05;
-  color: var(--cream);
 }
 .page__sub {
   margin: 0;
@@ -190,7 +189,6 @@ a:hover {
   background: transparent;
 }
 .btn--small {
-  min-height: 44px;
   padding: 0 16px;
   font-size: 14px;
 }
@@ -301,7 +299,6 @@ a:hover {
   border: 0;
   border-right: var(--line);
   background: transparent;
-  color: var(--cream);
   font-weight: 700;
   font-size: 14px;
 }
@@ -325,9 +322,6 @@ a:hover {
 .panel--wheel {
   flex: 999 1 520px;
   min-width: 0;
-  /* A turned disc's square box pokes past its circle; clip it sideways only,
-     so the pointer and the legend above the panel still show. */
-  overflow-x: clip;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -369,13 +363,13 @@ a:hover {
   border-radius: 50%;
   border: 3px solid var(--outline);
   overflow: hidden;
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.12, 0.72, 0.08, 1);
 }
-.wheel__disc svg {
+/* The face turns inside the still, round disc, which clips its corners. */
+.wheel__face {
   display: block;
   width: 100%;
   height: 100%;
+  transition: transform 4.5s cubic-bezier(0.12, 0.72, 0.08, 1);
 }
 .wheel__label {
   fill: var(--ink);
@@ -400,8 +394,18 @@ a:hover {
   background: var(--panel-raised);
   border: 3px solid var(--outline);
   box-shadow: var(--shadow-hard);
+  color: var(--surface);
 }
 
+.examples,
+.slices__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.picker__add {
+  color: var(--surface);
+}
 .slices__head,
 .slices__foot {
   display: flex;
@@ -413,7 +417,6 @@ a:hover {
 .slices__count {
   font-size: 28px;
   font-weight: 900;
-  color: var(--cream);
 }
 .slices__count span {
   font-size: 15px;
@@ -446,20 +449,22 @@ a:hover {
   font-weight: 700;
   color: var(--sprout);
 }
-.slice__input {
-  flex: 1;
-  min-width: 0;
+.field {
+  width: 100%;
   min-height: 44px;
   padding: 0 12px;
   border: 1.5px solid var(--outline);
   border-radius: var(--radius-lg);
   background: var(--ground);
-  color: var(--cream);
   font-size: 15px;
 }
-.slice__input::placeholder {
+.field::placeholder {
   color: var(--sprout);
   opacity: 0.7;
+}
+.slice__input {
+  flex: 1;
+  min-width: 0;
 }
 
 .switch {
@@ -501,17 +506,18 @@ a:hover {
   background: var(--ink);
 }
 
-/* .panel makes things position: relative; a modal dialog has to stay fixed
-   to be centred in the viewport. */
+/* The dialog itself stays the browser's (centred, on top); only its UA box
+   is cleared, and the panel inside draws the look. */
 .result {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  height: fit-content;
   width: min(440px, calc(100% - 32px));
-  padding: 34px 26px 24px;
-  color: var(--cream);
+  padding: 16px 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   overflow: visible;
+}
+.result__panel {
+  padding: 34px 26px 24px;
 }
 .result::backdrop {
   background: rgb(15 20 17 / 0.7);
@@ -553,6 +559,9 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .wheel__face {
+    transition-duration: 1.2s;
+  }
   .btn,
   .game-card,
   .switch__thumb {

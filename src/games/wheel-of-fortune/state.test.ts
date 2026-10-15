@@ -1,49 +1,76 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { PRESETS } from "./presets";
+import { EXAMPLES } from "./examples";
 import {
   MAX_SLOTS,
+  MAX_WHEELS,
   STORAGE_KEY,
+  currentWheel,
   defaultState,
   loadState,
+  namedPositions,
   namedSlices,
-  wheelStateSchema,
   reducer,
   saveState,
+  wheelStateSchema,
 } from "./state";
+import type { WheelAction, WheelState } from "./state";
+
+const run = (state: WheelState, ...actions: WheelAction[]) => {
+  let next = state;
+
+  for (const action of actions) {
+    next = reducer(next, action);
+  }
+
+  return next;
+};
 
 describe("defaultState", () => {
-  it("opens on the blank wheel with four empty slots", () => {
+  it("opens one wheel with four empty slots", () => {
     const state = defaultState();
-    expect(state.selected).toBe("blank");
-    expect(state.wheels.blank).toEqual(["", "", "", ""]);
-    expect(state.wheels.death).not.toContain("Gamma-ray burst");
+
+    expect(state.wheels).toHaveLength(1);
+    expect(currentWheel(state)).toMatchObject({
+      name: "Wheel 1",
+      slots: ["", "", "", ""],
+    });
   });
 });
 
 describe("wheelStateSchema", () => {
-  it("turns an empty object into the starting state", () => {
-    expect(wheelStateSchema.parse({})).toEqual(defaultState());
+  it("turns an empty object into one blank wheel", () => {
+    const state = wheelStateSchema.parse({});
+
+    expect(state.sound).toBe(true);
+    expect(currentWheel(state).slots).toEqual(["", "", "", ""]);
   });
 
-  it("keeps the good parts and repairs only the damaged ones", () => {
+  it("keeps the good wheels and repairs only the damaged parts", () => {
     const state = wheelStateSchema.parse({
-      selected: "luck",
+      selected: "b",
       sound: false,
-      wheels: { blank: ["Ana", "Ben"], death: "oops", luck: [1, 2] },
+      wheels: [
+        { id: "a", name: "Team", slots: ["Ana", "Ben"] },
+        { id: "b", name: "Broken", slots: "oops" },
+      ],
     });
 
-    expect(state.selected).toBe("luck");
     expect(state.sound).toBe(false);
-    expect(state.wheels.blank).toEqual(["Ana", "Ben"]);
-    expect(state.wheels.death).toEqual([...PRESETS.death.slices]);
-    expect(state.wheels.luck).toEqual([...PRESETS.luck.slices]);
+    expect(state.wheels[0]?.slots).toEqual(["Ana", "Ben"]);
+    expect(currentWheel(state)).toMatchObject({
+      name: "Broken",
+      slots: ["", "", "", ""],
+    });
   });
 
-  it("ignores a wheel it does not know", () => {
-    expect(wheelStateSchema.parse({ selected: "encounters" }).selected).toBe(
-      "blank"
-    );
+  it("opens the first wheel when the selection is unknown", () => {
+    const state = wheelStateSchema.parse({
+      selected: "gone",
+      wheels: [{ id: "a", name: "Team", slots: ["Ana", "Ben"] }],
+    });
+
+    expect(currentWheel(state).id).toBe("a");
   });
 });
 
@@ -51,60 +78,96 @@ describe("loadState", () => {
   beforeEach(() => window.localStorage.clear());
 
   it("starts fresh when nothing, or something unreadable, is stored", () => {
-    expect(loadState()).toEqual(defaultState());
+    expect(loadState().wheels).toHaveLength(1);
 
     for (const raw of ["not json", "null", "42", "[]"]) {
       window.localStorage.setItem(STORAGE_KEY, raw);
-      expect(loadState()).toEqual(defaultState());
+      expect(currentWheel(loadState()).name).toBe("Wheel 1");
     }
   });
 
   it("brings back what was saved", () => {
-    const saved = reducer(defaultState(), { on: false, type: "sound" });
+    const saved = run(defaultState(), { id: "two", type: "create" });
 
     saveState(saved);
     expect(loadState()).toEqual(saved);
   });
 });
 
-describe("reducer", () => {
-  it("edits only the selected wheel", () => {
-    const state = reducer(defaultState(), {
-      index: 1,
-      label: "Ana",
-      type: "rename",
-    });
+describe("reducer: wheels", () => {
+  it("creates numbered wheels up to the maximum and opens each one", () => {
+    let state = defaultState();
 
-    expect(state.wheels.blank).toEqual(["", "Ana", "", ""]);
-    expect(state.wheels.promotion).toEqual([...PRESETS.promotion.slices]);
+    for (let i = 0; i < MAX_WHEELS + 2; i += 1) {
+      state = reducer(state, { id: `w${i}`, type: "create" });
+    }
+
+    expect(state.wheels).toHaveLength(MAX_WHEELS);
+    expect(currentWheel(state)).toMatchObject({ id: "w6", name: "Wheel 8" });
+  });
+
+  it("renames and deletes the open wheel, never the last one", () => {
+    let state = run(
+      defaultState(),
+      { id: "two", type: "create" },
+      { name: "Raffle", type: "renameWheel" }
+    );
+
+    expect(currentWheel(state).name).toBe("Raffle");
+    state = run(state, { type: "deleteWheel" });
+    expect(state.wheels).toHaveLength(1);
+    expect(currentWheel(state).name).toBe("Wheel 1");
+    expect(run(state, { type: "deleteWheel" }).wheels).toHaveLength(1);
+  });
+});
+
+describe("reducer: slots", () => {
+  it("edits only the open wheel", () => {
+    const state = run(
+      defaultState(),
+      { id: "two", type: "create" },
+      { index: 1, label: "Ana", type: "rename" }
+    );
+
+    expect(state.wheels[0]?.slots).toEqual(["", "", "", ""]);
+    expect(currentWheel(state).slots).toEqual(["", "Ana", "", ""]);
   });
 
   it("adds slots up to the maximum and no further", () => {
-    let state = defaultState();
+    const adds: WheelAction[] = Array.from({ length: 20 }, () => ({
+      type: "add",
+    }));
 
-    for (let i = 0; i < 20; i += 1) {
-      state = reducer(state, { type: "add" });
-    }
-
-    expect(state.wheels.blank).toHaveLength(MAX_SLOTS);
+    expect(currentWheel(run(defaultState(), ...adds)).slots).toHaveLength(
+      MAX_SLOTS
+    );
   });
 
   it("empties a slot instead of going below two", () => {
-    let state = defaultState();
+    const state = run(
+      defaultState(),
+      { index: 0, type: "remove" },
+      { index: 0, type: "remove" },
+      { index: 0, label: "Ana", type: "rename" },
+      { index: 0, type: "remove" }
+    );
 
-    state = reducer(state, { index: 0, type: "remove" });
-    state = reducer(state, { index: 0, type: "remove" });
-    state = reducer(state, { index: 0, label: "Ana", type: "rename" });
-    state = reducer(state, { index: 0, type: "remove" });
-    expect(state.wheels.blank).toEqual(["", ""]);
+    expect(currentWheel(state).slots).toEqual(["", ""]);
   });
 
-  it("removes a winner by its name, and resets to the preset", () => {
-    let state = reducer(defaultState(), { type: "select", wheel: "promotion" });
-    state = reducer(state, { label: "50% off", type: "removeLabel" });
-    expect(state.wheels.promotion).not.toContain("50% off");
-    state = reducer(state, { type: "reset" });
-    expect(state.wheels.promotion).toEqual([...PRESETS.promotion.slices]);
+  it("fills from an example, and resets to four empty slots", () => {
+    let state = run(defaultState(), { example: "death", type: "fill" });
+
+    expect(currentWheel(state).slots).toEqual([...EXAMPLES.death.slices]);
+    expect(currentWheel(state).slots).toContain("Drought");
+    state = run(state, { type: "reset" });
+    expect(currentWheel(state).slots).toEqual(["", "", "", ""]);
+  });
+});
+
+describe("namedPositions", () => {
+  it("numbers the named slots and marks the empty ones", () => {
+    expect(namedPositions(["Ana", "", "Ana", " "])).toEqual([0, -1, 1, -1]);
   });
 });
 

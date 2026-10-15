@@ -1,4 +1,4 @@
-import type { ZodType } from "zod";
+import type { ZodMiniType } from "zod/mini";
 
 /**
  * The browser's localStorage, read and written so that a blocked or full
@@ -17,7 +17,7 @@ const readRaw = (key: string): string | null => {
 
 export const readStored = <T>(
   key: string,
-  schema: ZodType<T>,
+  schema: ZodMiniType<T>,
   fallback: () => T
 ): T => {
   const raw = readRaw(key);

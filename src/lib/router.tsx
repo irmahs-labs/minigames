@@ -16,7 +16,7 @@ const currentPath = () => window.location.pathname;
 
 export const usePath = () => useSyncExternalStore(subscribe, currentPath);
 
-export const navigate = (to: string) => {
+const navigate = (to: string) => {
   if (to === window.location.pathname) {
     return;
   }

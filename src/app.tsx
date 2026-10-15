@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { GAMES } from "./games";
 import { Hub } from "./hub";
+import { APP_NAME } from "./lib/brand";
 import { Link, usePath } from "./lib/router";
 
 const NotFound = () => (
@@ -32,8 +33,12 @@ export const App = () => {
   }
 
   return (
-    <Suspense fallback={<main className="page" aria-busy="true" />}>
-      <game.Screen />
-    </Suspense>
+    <>
+      {/* React puts this in the head while the game is open. */}
+      <title>{`${game.name} · ${APP_NAME}`}</title>
+      <Suspense fallback={<main className="page" aria-busy="true" />}>
+        <game.Screen name={game.name} />
+      </Suspense>
+    </>
   );
 };

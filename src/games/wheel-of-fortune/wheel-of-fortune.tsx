@@ -1,15 +1,22 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
-import { APP_NAME } from "../../lib/brand";
+import type { GameProps } from "../../games";
+import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
+import { useConfirm } from "../../lib/use-confirm";
 import { beep, primeAudio } from "./beep";
-import { PRESETS, WHEEL_IDS } from "./presets";
+import { EXAMPLES, EXAMPLE_IDS } from "./examples";
+import type { ExampleId } from "./examples";
 import { ResultDialog } from "./result-dialog";
 import {
   MAX_LABEL,
+  MAX_NAME,
   MAX_SLOTS,
+  MAX_WHEELS,
   MIN_SLOTS,
+  currentWheel,
   loadState,
+  namedPositions,
   namedSlices,
   reducer,
   saveState,
@@ -17,151 +24,116 @@ import {
 import { landingRotation, randomIndex } from "./wheel";
 import { WheelView, sliceColors } from "./wheel-view";
 
-const SPIN_MS = 4500;
-const REDUCED_SPIN_MS = 1200;
-const RESET_CONFIRM_MS = 3000;
+/** A wheel's name as a filename for its panel's pill: "Team lunch" → team-lunch. */
+const legendFor = (name: string) => {
+  const slug = name
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/gu, "-")
+    .replaceAll(/^-|-$/gu, "");
 
-const prefersReducedMotion = () =>
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  return `${slug || "untitled"}.wheel`;
+};
 
-const WheelOfFortune = () => {
+const WheelOfFortune = ({ name }: GameProps) => {
   const [state, dispatch] = useReducer(reducer, undefined, loadState);
   const [rotation, setRotation] = useState(0);
-  const [spinning, setSpinning] = useState(false);
-  const [winner, setWinner] = useState<string | null>(null);
-  const [confirmReset, setConfirmReset] = useState(false);
-  // 0 is never a live timer id, so clearing it is a harmless no-op.
-  const spinTimer = useRef(0);
-  const resetTimer = useRef(0);
-  const [durationMs, setDurationMs] = useState(SPIN_MS);
+  // The slice a spin is heading for while the wheel turns, then the one it won.
+  const [landing, setLanding] = useState<number | null>(null);
+  const [winner, setWinner] = useState<number | null>(null);
+  const confirm = useConfirm();
 
-  const preset = PRESETS[state.selected];
-  const slots = state.wheels[state.selected];
+  const wheel = currentWheel(state);
+  const { slots } = wheel;
   const labels = namedSlices(slots);
+  const positions = namedPositions(slots);
   const colors = sliceColors(labels.length);
-  const canSpin = labels.length >= 2 && !spinning;
+  const spinning = landing !== null;
+  const tooFew = labels.length < MIN_SLOTS;
+  const canSpin = !tooFew && !spinning;
 
   useEffect(() => saveState(state), [state]);
-
-  useEffect(() => {
-    document.title = `Wheel of Fortune · ${APP_NAME}`;
-
-    return () => {
-      document.title = APP_NAME;
-    };
-  }, []);
-
-  useEffect(
-    () => () => {
-      window.clearTimeout(spinTimer.current);
-      window.clearTimeout(resetTimer.current);
-    },
-    []
-  );
 
   const spin = () => {
     if (!canSpin) {
       return;
     }
 
-    const { sound } = state;
-
-    if (sound) {
+    if (state.sound) {
       primeAudio();
     }
 
-    // Read at each spin, so turning reduced motion on applies straight away.
-    const spinMs = prefersReducedMotion() ? REDUCED_SPIN_MS : SPIN_MS;
     const index = randomIndex(labels.length);
-    const landed = labels[index] ?? null;
 
-    setDurationMs(spinMs);
     setWinner(null);
+    setLanding(index);
     setRotation((current) => landingRotation(current, index, labels.length));
-    setSpinning(true);
-    spinTimer.current = window.setTimeout(() => {
-      setSpinning(false);
-      setWinner(landed);
-
-      if (sound) {
-        beep();
-      }
-    }, spinMs + 100);
   };
 
-  const reset = () => {
-    window.clearTimeout(resetTimer.current);
+  const settle = () => {
+    setWinner(landing);
+    setLanding(null);
 
-    if (confirmReset) {
-      setConfirmReset(false);
-      dispatch({ type: "reset" });
-
-      return;
+    if (state.sound) {
+      beep();
     }
-
-    setConfirmReset(true);
-    resetTimer.current = window.setTimeout(
-      () => setConfirmReset(false),
-      RESET_CONFIRM_MS
-    );
   };
 
-  // A named slot's dot takes its slice's colour; an empty slot has none.
-  const slotColors = slots.map((slot, i) =>
-    slot.trim().length === 0
-      ? null
-      : (colors[namedSlices(slots.slice(0, i)).length] ?? null)
-  );
+  // Filling a wheel that has names replaces them, so it asks first.
+  const fill = (example: ExampleId) => {
+    const run = () => dispatch({ example, type: "fill" });
+
+    if (labels.length === 0) {
+      run();
+    } else {
+      confirm.press(`fill-${example}`, run);
+    }
+  };
 
   return (
     <main className="page">
       <header className="page__header">
         <Link href="/" className="back">
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <Icon name="back" size={18} />
           All games
         </Link>
-        <h1 className="display page__title">Wheel of Fortune</h1>
-        <p className="page__sub">pick a wheel, fill it in, give it a spin</p>
+        <h1 className="display page__title">{name}</h1>
+        <p className="page__sub">make a wheel, fill it in, give it a spin</p>
       </header>
 
-      <nav aria-label="Wheels" className="picker">
-        {WHEEL_IDS.map((id) => (
+      <nav aria-label="Your wheels" className="picker">
+        {state.wheels.map((entry) => (
           <button
-            key={id}
+            key={entry.id}
             type="button"
             className="picker__option"
-            aria-pressed={state.selected === id}
+            aria-pressed={entry.id === wheel.id}
             disabled={spinning}
             onClick={() => {
               setWinner(null);
-              dispatch({ type: "select", wheel: id });
+              dispatch({ id: entry.id, type: "select" });
             }}
           >
-            {PRESETS[id].name}
+            {entry.name.trim() || "Untitled"}
           </button>
         ))}
+        <button
+          type="button"
+          className="picker__option picker__add"
+          disabled={spinning || state.wheels.length >= MAX_WHEELS}
+          onClick={() => dispatch({ id: crypto.randomUUID(), type: "create" })}
+        >
+          + New wheel
+        </button>
       </nav>
 
       <div className="layout">
         <section aria-label="Wheel" className="panel panel--wheel">
-          <span className="legend">{preset.legend}</span>
+          <span className="legend">{legendFor(wheel.name)}</span>
           <WheelView
             labels={labels}
             emptySlots={slots.length}
             rotation={rotation}
-            durationMs={durationMs}
+            onSettle={settle}
           />
           <button
             type="button"
@@ -169,29 +141,52 @@ const WheelOfFortune = () => {
             onClick={spin}
             disabled={!canSpin}
           >
-            <svg
-              aria-hidden="true"
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 12a9 9 0 1 1-3-6.7" />
-              <path d="M21 4v5h-5" />
-            </svg>
+            <Icon name="spin" />
             {spinning ? "spinning…" : "spin the wheel"}
           </button>
           <p className="hint" aria-live="polite">
-            {labels.length < 2 ? "Name at least two slices to spin." : ""}
+            {tooFew ? "Name at least two slices to spin." : ""}
           </p>
         </section>
 
         <section aria-labelledby="slices-title" className="panel panel--slices">
           <span className="legend">slices</span>
+
+          <div className="stack">
+            <label className="field-label" htmlFor="wheel-name">
+              Wheel name
+            </label>
+            <input
+              id="wheel-name"
+              className="field"
+              value={wheel.name}
+              maxLength={MAX_NAME}
+              disabled={spinning}
+              onChange={(event) =>
+                dispatch({ name: event.target.value, type: "renameWheel" })
+              }
+            />
+          </div>
+
+          <div className="stack">
+            <h2 className="field-label">Fill with an example</h2>
+            <div className="examples">
+              {EXAMPLE_IDS.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  className="btn btn--small"
+                  disabled={spinning}
+                  onClick={() => fill(id)}
+                >
+                  {confirm.armed === `fill-${id}`
+                    ? "Sure? Replace"
+                    : EXAMPLES[id].name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="slices__head">
             <div className="stack">
               <h2 id="slices-title" className="field-label">
@@ -219,15 +214,16 @@ const WheelOfFortune = () => {
                 <span
                   aria-hidden="true"
                   className="slice__dot"
-                  style={{ background: slotColors[i] ?? "transparent" }}
+                  style={{
+                    background: colors[positions[i] ?? -1] ?? "transparent",
+                  }}
                 />
-                <label className="slice__num" htmlFor={`slice-${i}`}>
+                <span aria-hidden="true" className="slice__num">
                   {String(i + 1).padStart(2, "0")}
-                </label>
+                </span>
                 <input
-                  id={`slice-${i}`}
                   aria-label={`Slice ${i + 1}`}
-                  className="slice__input"
+                  className="field slice__input"
                   value={slot}
                   maxLength={MAX_LABEL}
                   placeholder="Type a name"
@@ -249,18 +245,7 @@ const WheelOfFortune = () => {
                   }
                   onClick={() => dispatch({ index: i, type: "remove" })}
                 >
-                  <svg
-                    aria-hidden="true"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  >
-                    <path d="M6 6l12 12M18 6L6 18" />
-                  </svg>
+                  <Icon name="close" size={16} weight={3} />
                 </button>
               </li>
             ))}
@@ -279,30 +264,44 @@ const WheelOfFortune = () => {
                 <span className="switch__thumb" />
               </span>
             </button>
-            <button
-              type="button"
-              className="btn btn--quiet btn--small"
-              onClick={reset}
-              disabled={spinning}
-            >
-              {confirmReset ? "Sure? Reset it" : `Reset ${preset.name}`}
-            </button>
+            <div className="slices__actions">
+              <button
+                type="button"
+                className="btn btn--quiet btn--small"
+                onClick={() =>
+                  confirm.press("reset", () => dispatch({ type: "reset" }))
+                }
+                disabled={spinning}
+              >
+                {confirm.armed === "reset" ? "Sure? Reset" : "Reset"}
+              </button>
+              {state.wheels.length > 1 ? (
+                <button
+                  type="button"
+                  className="btn btn--quiet btn--small"
+                  onClick={() =>
+                    confirm.press("delete", () =>
+                      dispatch({ type: "deleteWheel" })
+                    )
+                  }
+                  disabled={spinning}
+                >
+                  {confirm.armed === "delete" ? "Sure? Delete" : "Delete wheel"}
+                </button>
+              ) : null}
+            </div>
           </div>
           <p className="hint">Saved in this browser only.</p>
         </section>
       </div>
 
       <ResultDialog
-        winner={winner}
-        kicker={preset.kicker}
-        canRemove={labels.length > 2}
+        winner={winner === null ? null : (labels[winner] ?? null)}
+        canRemove={labels.length > MIN_SLOTS}
         onClose={() => setWinner(null)}
         onSpinAgain={spin}
         onRemove={() => {
-          if (winner !== null) {
-            dispatch({ label: winner, type: "removeLabel" });
-          }
-
+          dispatch({ index: positions.indexOf(winner ?? -1), type: "remove" });
           setWinner(null);
         }}
       />
