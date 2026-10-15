@@ -295,6 +295,7 @@ a:hover {
 }
 .picker__option {
   min-height: 44px;
+  white-space: nowrap;
   padding: 0 20px;
   border: 0;
   border-right: var(--line);
@@ -397,7 +398,6 @@ a:hover {
   color: var(--surface);
 }
 
-.examples,
 .slices__actions {
   display: flex;
   flex-wrap: wrap;

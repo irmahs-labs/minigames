@@ -23,7 +23,7 @@ interface Game {
 export const GAMES: readonly Game[] = [
   {
     Screen: lazy(() => import("./games/wheel-of-fortune/wheel-of-fortune")),
-    blurb: "Make your own wheels and spin them, or start from an example.",
+    blurb: "Spin a wheel of names, a wheel of doom, or a wheel of your own.",
     legend: "wheel.fun",
     name: "Wheel of Fortune",
     slug: "wheel-of-fortune",

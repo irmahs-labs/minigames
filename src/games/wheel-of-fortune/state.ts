@@ -4,8 +4,7 @@ import * as z from "zod/mini";
 import { catch as withFallback } from "zod/mini";
 
 import { readStored, writeStored } from "../../lib/storage";
-import { EXAMPLES } from "./examples";
-import type { ExampleId } from "./examples";
+import { STARTERS, STARTER_IDS } from "./starters";
 
 export const STORAGE_KEY = "minigames:wheel-of-fortune:v1";
 
@@ -14,7 +13,6 @@ export const MAX_SLOTS = 16;
 export const MAX_LABEL = 40;
 export const MAX_WHEELS = 8;
 export const MAX_NAME = 24;
-const BLANK_SLOTS = 4;
 
 const clip = (max: number) =>
   z.pipe(
@@ -22,7 +20,8 @@ const clip = (max: number) =>
     z.transform((text: string) => text.slice(0, max))
   );
 
-const blankSlots = () => Array.from({ length: BLANK_SLOTS }, () => "");
+/** A new wheel's slots: as many empty ones as the Names wheel starts with. */
+const blankSlots = () => [...STARTERS.names.slices];
 
 const wheelSchema = z.object({
   id: z.string().check(z.minLength(1)),
@@ -34,16 +33,20 @@ const wheelSchema = z.object({
       .check(z.minLength(MIN_SLOTS), z.maxLength(MAX_SLOTS)),
     blankSlots
   ),
+  /** The starter this wheel came from, which Reset restores; null for new ones. */
+  starter: withFallback(z.nullable(z.enum(STARTER_IDS)), null),
 });
 
 /** One of the visitor's wheels: a tab with its own name and slots. */
 export type Wheel = z.infer<typeof wheelSchema>;
 
-const firstWheel = (): Wheel => ({
-  id: crypto.randomUUID(),
-  name: "Wheel 1",
-  slots: blankSlots(),
-});
+const starterWheels = (): Wheel[] =>
+  STARTER_IDS.map((starter) => ({
+    id: crypto.randomUUID(),
+    name: STARTERS[starter].name,
+    slots: [...STARTERS[starter].slices],
+    starter,
+  }));
 
 /**
  * Everything the Wheel of Fortune remembers, kept in this browser's
@@ -55,16 +58,16 @@ export const wheelStateSchema = z.object({
   sound: withFallback(z.boolean(), true),
   wheels: withFallback(
     z.array(wheelSchema).check(z.minLength(1), z.maxLength(MAX_WHEELS)),
-    () => [firstWheel()]
+    starterWheels
   ),
 });
 
 export type WheelState = z.infer<typeof wheelStateSchema>;
 
 export const defaultState = (): WheelState => {
-  const wheel = firstWheel();
+  const wheels = starterWheels();
 
-  return { selected: wheel.id, sound: true, wheels: [wheel] };
+  return { selected: wheels[0]?.id ?? "", sound: true, wheels };
 };
 
 export const loadState = (): WheelState =>
@@ -75,8 +78,8 @@ export const saveState = (state: WheelState) => writeStored(STORAGE_KEY, state);
 /** The open wheel; an unknown selection opens the first one. */
 export const currentWheel = (state: WheelState): Wheel =>
   state.wheels.find((wheel) => wheel.id === state.selected) ??
-  state.wheels[0] ??
-  firstWheel();
+  // The schema keeps at least one wheel; this last fallback only satisfies types.
+  state.wheels[0] ?? { id: "", name: "", slots: blankSlots(), starter: null };
 
 /** The slots that have a name, trimmed, in wheel order: what gets spun. */
 export const namedSlices = (slots: readonly string[]): string[] =>
@@ -104,10 +107,10 @@ export const namedPositions = (slots: readonly string[]): number[] => {
   return positions;
 };
 
-/** "Wheel N" with the smallest N no wheel is called yet. */
+/** "Wheel N" for the Nth tab, counting on if that name is taken. */
 const nextWheelName = (wheels: readonly Wheel[]): string => {
   const taken = new Set(wheels.map((wheel) => wheel.name));
-  let n = 1;
+  let n = wheels.length + 1;
 
   while (taken.has(`Wheel ${n}`)) {
     n += 1;
@@ -124,7 +127,7 @@ export type WheelAction =
   | { type: "rename"; index: number; label: string }
   | { type: "add" }
   | { type: "remove"; index: number }
-  | { type: "fill"; example: ExampleId }
+  | { type: "clear" }
   | { type: "reset" }
   | { type: "sound"; on: boolean };
 
@@ -169,6 +172,7 @@ export const reducer = (state: WheelState, action: WheelAction): WheelState => {
         id: action.id,
         name: nextWheelName(state.wheels),
         slots: blankSlots(),
+        starter: null,
       };
 
       return { ...state, selected: wheel.id, wheels: [...state.wheels, wheel] };
@@ -212,12 +216,17 @@ export const reducer = (state: WheelState, action: WheelAction): WheelState => {
       return editSlots(state, (slots) => withoutSlot(slots, action.index));
     }
 
-    case "fill": {
-      return editSlots(state, () => [...EXAMPLES[action.example].slices]);
+    case "clear": {
+      return editSlots(state, blankSlots);
     }
 
     case "reset": {
-      return editSlots(state, blankSlots);
+      return editWheel(state, (wheel) => ({
+        ...wheel,
+        slots: wheel.starter
+          ? [...STARTERS[wheel.starter].slices]
+          : blankSlots(),
+      }));
     }
 
     case "sound": {

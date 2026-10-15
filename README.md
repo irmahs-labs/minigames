@@ -6,13 +6,14 @@ Small games to play in the browser, at [minigames.irmahs.dev](https://minigames.
 
 **Wheel of Fortune.** Make a wheel, fill it in and spin it. When it stops, it beeps and a popup names the slice it landed on.
 
-Each tab is one of your wheels: it starts as "Wheel 1" with four empty slots to type names into, and you can add up to eight, each with its own name and 2 to 16 slices. **Reset** clears the open wheel back to four empty slots. To start from something, fill a wheel with an example:
+Each tab is one of your wheels. A first visit opens two:
 
-| Example | Slices |
+| Wheel | Starts with |
 | --- | --- |
-| Promotion | Free, 10% off, 20% off, 50% off, Free shipping, Buy one get one, Mystery gift, Try again |
+| Names | Four empty slots to type names into |
 | Death | Asteroid impact, Supervolcano, Black smoke, Megaquake, Tsunami, Ice age, Solar flare, Plague, Drought, Wildfire, Flood |
-| Luck | Good and bad omens in turn: Four-leaf clover, Black cat, Horseshoe, Broken mirror, Shooting star, Under a ladder, Lucky penny, Friday the 13th |
+
+**+ New wheel** adds another, up to eight, each with its own name and 2 to 16 slices. **Clear** empties the open wheel to four blank slots; **Reset** puts it back to how it started.
 
 Everything is saved in the browser's `localStorage` and stays until the visitor deletes it or clears their site data. Nothing is sent anywhere.
 

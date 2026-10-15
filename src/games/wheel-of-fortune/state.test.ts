@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { EXAMPLES } from "./examples";
+import { STARTERS } from "./starters";
 import {
   MAX_SLOTS,
   MAX_WHEELS,
@@ -27,23 +27,24 @@ const run = (state: WheelState, ...actions: WheelAction[]) => {
 };
 
 describe("defaultState", () => {
-  it("opens one wheel with four empty slots", () => {
+  it("opens on Names, with four empty slots, beside the Death wheel", () => {
     const state = defaultState();
 
-    expect(state.wheels).toHaveLength(1);
+    expect(state.wheels.map((wheel) => wheel.name)).toEqual(["Names", "Death"]);
     expect(currentWheel(state)).toMatchObject({
-      name: "Wheel 1",
+      name: "Names",
       slots: ["", "", "", ""],
     });
+    expect(state.wheels[1]?.slots).toEqual([...STARTERS.death.slices]);
   });
 });
 
 describe("wheelStateSchema", () => {
-  it("turns an empty object into one blank wheel", () => {
+  it("turns an empty object into the starting wheels", () => {
     const state = wheelStateSchema.parse({});
 
     expect(state.sound).toBe(true);
-    expect(currentWheel(state).slots).toEqual(["", "", "", ""]);
+    expect(state.wheels.map((wheel) => wheel.name)).toEqual(["Names", "Death"]);
   });
 
   it("keeps the good wheels and repairs only the damaged parts", () => {
@@ -78,11 +79,11 @@ describe("loadState", () => {
   beforeEach(() => window.localStorage.clear());
 
   it("starts fresh when nothing, or something unreadable, is stored", () => {
-    expect(loadState().wheels).toHaveLength(1);
+    expect(loadState().wheels).toHaveLength(2);
 
     for (const raw of ["not json", "null", "42", "[]"]) {
       window.localStorage.setItem(STORAGE_KEY, raw);
-      expect(currentWheel(loadState()).name).toBe("Wheel 1");
+      expect(currentWheel(loadState()).name).toBe("Names");
     }
   });
 
@@ -103,7 +104,7 @@ describe("reducer: wheels", () => {
     }
 
     expect(state.wheels).toHaveLength(MAX_WHEELS);
-    expect(currentWheel(state)).toMatchObject({ id: "w6", name: "Wheel 8" });
+    expect(currentWheel(state)).toMatchObject({ id: "w5", name: "Wheel 8" });
   });
 
   it("renames and deletes the open wheel, never the last one", () => {
@@ -115,9 +116,10 @@ describe("reducer: wheels", () => {
 
     expect(currentWheel(state).name).toBe("Raffle");
     state = run(state, { type: "deleteWheel" });
-    expect(state.wheels).toHaveLength(1);
-    expect(currentWheel(state).name).toBe("Wheel 1");
-    expect(run(state, { type: "deleteWheel" }).wheels).toHaveLength(1);
+    expect(state.wheels).toHaveLength(2);
+    expect(currentWheel(state).name).toBe("Death");
+    state = run(state, { type: "deleteWheel" }, { type: "deleteWheel" });
+    expect(state.wheels.map((wheel) => wheel.name)).toEqual(["Names"]);
   });
 });
 
@@ -130,7 +132,10 @@ describe("reducer: slots", () => {
     );
 
     expect(state.wheels[0]?.slots).toEqual(["", "", "", ""]);
-    expect(currentWheel(state).slots).toEqual(["", "Ana", "", ""]);
+    expect(currentWheel(state)).toMatchObject({
+      name: "Wheel 3",
+      slots: ["", "Ana", "", ""],
+    });
   });
 
   it("adds slots up to the maximum and no further", () => {
@@ -155,12 +160,28 @@ describe("reducer: slots", () => {
     expect(currentWheel(state).slots).toEqual(["", ""]);
   });
 
-  it("fills from an example, and resets to four empty slots", () => {
-    let state = run(defaultState(), { example: "death", type: "fill" });
+  it("clears a wheel to four blank slots, and resets it to its starter", () => {
+    const start = defaultState();
 
-    expect(currentWheel(state).slots).toEqual([...EXAMPLES.death.slices]);
-    expect(currentWheel(state).slots).toContain("Drought");
+    let state = run(
+      start,
+      { id: start.wheels[1]?.id ?? "", type: "select" },
+      { type: "clear" }
+    );
+
+    expect(currentWheel(state).slots).toEqual(["", "", "", ""]);
     state = run(state, { type: "reset" });
+    expect(currentWheel(state).slots).toContain("Drought");
+  });
+
+  it("resets a new wheel to four blank slots", () => {
+    const state = run(
+      defaultState(),
+      { id: "two", type: "create" },
+      { index: 0, label: "Ana", type: "rename" },
+      { type: "reset" }
+    );
+
     expect(currentWheel(state).slots).toEqual(["", "", "", ""]);
   });
 });

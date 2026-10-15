@@ -5,8 +5,6 @@ import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
 import { useConfirm } from "../../lib/use-confirm";
 import { beep, primeAudio } from "./beep";
-import { EXAMPLES, EXAMPLE_IDS } from "./examples";
-import type { ExampleId } from "./examples";
 import { ResultDialog } from "./result-dialog";
 import {
   MAX_LABEL,
@@ -78,17 +76,6 @@ const WheelOfFortune = ({ name }: GameProps) => {
     }
   };
 
-  // Filling a wheel that has names replaces them, so it asks first.
-  const fill = (example: ExampleId) => {
-    const run = () => dispatch({ example, type: "fill" });
-
-    if (labels.length === 0) {
-      run();
-    } else {
-      confirm.press(`fill-${example}`, run);
-    }
-  };
-
   return (
     <main className="page">
       <header className="page__header">
@@ -97,7 +84,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
           All games
         </Link>
         <h1 className="display page__title">{name}</h1>
-        <p className="page__sub">make a wheel, fill it in, give it a spin</p>
+        <p className="page__sub">fill in a wheel, give it a spin</p>
       </header>
 
       <nav aria-label="Your wheels" className="picker">
@@ -166,25 +153,6 @@ const WheelOfFortune = ({ name }: GameProps) => {
                 dispatch({ name: event.target.value, type: "renameWheel" })
               }
             />
-          </div>
-
-          <div className="stack">
-            <h2 className="field-label">Fill with an example</h2>
-            <div className="examples">
-              {EXAMPLE_IDS.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className="btn btn--small"
-                  disabled={spinning}
-                  onClick={() => fill(id)}
-                >
-                  {confirm.armed === `fill-${id}`
-                    ? "Sure? Replace"
-                    : EXAMPLES[id].name}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="slices__head">
@@ -265,6 +233,16 @@ const WheelOfFortune = ({ name }: GameProps) => {
               </span>
             </button>
             <div className="slices__actions">
+              <button
+                type="button"
+                className="btn btn--quiet btn--small"
+                onClick={() =>
+                  confirm.press("clear", () => dispatch({ type: "clear" }))
+                }
+                disabled={spinning || labels.length === 0}
+              >
+                {confirm.armed === "clear" ? "Sure? Clear" : "Clear"}
+              </button>
               <button
                 type="button"
                 className="btn btn--quiet btn--small"
