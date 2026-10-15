@@ -1,0 +1,570 @@
+/* Sleek Matcha (the app look of the Cute Matcha design system) in the dark,
+   as drawn for the Matcha Wheel: bark-dark ground on a fine grid, raised
+   panels named on a lime pill, Abril Fatface for names and Lato for the
+   rest, 2px near-black outlines and hard shadows. Cream is the text colour;
+   lime marks whatever is selected or pressed next. */
+:root {
+  --ground: #1c2420;
+  --grid: #242e29;
+  --panel: #2b3631;
+  --panel-raised: #3b4a42;
+  --outline: #0f1411;
+  --cream: #fff3cf;
+  --surface: #dde87e;
+  --sprout: #b8d970;
+  --paper: #f7f8de;
+  --ink: #2f3b34;
+  --signal: #f0675c;
+  --sky: #4a7fc0;
+
+  --line: 2px solid var(--outline);
+  --shadow-hard: 3px 3px 0 var(--outline);
+  --radius-panel: 11px;
+  --radius-lg: 9px;
+
+  --display: "Abril Fatface", Georgia, serif;
+  --body: "Lato", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  font-family: var(--body);
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
+}
+a {
+  color: var(--surface);
+}
+a:hover {
+  color: var(--paper);
+}
+
+.display {
+  font-family: var(--display);
+  font-weight: 400;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kicker,
+.field-label {
+  margin: 0;
+  font: 700 13px/1.3 var(--body);
+  color: var(--sprout);
+}
+.hint {
+  margin: 0;
+  min-height: 1.4em;
+  font: 400 13px/1.4 var(--body);
+  color: var(--sprout);
+}
+
+/* ── page ── */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 28px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.page__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.page__title {
+  margin: 0;
+  font-size: 40px;
+  line-height: 1.05;
+}
+.page__sub {
+  margin: 0;
+  font-size: 15px;
+  color: var(--sprout);
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  min-height: 44px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* A panel's name, set like a filename on a lime pill across its top edge. */
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-hard);
+}
+.legend {
+  position: absolute;
+  top: -14px;
+  left: 22px;
+  padding: 3px 14px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 12px/1.4 var(--body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--panel-raised);
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s,
+    background 0.12s;
+}
+.btn:not(:disabled):hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+/* Only the one action to press next carries the hard shadow. */
+.btn--primary {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 900;
+  box-shadow: var(--shadow-hard);
+}
+.btn--primary:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--outline);
+}
+.btn--primary:not(:disabled):active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--outline);
+}
+.btn--quiet {
+  background: transparent;
+}
+.btn--small {
+  padding: 0 16px;
+  font-size: 14px;
+}
+.btn--spin {
+  min-height: 56px;
+  min-width: 220px;
+  padding: 0 32px;
+  font-size: 18px;
+}
+.icon-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sprout);
+}
+.icon-btn:not(:disabled):hover {
+  background: var(--panel-raised);
+  color: var(--cream);
+}
+
+/* ── hub ── */
+.hub__header {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.hub__logo {
+  flex-shrink: 0;
+}
+.games {
+  margin: 0;
+  padding: 16px 0 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 36px 28px;
+}
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 34px 22px 22px;
+  color: var(--cream);
+  text-decoration: none;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+.game-card:hover {
+  color: var(--cream);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--outline);
+}
+.game-card__name {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.1;
+}
+.game-card__blurb {
+  margin: 0;
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--paper);
+}
+.game-card__play {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 6px 18px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 900;
+}
+.foot {
+  font-size: 14px;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 40px 28px 28px;
+}
+
+/* ── wheel of fortune ── */
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  border: var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--panel);
+}
+.picker__option {
+  min-height: 44px;
+  white-space: nowrap;
+  padding: 0 20px;
+  border: 0;
+  border-right: var(--line);
+  background: transparent;
+  font-weight: 700;
+  font-size: 14px;
+}
+.picker__option:last-child {
+  border-right: 0;
+}
+.picker__option[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+}
+.picker__option:not(:disabled, [aria-pressed="true"]):hover {
+  background: var(--panel-raised);
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 28px;
+}
+.panel--wheel {
+  flex: 999 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 44px 24px 24px;
+}
+.panel--slices {
+  flex: 1 1 340px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 22px 22px;
+}
+
+.wheel {
+  position: relative;
+  width: min(460px, 100%);
+  aspect-ratio: 1 / 1;
+}
+.wheel__pointer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+}
+.wheel__rim {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: var(--ground);
+  border: var(--line);
+  box-shadow: 4px 4px 0 var(--outline);
+}
+.wheel__disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--outline);
+  overflow: hidden;
+}
+/* The face turns inside the still, round disc, which clips its corners. */
+.wheel__face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 4.5s cubic-bezier(0.12, 0.72, 0.08, 1);
+}
+.wheel__label {
+  fill: var(--ink);
+  font-family: var(--body);
+  font-weight: 900;
+}
+.wheel__label--empty {
+  fill: var(--sprout);
+}
+.wheel__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--panel-raised);
+  border: 3px solid var(--outline);
+  box-shadow: var(--shadow-hard);
+  color: var(--surface);
+}
+
+.slices__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.picker__add {
+  color: var(--surface);
+}
+.slices__head,
+.slices__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.slices__count {
+  font-size: 28px;
+  font-weight: 900;
+}
+.slices__count span {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--surface);
+}
+.slices {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.slice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slice__dot {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: var(--line);
+}
+.slice__num {
+  min-width: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sprout);
+}
+.field {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--ground);
+  font-size: 15px;
+}
+.field::placeholder {
+  color: var(--sprout);
+  opacity: 0.7;
+}
+.slice__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+  font-size: 14px;
+}
+.switch__track {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--ground);
+  transition: background 0.12s;
+}
+.switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--sprout);
+  border: 1.5px solid var(--outline);
+  transition: transform 0.12s;
+}
+.switch[aria-checked="true"] .switch__track {
+  background: var(--surface);
+}
+.switch[aria-checked="true"] .switch__thumb {
+  transform: translateX(18px);
+  background: var(--ink);
+}
+
+/* The dialog itself stays the browser's (centred, on top); only its UA box
+   is cleared, and the panel inside draws the look. */
+.result {
+  width: min(440px, calc(100% - 32px));
+  padding: 16px 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+.result__panel {
+  padding: 34px 26px 24px;
+}
+.result::backdrop {
+  background: rgb(15 20 17 / 0.7);
+}
+.result__winner {
+  margin: 6px 0 22px;
+  font-size: 40px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.result__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 24px 16px 40px;
+    gap: 28px;
+  }
+  .page__title {
+    font-size: 32px;
+  }
+  .picker {
+    align-self: stretch;
+  }
+  .picker__option {
+    flex: 1;
+    padding: 0 10px;
+  }
+  .panel--wheel {
+    padding: 40px 16px 20px;
+  }
+  .btn--spin {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel__face {
+    transition-duration: 1.2s;
+  }
+  .btn,
+  .game-card,
+  .switch__thumb {
+    transition: none;
+  }
+}

@@ -1,0 +1,28 @@
+# Serves the built site inside the container. The shared Caddy in the proxy
+# repo handles HTTPS and compression in front of it and reaches this as
+# minigames:3000 on the `proxy` network.
+{
+	admin off
+	auto_https off
+}
+
+:3000 {
+	root * /srv
+
+	# Vite names every built asset after its contents, so those can be cached
+	# for good; the page itself is always checked, so a deploy shows at once.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	@pages not path /assets/*
+	header @pages Cache-Control "no-cache"
+
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	# Every path that is not a file is a page of the app: index.html routes it.
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}

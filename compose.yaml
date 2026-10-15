@@ -1,0 +1,15 @@
+# The site on the server. Caddy in irmahs-labs/proxy reaches it on the shared
+# `proxy` network as minigames:3000; no ports are published. To run the image
+# locally, create the network once with `docker network create proxy`.
+services:
+  app:
+    build: .
+    image: minigames
+    restart: unless-stopped
+    networks:
+      proxy:
+        aliases: [minigames]
+
+networks:
+  proxy:
+    external: true
