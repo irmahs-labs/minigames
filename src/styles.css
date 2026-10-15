@@ -1,29 +1,58 @@
-/* Sleek Matcha (the app look of the Cute Matcha design system) in the dark,
-   as drawn for the Matcha Wheel: bark-dark ground on a fine grid, raised
-   panels named on a lime pill, Abril Fatface for names and Lato for the
-   rest, 2px near-black outlines and hard shadows. Cream is the text colour;
-   lime marks whatever is selected or pressed next. */
+/* Cute Matcha's app look, in Light and Dark Matcha. Colours are role tokens
+   named by job (tokens.json in the design system), so one rule is right in
+   both themes; <html data-theme> picks the set. Abril Fatface sets names
+   and Lato everything else; panels are flat with 2px outlines, and only the
+   one action to press next carries the hard shadow. */
 :root {
-  --ground: #1c2420;
-  --grid: #242e29;
-  --panel: #2b3631;
-  --panel-raised: #3b4a42;
-  --outline: #0f1411;
-  --cream: #fff3cf;
-  --surface: #dde87e;
-  --sprout: #b8d970;
-  --paper: #f7f8de;
-  --ink: #2f3b34;
-  --signal: #f0675c;
-  --sky: #4a7fc0;
+  --ground: #f3f1c8;
+  --panel: #f7f8de;
+  --raised: #ffffff;
+  --raised-hover: #e3f0c6;
+  --text: #2f3b34;
+  --text-muted: #3f6b30;
+  --outline: #2f3b34;
+  --accent: #dde87e;
+  --accent-soft: #b8d970;
+  --on-accent: #2f3b34;
+  --strong: #3b4a42;
+  --on-strong: #fff3cf;
+  --grid: #4e6152;
+  --pattern-dot: #b8d970;
+  --pattern-line: #f3f1c800;
+  --focus: #4a7fc0;
+  --danger: #f0675c;
+  --shadow-hard: 3px 3px 0 #2f3b34;
+  --shadow-soft: 2px 2px 0 #2f3b34;
+  color-scheme: light;
 
-  --line: 2px solid var(--outline);
-  --shadow-hard: 3px 3px 0 var(--outline);
+  /* Fixed: they belong to drawings, not to the interface. */
+  --cream: #fff3cf;
+
+  --stroke-base: 1.5px;
+  --stroke-panel: 2px;
+  --line: var(--stroke-panel) solid var(--outline);
   --radius-panel: 11px;
   --radius-lg: 9px;
+  --radius-pill: 999px;
 
   --display: "Abril Fatface", Georgia, serif;
   --body: "Lato", "Helvetica Neue", Arial, sans-serif;
+}
+:root[data-theme="dark"] {
+  --ground: #1c2420;
+  --panel: #2b3631;
+  --raised: #3b4a42;
+  --raised-hover: #485847;
+  --text: #fff3cf;
+  --text-muted: #b8d970;
+  --outline: #0f1411;
+  --strong: #dde87e;
+  --on-strong: #2f3b34;
+  --grid: #c9d66b;
+  --pattern-dot: #b8d97000;
+  --pattern-line: #242e29;
+  --shadow-hard: 3px 3px 0 #0f1411;
+  --shadow-soft: 2px 2px 0 #0f1411;
   color-scheme: dark;
 }
 
@@ -32,16 +61,22 @@
 *::after {
   box-sizing: border-box;
 }
+/* Cute Matcha's Ground: dots in Light Matcha, grid lines in Dark Matcha.
+   Each pattern token is transparent in the other theme. */
 body {
   margin: 0;
   min-height: 100vh;
   background-color: var(--ground);
   background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 28px 28px;
+    radial-gradient(var(--pattern-dot) 1.2px, transparent 1.4px),
+    linear-gradient(var(--pattern-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pattern-line) 1px, transparent 1px);
+  background-size:
+    22px 22px,
+    28px 28px,
+    28px 28px;
   font-family: var(--body);
-  color: var(--cream);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 button,
@@ -54,17 +89,17 @@ button {
 }
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.5;
 }
 :focus-visible {
-  outline: 3px solid var(--sky);
-  outline-offset: 3px;
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 a {
-  color: var(--surface);
+  color: var(--text);
 }
 a:hover {
-  color: var(--paper);
+  color: var(--text-muted);
 }
 
 .display {
@@ -80,29 +115,75 @@ a:hover {
 .field-label {
   margin: 0;
   font: 700 13px/1.3 var(--body);
-  color: var(--sprout);
+  color: var(--text-muted);
 }
 .hint {
   margin: 0;
   min-height: 1.4em;
-  font: 400 13px/1.4 var(--body);
-  color: var(--sprout);
+  font: 400 12.5px/1.4 var(--body);
+  color: var(--text-muted);
+}
+
+/* ── header ── */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 14px 28px;
+  background: var(--panel);
+  border-bottom: var(--line);
+}
+.app-header__home {
+  flex: 1 1 0;
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+.app-header__home:hover {
+  color: var(--text);
+}
+.app-header__home svg {
+  flex: none;
+}
+.app-header__name {
+  display: block;
+  margin: 0;
+  font: 400 24px/1.1 var(--display);
+}
+.app-header__by {
+  display: block;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.app-header__actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.app-header__end {
+  flex: 1 1 0;
+  min-width: max-content;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ── page ── */
 .page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 40px 28px 56px;
+  padding: 28px 28px 56px;
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
-.page__header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
 }
 .page__title {
   margin: 0;
@@ -112,37 +193,26 @@ a:hover {
 .page__sub {
   margin: 0;
   font-size: 15px;
-  color: var(--sprout);
-}
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 10px;
-  min-height: 44px;
-  font-weight: 700;
-  text-decoration: none;
+  color: var(--text-muted);
 }
 
-/* A panel's name, set like a filename on a lime pill across its top edge. */
+/* A panel's name, set like a filename on a strong pill across its top edge. */
 .panel {
   position: relative;
   background: var(--panel);
   border: var(--line);
   border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-hard);
 }
 .legend {
   position: absolute;
-  top: -14px;
-  left: 22px;
-  padding: 3px 14px;
-  border: var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--ink);
+  top: -12px;
+  left: 16px;
+  padding: 2px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--strong);
+  color: var(--on-strong);
   font: 700 12px/1.4 var(--body);
-  letter-spacing: 0.08em;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
 }
 
@@ -151,15 +221,14 @@ a:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 20px;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
   border: var(--line);
-  border-radius: 999px;
-  background: var(--panel-raised);
-  color: var(--cream);
-  font-weight: 700;
-  font-size: 15px;
+  border-radius: var(--radius-pill);
+  background: var(--raised);
+  color: var(--text);
+  font: 700 14px/1.2 var(--body);
   text-decoration: none;
   transition:
     transform 0.12s,
@@ -167,19 +236,19 @@ a:hover {
     background 0.12s;
 }
 .btn:not(:disabled):hover {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--panel);
+  color: var(--text);
 }
 /* Only the one action to press next carries the hard shadow. */
-.btn--primary {
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 900;
+.btn--primary,
+.btn--primary:not(:disabled):hover {
+  background: var(--strong);
+  color: var(--on-strong);
   box-shadow: var(--shadow-hard);
 }
 .btn--primary:not(:disabled):hover {
   transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--outline);
+  box-shadow: 4px 4px 0 var(--outline);
 }
 .btn--primary:not(:disabled):active {
   transform: translate(3px, 3px);
@@ -188,9 +257,10 @@ a:hover {
 .btn--quiet {
   background: transparent;
 }
-.btn--small {
-  padding: 0 16px;
-  font-size: 14px;
+/* The small pills at a header's end. */
+.btn--pill {
+  min-height: 40px;
+  padding: 4px 14px;
 }
 .btn--spin {
   min-height: 56px;
@@ -209,22 +279,14 @@ a:hover {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--sprout);
+  color: var(--text-muted);
 }
 .icon-btn:not(:disabled):hover {
-  background: var(--panel-raised);
-  color: var(--cream);
+  background: var(--raised);
+  color: var(--text);
 }
 
 /* ── hub ── */
-.hub__header {
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-}
-.hub__logo {
-  flex-shrink: 0;
-}
 .games {
   margin: 0;
   padding: 16px 0 0;
@@ -233,22 +295,31 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 36px 28px;
 }
+/* An app tile: raised, lifting into raised-hover. */
 .game-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
   height: 100%;
-  padding: 34px 22px 22px;
-  color: var(--cream);
+  padding: 30px 22px 22px;
+  background: var(--raised);
+  border: var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
   text-decoration: none;
   transition:
     transform 0.12s,
-    box-shadow 0.12s;
+    box-shadow 0.12s,
+    background 0.12s;
 }
-.game-card:hover {
-  color: var(--cream);
+.game-card:hover,
+.game-card:focus-visible {
+  color: var(--text);
+  background: var(--raised-hover);
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--outline);
+  box-shadow: 4px 4px 0 var(--outline);
 }
 .game-card__name {
   margin: 0;
@@ -260,17 +331,16 @@ a:hover {
   flex: 1;
   font-size: 15px;
   line-height: 1.45;
-  color: var(--paper);
 }
 .game-card__play {
   align-self: flex-start;
   margin-top: 8px;
   padding: 6px 18px;
   border: var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 900;
+  border-radius: var(--radius-pill);
+  background: var(--strong);
+  color: var(--on-strong);
+  font-weight: 700;
 }
 .foot {
   font-size: 14px;
@@ -284,6 +354,7 @@ a:hover {
 }
 
 /* ── wheel of fortune ── */
+/* Cute Matcha's Segmented: joined options, the chosen one strong. */
 .picker {
   display: flex;
   flex-wrap: wrap;
@@ -291,7 +362,7 @@ a:hover {
   border: var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--panel);
+  background: var(--raised);
 }
 .picker__option {
   min-height: 44px;
@@ -299,19 +370,24 @@ a:hover {
   padding: 0 20px;
   border: 0;
   border-right: var(--line);
-  background: transparent;
-  font-weight: 700;
-  font-size: 14px;
+  background: var(--raised);
+  font: 700 14px/1.2 var(--body);
 }
 .picker__option:last-child {
   border-right: 0;
 }
 .picker__option[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--strong);
+  color: var(--on-strong);
 }
 .picker__option:not(:disabled, [aria-pressed="true"]):hover {
-  background: var(--panel-raised);
+  background: var(--panel);
+}
+.picker__option:focus-visible {
+  outline-offset: -5px;
+}
+.picker__add {
+  color: var(--text-muted);
 }
 
 .layout {
@@ -373,12 +449,12 @@ a:hover {
   transition: transform 4.5s cubic-bezier(0.12, 0.72, 0.08, 1);
 }
 .wheel__label {
-  fill: var(--ink);
+  fill: var(--on-accent);
   font-family: var(--body);
   font-weight: 900;
 }
 .wheel__label--empty {
-  fill: var(--sprout);
+  fill: var(--text-muted);
 }
 .wheel__hub {
   position: absolute;
@@ -392,19 +468,16 @@ a:hover {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--panel-raised);
+  background: var(--raised);
   border: 3px solid var(--outline);
   box-shadow: var(--shadow-hard);
-  color: var(--surface);
+  color: var(--strong);
 }
 
 .slices__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-.picker__add {
-  color: var(--surface);
 }
 .slices__head,
 .slices__foot {
@@ -421,7 +494,7 @@ a:hover {
 .slices__count span {
   font-size: 15px;
   font-weight: 400;
-  color: var(--surface);
+  color: var(--text-muted);
 }
 .slices {
   margin: 0;
@@ -447,26 +520,27 @@ a:hover {
   min-width: 20px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--sprout);
+  color: var(--text-muted);
 }
 .field {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
-  border: 1.5px solid var(--outline);
+  border: var(--stroke-base) solid var(--outline);
   border-radius: var(--radius-lg);
-  background: var(--ground);
+  background: var(--raised);
   font-size: 15px;
 }
 .field::placeholder {
-  color: var(--sprout);
-  opacity: 0.7;
+  color: var(--text-muted);
+  opacity: 0.8;
 }
 .slice__input {
   flex: 1;
   min-width: 0;
 }
 
+/* Cute Matcha's Switch: raised when off, strong when on. */
 .switch {
   display: inline-flex;
   align-items: center;
@@ -475,35 +549,33 @@ a:hover {
   padding: 0;
   border: 0;
   background: transparent;
-  font-weight: 700;
-  font-size: 14px;
+  font: 700 14px/1.2 var(--body);
 }
 .switch__track {
   position: relative;
-  width: 44px;
-  height: 26px;
+  width: 50px;
+  height: 28px;
   border: var(--line);
-  border-radius: 999px;
-  background: var(--ground);
-  transition: background 0.12s;
+  border-radius: var(--radius-pill);
+  background: var(--raised);
+  transition: background 0.15s;
 }
 .switch__thumb {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--sprout);
-  border: 1.5px solid var(--outline);
-  transition: transform 0.12s;
+  background: var(--text);
+  transition: transform 0.15s;
 }
 .switch[aria-checked="true"] .switch__track {
-  background: var(--surface);
+  background: var(--strong);
 }
 .switch[aria-checked="true"] .switch__thumb {
-  transform: translateX(18px);
-  background: var(--ink);
+  transform: translateX(22px);
+  background: var(--on-strong);
 }
 
 /* The dialog itself stays the browser's (centred, on top); only its UA box
@@ -535,6 +607,18 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+  .app-header__name {
+    font-size: 20px;
+  }
+  .app-header__home,
+  .app-header__end {
+    flex-basis: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+  }
   .page {
     padding: 24px 16px 40px;
     gap: 28px;
@@ -564,6 +648,7 @@ a:hover {
   }
   .btn,
   .game-card,
+  .switch__track,
   .switch__thumb {
     transition: none;
   }

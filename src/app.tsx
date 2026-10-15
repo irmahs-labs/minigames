@@ -1,21 +1,26 @@
 import { Suspense } from "react";
 
+import { MiniGamesIcon } from "./components/app-icons";
+import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { Hub } from "./hub";
 import { APP_NAME } from "./lib/brand";
 import { Link, usePath } from "./lib/router";
 
 const NotFound = () => (
-  <main className="page">
-    <section className="panel empty">
-      <span className="legend">404.txt</span>
-      <h1 className="display page__title">No game here</h1>
-      <p className="page__sub">That page does not exist, but the games do.</p>
-      <Link href="/" className="btn btn--primary">
-        See all games
-      </Link>
-    </section>
-  </main>
+  <>
+    <Header icon={<MiniGamesIcon />} name={APP_NAME} href="/" />
+    <main className="page">
+      <section className="panel empty">
+        <span className="legend">404.txt</span>
+        <h2 className="display page__title">No game here</h2>
+        <p className="page__sub">That page does not exist, but the games do.</p>
+        <Link href="/" className="btn btn--primary">
+          see all games
+        </Link>
+      </section>
+    </main>
+  </>
 );
 
 export const App = () => {
