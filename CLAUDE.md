@@ -46,7 +46,9 @@ The name people see is `APP_NAME` in `src/lib/brand.ts`. The image, the network 
 
 ## Design
 
-The site is styled in Sleek Matcha, the app look of Irma's Cute Matcha design system, in its dark version as drawn for the Matcha Wheel: the tokens at the top of `src/styles.css`, Abril Fatface for names and Lato for everything else, 2px near-black outlines, raised panels with a filename on a lime pill (`.legend`), and lime with ink text for whatever is selected. Only the one action to press next in an area (`.btn--primary`) carries the hard shadow. The logo is `public/favicon.svg`.
+The site is styled in Cute Matcha's app look (the _Apps_ section of Irma's Cute Matcha design system), in both of its themes. Colours are the system's role tokens, named by job (`ground`, `panel`, `raised`, `text`, `text-muted`, `strong`, `on-strong`, …), at the top of `src/styles.css`: Light Matcha on `:root`, Dark Matcha on `:root[data-theme="dark"]`. Pick a token by what the thing is, never a hex. The inline script in `index.html` sets `data-theme` before the first paint, from the visitor's saved choice or else the device's setting, and `src/lib/theme.ts` keeps it (the header's sun/moon toggle saves a choice).
+
+Every page opens with the **Header** (`src/components/header.tsx`): its 40px app icon (`src/components/app-icons.tsx`), its name in Abril Fatface with "by Irma HS" under it, the page's own buttons in the middle, and the theme toggle at the end. Panels are flat, with a 2px outline and a filename on a `strong` pill (`.legend`); only the one action to press next (`.btn--primary`) carries the hard shadow. The favicon is the Mini Games die, `public/favicon.svg`.
 
 ## Deploy
 

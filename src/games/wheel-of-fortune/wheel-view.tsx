@@ -64,7 +64,7 @@ export const WheelView = ({
       >
         <path
           d="M6 4H34Q38 4 36 8L22 40Q20 44 18 40L4 8Q2 4 6 4Z"
-          fill="var(--signal)"
+          fill="var(--danger)"
           stroke="var(--outline)"
           strokeWidth="2.5"
           strokeLinejoin="round"
@@ -100,8 +100,8 @@ export const WheelView = ({
             <g key={i}>
               <path
                 d={slicePath(i, count, RADIUS)}
-                fill={empty ? "var(--panel-raised)" : colors[i]}
-                stroke="var(--ink)"
+                fill={empty ? "var(--raised)" : colors[i]}
+                stroke="var(--on-accent)"
                 strokeWidth="1"
               />
               <text
