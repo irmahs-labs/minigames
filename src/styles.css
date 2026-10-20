@@ -726,6 +726,10 @@ a:hover {
 .planet--purple .planet__flag {
   background: color-mix(in srgb, var(--purple) 80%, transparent);
 }
+/* Filled with nobody holding three in a row: a white flag on the plain panel. */
+.planet--drawn .planet__flag {
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+}
 
 .turn {
   margin: 0;

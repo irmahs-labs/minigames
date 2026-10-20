@@ -4,6 +4,7 @@ import {
   canPlay,
   describe,
   isClosed,
+  isDrawn,
   lineWinner,
   newGame,
   play,
@@ -88,6 +89,7 @@ group("play", () => {
 
     expect(game.conquered[0]).toBe(P);
     expect(isClosed(game, 0)).toBe(true);
+    expect(isDrawn(game, 0)).toBe(false);
     expect(canPlay(game, { board: 0, cell: 8 })).toBe(false);
     expect(tally(game)).toEqual({ pink: 1, purple: 0 });
   });
@@ -115,6 +117,7 @@ group("play", () => {
     };
 
     expect(isClosed(game, 0)).toBe(true);
+    expect(isDrawn(game, 0)).toBe(true);
 
     const next = play(game, { board: 4, cell: 0 });
 

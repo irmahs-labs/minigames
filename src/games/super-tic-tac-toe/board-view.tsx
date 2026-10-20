@@ -1,11 +1,30 @@
-import { PLANETS, PLAYERS, canPlay, isPlayable, playerLabel } from "./rules";
-import type { Game, Move } from "./rules";
+import {
+  PLANETS,
+  PLAYERS,
+  canPlay,
+  isDrawn,
+  isPlayable,
+  playerLabel,
+} from "./rules";
+import type { Game, Move, Player } from "./rules";
+
+// The flag over a planet filled up with nobody holding three in a row.
+const NO_WINNER = "🏳️";
 
 // Shown as text, not as a coloured emoji where a font has one (♀, ♂).
 const TEXT_STYLE = "︎";
 
 const classes = (...names: (string | false | null)[]) =>
   names.filter(Boolean).join(" ");
+
+/** A planet as a screen reader hears it: its name, and who holds it. */
+const planetLabel = (name: string, owner: Player | null, drawn: boolean) => {
+  if (owner) {
+    return `${name}, conquered by ${playerLabel(owner)}`;
+  }
+
+  return drawn ? `${name}, full with no winner` : name;
+};
 
 interface BoardViewProps {
   game: Game;
@@ -22,20 +41,18 @@ export const BoardView = ({ game, onPlay }: BoardViewProps) => (
     {PLANETS.map((planet, board) => {
       const owner = game.conquered[board] ?? null;
       const playable = isPlayable(game, board);
+      const drawn = isDrawn(game, board);
 
       return (
         <fieldset
           key={planet.name}
-          aria-label={
-            owner
-              ? `${planet.name}, conquered by ${playerLabel(owner)}`
-              : planet.name
-          }
+          aria-label={planetLabel(planet.name, owner, drawn)}
           className={classes(
             "planet",
             playable && "planet--open",
             owner && `planet--${owner}`,
-            !(game.over || playable || owner) && "planet--waiting"
+            drawn && "planet--drawn",
+            !(game.over || playable || owner || drawn) && "planet--waiting"
           )}
         >
           <span aria-hidden="true" className="planet__name">
@@ -77,9 +94,9 @@ export const BoardView = ({ game, onPlay }: BoardViewProps) => (
               );
             })}
           </div>
-          {owner ? (
+          {owner || drawn ? (
             <span aria-hidden="true" className="planet__flag">
-              {PLAYERS[owner].emoji}
+              {owner ? PLAYERS[owner].emoji : NO_WINNER}
             </span>
           ) : null}
         </fieldset>
