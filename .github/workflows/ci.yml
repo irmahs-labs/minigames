@@ -17,7 +17,6 @@ jobs:
     uses: irmahs-labs/workflows/.github/workflows/app-ci.yml@main
     with:
       typecheck: npm run lint
-      docker-image: minigames
 
   # The branch rules require a check named "checks". It fails if any job
   # above failed, was cancelled or skipped; list new jobs in needs.
