@@ -27,6 +27,9 @@
 
   /* Fixed: they belong to drawings, not to the interface. */
   --cream: #fff3cf;
+  /* Super Tic-Tac-Toe's players, from the original game; dark text on both. */
+  --pink: #ffb8ee;
+  --purple: #d4b8ff;
 
   --stroke-base: 1.5px;
   --stroke-panel: 2px;
@@ -606,6 +609,181 @@ a:hover {
   gap: 10px;
 }
 
+/* ── super tic-tac-toe ── */
+.panel--system {
+  flex: 999 1 520px;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 36px 20px 20px;
+}
+.panel--log {
+  flex: 1 1 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 22px 22px;
+}
+.system {
+  width: min(620px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+/* A planet: a small board, lit up in accent while the next move may go on it. */
+.planet {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  transition: opacity 0.15s;
+}
+.planet--open {
+  background: var(--accent-soft);
+}
+.planet--waiting {
+  opacity: 0.55;
+}
+.planet--pink {
+  background: var(--pink);
+}
+.planet--purple {
+  background: var(--purple);
+}
+.planet__name {
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 700 12px/1.2 var(--body);
+  color: var(--text);
+}
+.planet--open .planet__name,
+.planet--pink .planet__name,
+.planet--purple .planet__name {
+  color: var(--on-accent);
+}
+.planet__cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.cell {
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: 6px;
+  background: var(--raised);
+  font-size: clamp(12px, 2.8vw, 20px);
+  line-height: 1;
+}
+.cell:not(:disabled):hover {
+  background: var(--raised-hover);
+}
+/* The planet shows whether it is in play; a square never fades on its own. */
+.cell:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.cell--pink {
+  background: var(--pink);
+}
+.cell--purple {
+  background: var(--purple);
+}
+.cell--last {
+  box-shadow: inset 0 0 0 2px var(--outline);
+}
+.cell__planet {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+/* A conquered planet's flag over its squares: the winner's mark, large. */
+.planet__flag {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  font-size: clamp(36px, 9vw, 72px);
+  pointer-events: none;
+}
+.planet--pink .planet__flag {
+  background: color-mix(in srgb, var(--pink) 80%, transparent);
+}
+.planet--purple .planet__flag {
+  background: color-mix(in srgb, var(--purple) 80%, transparent);
+}
+
+.turn {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.15;
+}
+.turn__note {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.score {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.score__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border: var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+.score--pink {
+  background: var(--pink);
+}
+.score--purple {
+  background: var(--purple);
+}
+.score__row dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+.score__row dd span {
+  font-size: 14px;
+  font-weight: 400;
+}
+.how-to {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.result__note {
+  margin: -12px 0 22px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
 @media (max-width: 600px) {
   .app-header {
     padding: 12px 16px;
@@ -640,6 +818,25 @@ a:hover {
     min-width: 0;
     width: 100%;
   }
+  .panel--system {
+    padding: 32px 10px 12px;
+  }
+  .system {
+    gap: 6px;
+  }
+  .planet {
+    gap: 4px;
+    padding: 4px;
+  }
+  .planet__name {
+    font-size: 10px;
+  }
+  .planet__cells {
+    gap: 2px;
+  }
+  .cell {
+    border-radius: 4px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -648,6 +845,7 @@ a:hover {
   }
   .btn,
   .game-card,
+  .planet,
   .switch__track,
   .switch__thumb {
     transition: none;

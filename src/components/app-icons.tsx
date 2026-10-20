@@ -1,5 +1,5 @@
 /**
- * The 40 × 40 app icons, drawn flat in Cute Matcha colours. Both use the
+ * The 40 × 40 app icons, drawn flat in Cute Matcha colours. All use the
  * lime accent, whose edge shows in either theme. The Mini Games die is also
  * the favicon (public/favicon.svg, in fixed colours).
  */
@@ -40,5 +40,38 @@ export const WheelIcon = () => (
       strokeWidth="1.2"
     />
     <circle cx="20" cy="20" r="5" fill="var(--on-accent)" />
+  </svg>
+);
+
+/** A tic-tac-toe grid with a ringed planet in the middle square. */
+export const SuperTicTacToeIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="var(--accent)"
+      stroke="var(--on-accent)"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M14.3 7v26M25.7 7v26M7 14.3h26M7 25.7h26"
+      stroke="var(--on-accent)"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <circle cx="20" cy="20" r="2.6" fill="var(--on-accent)" />
+    <ellipse
+      cx="20"
+      cy="20"
+      rx="4.4"
+      ry="1.5"
+      fill="none"
+      stroke="var(--on-accent)"
+      strokeWidth="1.1"
+      transform="rotate(-20 20 20)"
+    />
   </svg>
 );
