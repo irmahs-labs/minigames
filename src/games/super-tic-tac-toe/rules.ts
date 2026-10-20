@@ -103,6 +103,10 @@ export const isClosed = (game: Game, board: number): boolean =>
   game.conquered[board] !== null ||
   (game.boards[board]?.every((mark) => mark !== null) ?? true);
 
+/** A planet filled up with nobody holding three in a row on it. */
+export const isDrawn = (game: Game, board: number): boolean =>
+  game.conquered[board] === null && isClosed(game, board);
+
 /** Whether the next move may go on this planet. */
 export const isPlayable = (game: Game, board: number): boolean =>
   !game.over &&
