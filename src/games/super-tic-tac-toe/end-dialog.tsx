@@ -4,6 +4,8 @@ interface EndDialogProps {
   open: boolean;
   headline: string;
   note: string;
+  /** The main button's label: "New game" unless given. */
+  again?: string;
   onNewGame: () => void;
   onClose: () => void;
 }
@@ -13,6 +15,7 @@ export const EndDialog = ({
   open,
   headline,
   note,
+  again = "New game",
   onNewGame,
   onClose,
 }: EndDialogProps) => {
@@ -52,7 +55,7 @@ export const EndDialog = ({
             className="btn btn--primary"
             onClick={onNewGame}
           >
-            New game
+            {again}
           </button>
           <button type="button" className="btn btn--quiet" onClick={onClose}>
             See the board

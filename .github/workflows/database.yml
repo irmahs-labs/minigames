@@ -1,0 +1,50 @@
+# Checks db/migrations/ on every change: they apply to an empty database and
+# roll back cleanly, and the leaderboard's queries work against what they
+# build. Applying them to production is the deploy's job, not this one's.
+name: Database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "db/**"
+      - "server/scores*.ts"
+      - "server/db.ts"
+      - "compose.yaml"
+      - ".github/workflows/database.yml"
+  pull_request:
+    paths:
+      - "db/**"
+      - "server/scores*.ts"
+      - "server/db.ts"
+      - "compose.yaml"
+      - ".github/workflows/database.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Migrations build, roll back, and serve the leaderboard
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Apply every migration to an empty database
+        run: npm run db:up
+
+      # Down then up again, so every migrate:down is known to work before it is
+      # ever needed.
+      - name: Roll everything back and apply it again
+        run: |
+          for _ in db/migrations/*.sql; do docker compose run --rm migrate rollback; done
+          docker compose run --rm migrate up
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+
+      - name: The leaderboard's queries against the migrated database
+        run: npx vitest run server/scores.test.ts
+        env:
+          TEST_DATABASE_URL: postgres://minigames:minigames@localhost:5434/minigames

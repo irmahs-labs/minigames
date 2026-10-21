@@ -1,15 +1,41 @@
-# The site on the server. Caddy in irmahs-labs/proxy reaches it on the shared
-# `proxy` network as minigames:3000; no ports are published. To run the image
-# locally, create the network once with `docker network create proxy`.
+# Local development: Postgres, and dbmate to apply db/migrations to it.
+#
+#   npm run db:up               start Postgres and apply pending migrations
+#   npm run db:new -- <name>    create db/migrations/<timestamp>_<name>.sql
+#   npm run db:reset            delete the local database and rebuild it
+#
+# The credentials are for this local container only; production has its own
+# (compose.prod.yaml). Port 5434, so it runs beside the account service's
+# database on 5433 and Pantry Spinner's on 5432.
 services:
-  app:
-    build: .
-    image: minigames
-    restart: unless-stopped
-    networks:
-      proxy:
-        aliases: [minigames]
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: minigames
+      POSTGRES_PASSWORD: minigames
+      POSTGRES_DB: minigames
+    ports:
+      - "127.0.0.1:${DB_PORT-5434}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U minigames -d minigames"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
-networks:
-  proxy:
-    external: true
+  migrate:
+    image: ghcr.io/amacneil/dbmate:2
+    profiles: [tools]
+    environment:
+      DATABASE_URL: postgres://minigames:minigames@db:5432/minigames?sslmode=disable
+      DBMATE_MIGRATIONS_DIR: /db/migrations
+      DBMATE_NO_DUMP_SCHEMA: "true"
+    volumes:
+      - ./db:/db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

@@ -16,6 +16,15 @@ export default defineConfig({
       },
     },
   ],
+  server: {
+    // `npm run dev:api` serves /api and /ws on 3002; the browser only ever
+    // sees 5173, so the session cookie and every request stay same-origin,
+    // as in production.
+    proxy: {
+      "/api": "http://localhost:3002",
+      "/ws": { target: "ws://localhost:3002", ws: true },
+    },
+  },
   test: {
     environment: "jsdom",
   },

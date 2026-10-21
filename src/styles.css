@@ -788,6 +788,69 @@ a:hover {
   line-height: 1.45;
 }
 
+/* ── online play and the leaderboard ── */
+.panel--notice {
+  align-self: flex-start;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 22px 22px;
+}
+.panel--board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 22px 22px;
+}
+.board {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.board th,
+.board td {
+  padding: 8px 10px;
+  border-bottom: var(--stroke-base) solid var(--outline);
+  text-align: left;
+}
+.board thead th {
+  font: 700 12px/1.3 var(--body);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.board tbody th {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.board abbr {
+  text-decoration: none;
+}
+.board__rank,
+.board__points,
+.board__record {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.board__points {
+  font-weight: 900;
+}
+.board__record {
+  color: var(--text-muted);
+}
+.board__you {
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.board__you .board__record {
+  color: var(--on-accent);
+}
+/* You, below the top: set apart from it by a heavier rule. */
+.board__below tr:first-child > * {
+  border-top: var(--line);
+}
+
 @media (max-width: 600px) {
   .app-header {
     padding: 12px 16px;
@@ -840,6 +903,13 @@ a:hover {
   }
   .cell {
     border-radius: 4px;
+  }
+  .panel--board {
+    padding: 28px 12px 16px;
+  }
+  .board th,
+  .board td {
+    padding: 8px 6px;
   }
 }
 

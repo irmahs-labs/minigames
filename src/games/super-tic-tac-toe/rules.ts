@@ -70,7 +70,8 @@ export interface Game {
   last: Move | null;
 }
 
-const other = (player: Player): Player =>
+/** The player who is not this one. */
+export const other = (player: Player): Player =>
   player === "pink" ? "purple" : "pink";
 
 /** Whoever holds three in a row on a 3 × 3 board, if anyone does. */

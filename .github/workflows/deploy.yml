@@ -21,12 +21,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
 
       - name: Deploy on server
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.MINIGAMES_POSTGRES_PASSWORD }}
         run: |
+          [ -n "$POSTGRES_PASSWORD" ] || { echo "Secret MINIGAMES_POSTGRES_PASSWORD is not set"; exit 1; }
+          # Percent-encoded for the postgres:// URLs: a / or @ in the password would
+          # otherwise break them, and a parser's error can print part of it.
+          POSTGRES_PASSWORD_URL=$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["POSTGRES_PASSWORD"], safe=""))')
+          # .env is sent over stdin so the secret never appears in a command line
+          printf 'POSTGRES_PASSWORD=%s\nPOSTGRES_PASSWORD_URL=%s\n' "$POSTGRES_PASSWORD" "$POSTGRES_PASSWORD_URL" |
           ssh deploy@${{ secrets.DEPLOY_HOST }} 'set -e
             cd /srv/minigames
             [ -d .git ] || git clone https://github.com/${{ github.repository }}.git .
             git fetch --depth 1 origin main
             git reset --hard origin/main
-            docker compose up -d --build --remove-orphans --wait
+            (umask 077 && cat > .env)
+            export COMPOSE_FILE=compose.prod.yaml
+            docker compose up -d --wait db
+            docker compose run --rm migrate up
+            docker compose up -d --build --remove-orphans --wait app
             docker image prune -f
             docker builder prune -f --filter until=168h'
