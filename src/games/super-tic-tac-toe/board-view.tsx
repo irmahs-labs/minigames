@@ -29,6 +29,10 @@ const planetLabel = (name: string, owner: Player | null, drawn: boolean) => {
 interface BoardViewProps {
   game: Game;
   onPlay: (move: Move) => void;
+  /** No square can be pressed: online, while it is the other player's turn. */
+  locked?: boolean;
+  /** No planet is lit either: online, before a game has started. */
+  quiet?: boolean;
 }
 
 /**
@@ -36,11 +40,16 @@ interface BoardViewProps {
  * square shows the symbol of the planet it sends the next player to; only
  * the squares the next move may take can be pressed.
  */
-export const BoardView = ({ game, onPlay }: BoardViewProps) => (
+export const BoardView = ({
+  game,
+  onPlay,
+  locked = false,
+  quiet = false,
+}: BoardViewProps) => (
   <div className="system">
     {PLANETS.map((planet, board) => {
       const owner = game.conquered[board] ?? null;
-      const playable = isPlayable(game, board);
+      const playable = !quiet && isPlayable(game, board);
       const drawn = isDrawn(game, board);
 
       return (
@@ -79,7 +88,7 @@ export const BoardView = ({ game, onPlay }: BoardViewProps) => (
                     mark && `cell--${mark}`,
                     last && "cell--last"
                   )}
-                  disabled={!canPlay(game, { board, cell })}
+                  disabled={locked || !canPlay(game, { board, cell })}
                   onClick={() => onPlay({ board, cell })}
                 >
                   {mark ? (

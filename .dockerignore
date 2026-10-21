@@ -6,3 +6,4 @@ dist
 .env
 .env.*
 *.md
+dist-server
