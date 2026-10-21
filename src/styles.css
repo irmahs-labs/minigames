@@ -1,4 +1,4 @@
-/* Cute Matcha's app look, in Light Matcha and Dark Matcha (green tea).
+/* Cute Matcha's app look, in Light Matcha and Dark Matcha.
    Colours are role tokens named by job (tokens.json in the design system),
    so one rule is right in both themes; <html data-theme> picks the set.
    Fredoka sets titles and Nunito Sans everything else; panels are flat with
@@ -50,7 +50,7 @@
   --body: "Nunito Sans", "Fredoka", system-ui, sans-serif;
 }
 :root[data-theme="dark"] {
-  /* Green tea: a mid-tone matcha page, cards a step lighter, and the header,
+  /* Dark Matcha: a mid-tone matcha page, cards a step lighter, and the header,
      buttons and fields a darker well. Outlines and shadows stay near-black. */
   --ground: #46574b;
   --panel: #52645a;
