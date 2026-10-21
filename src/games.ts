@@ -24,7 +24,7 @@ export const GAMES: readonly Game[] = [
   {
     Screen: lazy(() => import("./games/wheel-of-fortune/wheel-of-fortune")),
     blurb: "Spin a wheel of names, a wheel of doom, or a wheel of your own.",
-    legend: "wheel.fun",
+    legend: "wheel-of-fortune.games",
     name: "Wheel of Fortune",
     slug: "wheel-of-fortune",
   },
@@ -32,7 +32,7 @@ export const GAMES: readonly Game[] = [
     Screen: lazy(() => import("./games/super-tic-tac-toe/super-tic-tac-toe")),
     blurb:
       "Nine games of tic-tac-toe, one on each planet. Conquer three planets in a row to win.",
-    legend: "planets.ttt",
+    legend: "super-tic-tac-toe.games",
     name: "Super Tic-Tac-Toe",
     slug: "super-tic-tac-toe",
   },
