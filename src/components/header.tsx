@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Link } from "../lib/router";
+import { AccountButton } from "./account-button";
 import { ThemeToggle } from "./theme-toggle";
 
 interface HeaderProps {
@@ -15,7 +16,8 @@ interface HeaderProps {
 
 /**
  * Cute Matcha's app Header: the icon, the name with "by Irma HS" under it,
- * the page's actions in the middle, and the theme toggle at the end. The
+ * the page's actions in the middle, and the theme toggle and the account
+ * pill at the end. The
  * name is the page's heading.
  */
 export const Header = ({ icon, name, href, children }: HeaderProps) => (
@@ -30,6 +32,7 @@ export const Header = ({ icon, name, href, children }: HeaderProps) => (
     {children ? <div className="app-header__actions">{children}</div> : null}
     <div className="app-header__end">
       <ThemeToggle />
+      <AccountButton />
     </div>
   </header>
 );

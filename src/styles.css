@@ -1,32 +1,39 @@
-/* Cute Matcha's app look, in Light and Dark Matcha. Colours are role tokens
-   named by job (tokens.json in the design system), so one rule is right in
-   both themes; <html data-theme> picks the set. Abril Fatface sets names
-   and Lato everything else; panels are flat with 2px outlines, and only the
-   one action to press next carries the hard shadow. */
+/* Cute Matcha's app look, in Light Matcha and Dark Matcha (green tea).
+   Colours are role tokens named by job (tokens.json in the design system),
+   so one rule is right in both themes; <html data-theme> picks the set.
+   Fredoka sets titles and Nunito Sans everything else; panels are flat with
+   2px outlines, and only the one action to press next carries the hard
+   shadow. */
 :root {
   --ground: #f3f1c8;
   --panel: #f7f8de;
-  --raised: #ffffff;
-  --raised-hover: #e3f0c6;
+  --header: #f7f8de;
+  --raised: #fffdf0;
+  --raised-hover: #e8e1bd;
   --text: #2f3b34;
   --text-muted: #3f6b30;
   --outline: #2f3b34;
-  --accent: #dde87e;
-  --accent-soft: #b8d970;
+  --accent: #d4dd9c;
+  --accent-soft: #afc584;
   --on-accent: #2f3b34;
   --strong: #3b4a42;
   --on-strong: #fff3cf;
+  --selected: #afc584;
+  --on-selected: #2f3b34;
   --grid: #4e6152;
-  --pattern-dot: #b8d970;
+  --pattern-dot: #afc584;
   --pattern-line: #f3f1c800;
   --focus: #4a7fc0;
   --danger: #f0675c;
-  --shadow-hard: 3px 3px 0 #2f3b34;
-  --shadow-soft: 2px 2px 0 #2f3b34;
+  /* Hard shadows are the same near-black in both themes. */
+  --shadow-hard: 3px 3px 0 #0f1411;
+  --shadow-soft: 2px 2px 0 #0f1411;
   color-scheme: light;
 
   /* Fixed: they belong to drawings, not to the interface. */
   --cream: #fff3cf;
+  --ink: #2f3b34;
+  --white: #ffffff;
   /* Super Tic-Tac-Toe's players, from the original game; dark text on both. */
   --pink: #ffb8ee;
   --purple: #d4b8ff;
@@ -38,24 +45,33 @@
   --radius-lg: 9px;
   --radius-pill: 999px;
 
-  --display: "Abril Fatface", Georgia, serif;
-  --body: "Lato", "Helvetica Neue", Arial, sans-serif;
+  /* Fredoka sets titles and panel names, Nunito Sans everything else. */
+  --display: "Fredoka", "Nunito Sans", system-ui, sans-serif;
+  --body: "Nunito Sans", "Fredoka", system-ui, sans-serif;
 }
 :root[data-theme="dark"] {
-  --ground: #1c2420;
-  --panel: #2b3631;
-  --raised: #3b4a42;
-  --raised-hover: #485847;
-  --text: #fff3cf;
-  --text-muted: #b8d970;
+  /* Green tea: a mid-tone matcha page, cards a step lighter, and the header,
+     buttons and fields a darker well. Outlines and shadows stay near-black. */
+  --ground: #46574b;
+  --panel: #52645a;
+  --header: #2f3d34;
+  --raised: #2f3d34;
+  --raised-hover: #3a4a3f;
+  --text: #f3f1c8;
+  --text-muted: #d4e396;
   --outline: #0f1411;
-  --strong: #dde87e;
-  --on-strong: #2f3b34;
-  --grid: #c9d66b;
+  --accent: #c9d68f;
+  --accent-soft: #9eb27a;
+  --on-accent: #0f1411;
+  --strong: #1c2420;
+  --on-strong: #f3f1c8;
+  --selected: #c9d68f;
+  --on-selected: #0f1411;
+  --grid: #2f3b34;
   --pattern-dot: #b8d97000;
-  --pattern-line: #242e29;
-  --shadow-hard: 3px 3px 0 #0f1411;
-  --shadow-soft: 2px 2px 0 #0f1411;
+  --pattern-line: #4d5f52;
+  --focus: #c2d8f5;
+  --danger: #f6a49d;
   color-scheme: dark;
 }
 
@@ -107,7 +123,7 @@ a:hover {
 
 .display {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 600;
 }
 .stack {
   display: flex;
@@ -135,7 +151,7 @@ a:hover {
   align-items: center;
   gap: 12px 16px;
   padding: 14px 28px;
-  background: var(--panel);
+  background: var(--header);
   border-bottom: var(--line);
 }
 .app-header__home {
@@ -156,7 +172,7 @@ a:hover {
 .app-header__name {
   display: block;
   margin: 0;
-  font: 400 24px/1.1 var(--display);
+  font: 600 24px/1.1 var(--display);
 }
 .app-header__by {
   display: block;
@@ -177,6 +193,48 @@ a:hover {
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
+}
+
+/* Cute Matcha's AccountButton, as a 40px header pill: a panel piece lying
+   on the desk, with Google's mark or the person's picture in a white
+   circle. On phones only the circle shows; its text stays for screen
+   readers. */
+.account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 4px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
+  font: 600 14px/1.2 var(--body);
+  text-decoration: none;
+}
+.account:hover {
+  color: var(--text);
+  background: var(--raised-hover);
+}
+.account__icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 700;
+}
+.account__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ── page ── */
@@ -214,7 +272,7 @@ a:hover {
   border-radius: var(--radius-pill);
   background: var(--strong);
   color: var(--on-strong);
-  font: 700 12px/1.4 var(--body);
+  font: 600 12px/1.4 var(--display);
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
@@ -245,13 +303,13 @@ a:hover {
 /* Only the one action to press next carries the hard shadow. */
 .btn--primary,
 .btn--primary:not(:disabled):hover {
-  background: var(--strong);
-  color: var(--on-strong);
+  background: var(--accent);
+  color: var(--on-accent);
   box-shadow: var(--shadow-hard);
 }
 .btn--primary:not(:disabled):hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--outline);
+  box-shadow: 4px 4px 0 #0f1411;
 }
 .btn--primary:not(:disabled):active {
   transform: translate(3px, 3px);
@@ -306,7 +364,7 @@ a:hover {
   gap: 10px;
   height: 100%;
   padding: 30px 22px 22px;
-  background: var(--raised);
+  background: var(--panel);
   border: var(--line);
   border-radius: var(--radius-panel);
   box-shadow: var(--shadow-soft);
@@ -322,7 +380,7 @@ a:hover {
   color: var(--text);
   background: var(--raised-hover);
   transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 var(--outline);
+  box-shadow: 4px 4px 0 #0f1411;
 }
 .game-card__name {
   margin: 0;
@@ -341,8 +399,8 @@ a:hover {
   padding: 6px 18px;
   border: var(--line);
   border-radius: var(--radius-pill);
-  background: var(--strong);
-  color: var(--on-strong);
+  background: var(--accent);
+  color: var(--on-accent);
   font-weight: 700;
 }
 .foot {
@@ -380,8 +438,8 @@ a:hover {
   border-right: 0;
 }
 .picker__option[aria-pressed="true"] {
-  background: var(--strong);
-  color: var(--on-strong);
+  background: var(--selected);
+  color: var(--on-selected);
 }
 .picker__option:not(:disabled, [aria-pressed="true"]):hover {
   background: var(--panel);
@@ -435,7 +493,7 @@ a:hover {
   border-radius: 50%;
   background: var(--ground);
   border: var(--line);
-  box-shadow: 4px 4px 0 var(--outline);
+  box-shadow: 4px 4px 0 #0f1411;
 }
 .wheel__disc {
   position: absolute;
@@ -474,7 +532,7 @@ a:hover {
   background: var(--raised);
   border: 3px solid var(--outline);
   box-shadow: var(--shadow-hard);
-  color: var(--strong);
+  color: var(--text-muted);
 }
 
 .slices__actions {
@@ -574,11 +632,11 @@ a:hover {
   transition: transform 0.15s;
 }
 .switch[aria-checked="true"] .switch__track {
-  background: var(--strong);
+  background: var(--selected);
 }
 .switch[aria-checked="true"] .switch__thumb {
   transform: translateX(22px);
-  background: var(--on-strong);
+  background: var(--on-selected);
 }
 
 /* The dialog itself stays the browser's (centred, on top); only its UA box
@@ -794,6 +852,20 @@ a:hover {
   }
   .app-header__name {
     font-size: 20px;
+  }
+  .account {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .account__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .app-header__home,
   .app-header__end {
