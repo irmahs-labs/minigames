@@ -33,7 +33,7 @@ export interface Leaderboard {
 export const recordGame = (pool: Pool, game: FinishedGame) =>
   inTransaction(pool, async (client) => {
     await client.query(
-      `insert into games
+      `insert into super_tic_tac_toe_games
          (pink_id, purple_id, winner, ending, moves, pink_points, purple_points)
        values ($1, $2, $3, $4, $5, $6, $7)`,
       [
@@ -55,7 +55,7 @@ export const recordGame = (pool: Pool, game: FinishedGame) =>
         const drew = game.winner === null ? 1 : 0;
 
         return client.query(
-          `insert into players as p (user_id, name, points, wins, losses, draws)
+          `insert into super_tic_tac_toe_players as p (user_id, name, points, wins, losses, draws)
            values ($1, $2, greatest(0, $3::integer), $4, $5, $6)
            on conflict (user_id) do update set
              name = excluded.name,
@@ -75,7 +75,7 @@ const STANDINGS = `
          name, points, wins, losses, draws,
          coalesce(user_id = $1::uuid, false) as you,
          updated_at
-  from players`;
+  from super_tic_tac_toe_players`;
 
 /**
  * The top players by points; most wins first on a tie, then whoever got
