@@ -5,8 +5,8 @@
  * Matcha, so its edge reads on either header. The Mini Games die is also
  * public/favicon.svg.
  */
-export const MiniGamesIcon = () => (
-  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+export const MiniGamesIcon = ({ size = 40 }: { size?: number }) => (
+  <svg aria-hidden="true" width={size} height={size} viewBox="0 0 40 40">
     <rect
       x="3"
       y="3"
