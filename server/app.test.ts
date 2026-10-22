@@ -8,6 +8,7 @@ import { WebSocket } from "ws";
 
 import type { Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY } from "../src/board/rules";
+import type { Vote } from "../src/board/rules";
 import type { Brewers } from "../src/games/booster-potion/brewing";
 import type { ServerMessage } from "../src/games/super-tic-tac-toe/online/protocol";
 import { createApp } from "./app";
@@ -118,7 +119,33 @@ const potions = {
 };
 
 /** Stands in for hub_sticky_notes, newest last. */
-const noteLog: (Note & { userId: string })[] = [];
+const noteLog: {
+  body: string;
+  colour: Note["colour"];
+  id: string;
+  postedAt: string;
+  userId: string;
+}[] = [];
+
+/** Stands in for hub_sticky_note_votes: each note's votes, by voter. */
+const voteLog = new Map<string, Map<string, Vote>>();
+
+const votesOn = (id: string) => [
+  ...(voteLog.get(id) ?? new Map<string, Vote>()).entries(),
+];
+
+const noteFor = (
+  { body, colour, id, postedAt }: (typeof noteLog)[number],
+  userId: string | null
+): Note => ({
+  body,
+  colour,
+  down: votesOn(id).filter(([, vote]) => vote === -1).length,
+  id,
+  mine: (userId && voteLog.get(id)?.get(userId)) || 0,
+  postedAt,
+  up: votesOn(id).filter(([, vote]) => vote === 1).length,
+});
 
 const notes = {
   countNotes: (userId: string) =>
@@ -128,25 +155,19 @@ const notes = {
       return Promise.resolve(null);
     }
 
-    const posted = {
+    const row = {
       ...note,
       id: String(noteLog.length + 1),
       postedAt: new Date().toISOString(),
+      userId,
     };
 
-    noteLog.push({ ...posted, userId });
+    noteLog.push(row);
 
-    return Promise.resolve(posted);
+    return Promise.resolve(noteFor(row, userId));
   },
-  readNotes: () =>
-    Promise.resolve(
-      noteLog.toReversed().map(({ body, colour, id, postedAt }) => ({
-        body,
-        colour,
-        id,
-        postedAt,
-      }))
-    ),
+  readNotes: (userId: string | null) =>
+    Promise.resolve(noteLog.toReversed().map((row) => noteFor(row, userId))),
   removeNote: (id: string) => {
     const index = noteLog.findIndex((note) => note.id === id);
 
@@ -155,6 +176,24 @@ const notes = {
     }
 
     noteLog.splice(index, 1);
+    voteLog.delete(id);
+
+    return Promise.resolve(true);
+  },
+  voteNote: (userId: string, id: string, vote: Vote) => {
+    if (!noteLog.some((note) => note.id === id)) {
+      return Promise.resolve(false);
+    }
+
+    const votes = voteLog.get(id) ?? new Map<string, Vote>();
+
+    if (vote === 0) {
+      votes.delete(userId);
+    } else {
+      votes.set(userId, vote);
+    }
+
+    voteLog.set(id, votes);
 
     return Promise.resolve(true);
   },
@@ -557,6 +596,15 @@ const takeDown = (cookie: string, id: string, origin = ORIGIN) =>
     method: "DELETE",
   });
 
+const vote = (cookie: string, id: string, sent: string, origin = ORIGIN) =>
+  fetch(`http://${base}/api/board/notes/${id}/vote`, {
+    body: sent,
+    headers: { "content-type": "application/json", cookie, origin },
+    method: "PUT",
+  });
+
+const thumb = (value: Vote) => JSON.stringify({ vote: value });
+
 const boardAs = (cookie = "") =>
   bodyOf(fetch(`http://${base}/api/board`, { headers: { cookie } }));
 
@@ -610,8 +658,11 @@ describe("/api/board", () => {
       {
         body: "good luck\n\ntoday!",
         colour: "taro",
+        down: 0,
         id: expect.any(String),
+        mine: 0,
         postedAt: expect.any(String),
+        up: 0,
       },
     ]);
     expect(JSON.stringify(await boardAs())).not.toMatch(/Ben|userId/u);
@@ -629,6 +680,57 @@ describe("/api/board", () => {
     expect(one.status).toBe(429);
     expect(await one.text()).toContain(`${NOTES_PER_DAY} notes`);
     expect(await boardAs("session=ben")).toMatchObject({ left: 0 });
+  });
+
+  it("takes votes only from the site itself, signed in, and that make sense", async () => {
+    const [newest] = await notesUp();
+    const id = newest?.id ?? "";
+    const up = JSON.stringify({ vote: 1 });
+
+    expect(
+      await statusOf(vote("session=cy", id, up, "https://evil.irmahs.dev"))
+    ).toBe(403);
+    expect(await statusOf(vote("", id, up))).toBe(401);
+    expect(
+      await statusOf(vote("session=cy", id, JSON.stringify({ vote: 2 })))
+    ).toBe(400);
+    expect(await statusOf(vote("session=cy", id, "yes"))).toBe(400);
+    expect(await statusOf(vote("session=cy", "999", up))).toBe(404);
+  });
+
+  it("counts one thumbs up or down per person, and never says whose", async () => {
+    const [newest] = await notesUp();
+    const id = newest?.id ?? "";
+
+    const newestAs = async (cookie = "") => {
+      const board = await boardAs(cookie);
+
+      return board.notes[0];
+    };
+
+    await vote("session=cy", id, thumb(1));
+    await vote("session=cy", id, thumb(1));
+    await vote("session=ana", id, thumb(-1));
+
+    expect(await newestAs("session=ana")).toMatchObject({
+      down: 1,
+      id,
+      mine: -1,
+      up: 1,
+    });
+    expect(await newestAs("session=cy")).toMatchObject({ mine: 1 });
+    expect(await newestAs()).toMatchObject({ down: 1, mine: 0, up: 1 });
+    expect(JSON.stringify(await boardAs())).not.toMatch(/Cy|Ana|userId/u);
+
+    // Changing a vote moves it; 0 takes it back.
+    await vote("session=cy", id, thumb(-1));
+    expect(await newestAs()).toMatchObject({ down: 2, up: 0 });
+    await vote("session=cy", id, thumb(0));
+    expect(await newestAs("session=cy")).toMatchObject({
+      down: 1,
+      mine: 0,
+      up: 0,
+    });
   });
 
   it("lets only an admin take a note down", async () => {

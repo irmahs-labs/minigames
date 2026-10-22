@@ -6,9 +6,19 @@
  */
 
 /** The colours a note comes in, as the CSS names them (`.sticky--lemon`). */
-export const COLOURS = ["lemon", "matcha", "strawberry", "taro"] as const;
+export const COLOURS = [
+  "lemon",
+  "matcha",
+  "strawberry",
+  "taro",
+  "blue",
+  "white",
+] as const;
 
 export type Colour = (typeof COLOURS)[number];
+
+/** A thumbs up, a thumbs down, or neither. */
+export type Vote = -1 | 0 | 1;
 
 /** The longest a note can be, in characters. */
 export const MAX_LENGTH = 200;

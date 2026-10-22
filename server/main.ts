@@ -12,6 +12,7 @@ import {
   readNotes,
   removeNote,
   sweepNotes,
+  voteNote,
 } from "./notes";
 import {
   readBrewers,
@@ -71,8 +72,9 @@ const { app, injectWebSocket } = createApp({
   notes: {
     countNotes: (userId) => countNotes(pool, userId),
     postNote: (userId, note, limit) => postNote(pool, userId, note, limit),
-    readNotes: () => readNotes(pool),
+    readNotes: (userId) => readNotes(pool, userId),
     removeNote: (id) => removeNote(pool, id),
+    voteNote: (userId, id, vote) => voteNote(pool, userId, id, vote),
   },
   potions: {
     readBrewers: (potion) => readBrewers(pool, potion),

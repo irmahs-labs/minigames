@@ -11,6 +11,7 @@ import {
   readNotes,
   removeNote,
   sweepNotes,
+  voteNote,
 } from "./notes";
 
 const url = process.env.TEST_DATABASE_URL;
@@ -18,6 +19,7 @@ const pool = connect(url ?? "postgres://unused");
 
 const ANA = "00000000-0000-4000-8000-00000000000a";
 const BEN = "00000000-0000-4000-8000-00000000000b";
+const CY = "00000000-0000-4000-8000-00000000000c";
 
 /** Moves every note `hours` into the past. */
 const age = async (hours: number) => {
@@ -29,7 +31,7 @@ const age = async (hours: number) => {
 
 describe.skipIf(!url)("the sticky board in Postgres", () => {
   beforeEach(async () => {
-    await pool.query("truncate hub_sticky_notes");
+    await pool.query("truncate hub_sticky_notes cascade");
   });
 
   afterAll(async () => {
@@ -37,7 +39,7 @@ describe.skipIf(!url)("the sticky board in Postgres", () => {
   });
 
   it("starts bare", async () => {
-    expect(await readNotes(pool)).toEqual([]);
+    expect(await readNotes(pool, null)).toEqual([]);
     expect(await countNotes(pool, ANA)).toBe(0);
   });
 
@@ -54,11 +56,14 @@ describe.skipIf(!url)("the sticky board in Postgres", () => {
     expect(second).toEqual({
       body: "second",
       colour: "taro",
+      down: 0,
       id: expect.stringMatching(/^\d+$/u),
+      mine: 0,
       postedAt: expect.any(String),
+      up: 0,
     });
 
-    const notes = await readNotes(pool);
+    const notes = await readNotes(pool, null);
 
     expect(notes.map((note) => note.body)).toEqual(["second", "first"]);
     expect(JSON.stringify(notes)).not.toContain(ANA);
@@ -82,7 +87,7 @@ describe.skipIf(!url)("the sticky board in Postgres", () => {
     await age(25);
     await postNote(pool, ANA, { body: "new", colour: "lemon" }, 5);
 
-    const up = await readNotes(pool);
+    const up = await readNotes(pool, null);
 
     expect(up.map((note) => note.body)).toEqual(["new"]);
     // A note that is down no longer counts against the limit.
@@ -107,6 +112,46 @@ describe.skipIf(!url)("the sticky board in Postgres", () => {
 
     expect(await removeNote(pool, note?.id ?? "")).toBe(true);
     expect(await removeNote(pool, note?.id ?? "")).toBe(false);
-    expect(await readNotes(pool)).toEqual([]);
+    expect(await readNotes(pool, null)).toEqual([]);
+  });
+
+  it("counts thumbs up and down, and each reader's own", async () => {
+    const note = await postNote(pool, ANA, { body: "hi", colour: "blue" }, 5);
+    const id = note?.id ?? "";
+
+    expect(await voteNote(pool, BEN, id, 1)).toBe(true);
+    expect(await voteNote(pool, CY, id, 1)).toBe(true);
+    // Changing a vote replaces it rather than adding one.
+    expect(await voteNote(pool, CY, id, -1)).toBe(true);
+
+    expect(await readNotes(pool, BEN)).toMatchObject([
+      { down: 1, mine: 1, up: 1 },
+    ]);
+    expect(await readNotes(pool, CY)).toMatchObject([{ mine: -1 }]);
+    expect(await readNotes(pool, null)).toMatchObject([{ mine: 0 }]);
+    expect(JSON.stringify(await readNotes(pool, BEN))).not.toContain(BEN);
+
+    expect(await voteNote(pool, CY, id, 0)).toBe(true);
+    expect(await readNotes(pool, CY)).toMatchObject([
+      { down: 0, mine: 0, up: 1 },
+    ]);
+  });
+
+  it("takes no vote on a note that is not up, and drops votes with their note", async () => {
+    const note = await postNote(pool, ANA, { body: "old", colour: "white" }, 5);
+    const id = note?.id ?? "";
+
+    await voteNote(pool, BEN, id, 1);
+    await age(25);
+
+    expect(await voteNote(pool, CY, id, 1)).toBe(false);
+    expect(await voteNote(pool, BEN, id, 0)).toBe(false);
+    expect(await voteNote(pool, BEN, "999999", 1)).toBe(false);
+
+    await sweepNotes(pool);
+
+    const { rows } = await pool.query("select * from hub_sticky_note_votes");
+
+    expect(rows).toEqual([]);
   });
 });

@@ -9,15 +9,26 @@ import { COLOURS } from "./rules";
  */
 const colour = z.enum(COLOURS);
 
+const vote = z.union([z.literal(-1), z.literal(0), z.literal(1)]);
+
 /** POST /api/board/notes: a note to stick up. */
 export const noteRequest = z.object({ body: z.string(), colour });
+
+/** PUT /api/board/notes/:id/vote: thumbs up (1), down (-1), or neither (0). */
+export const voteRequest = z.object({ vote });
 
 const note = z.object({
   body: z.string(),
   colour,
+  /** How many people gave it a thumbs down. */
+  down: z.int(),
   id: z.string(),
+  /** The reader's own vote on it; 0 when signed out. */
+  mine: vote,
   /** When it went up, as an ISO date; it comes down a day later. */
   postedAt: z.string(),
+  /** How many people gave it a thumbs up. */
+  up: z.int(),
 });
 
 /** GET /api/board: every note up now, newest first. */

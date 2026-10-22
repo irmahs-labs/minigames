@@ -3,53 +3,30 @@ import type { SubmitEvent } from "react";
 
 import { signInUrl } from "../lib/account";
 import { useConfirm } from "../lib/use-confirm";
-import type { Board, Note } from "./api";
-import { fetchBoard, stickNote, takeDownNote } from "./board-api";
+import type { Board } from "./api";
+import { fetchBoard, stickNote, takeDownNote, voteOnNote } from "./board-api";
+import { Corkboard } from "./corkboard";
 import {
   COLOURS,
   LIFETIME_MS,
   MAX_LENGTH,
-  goneIn,
   isValidBody,
   lengthOf,
   tidy,
 } from "./rules";
-import type { Colour } from "./rules";
+import type { Colour, Vote } from "./rules";
 
 /** Others stick notes too: the board is fetched again this often while in view. */
 const REFRESH_MS = 30_000;
 
 const COLOUR_NAMES = {
+  blue: "Blue",
   lemon: "Lemon",
   matcha: "Matcha",
   strawberry: "Strawberry",
   taro: "Taro",
+  white: "White",
 } satisfies Record<Colour, string>;
-
-/** Each note leans a little its own way, the same way every time. */
-const tiltOf = (id: string) => `sticky--tilt-${Number(id.slice(-1)) % 3}`;
-
-interface StickyProps {
-  note: Note;
-  now: number;
-  /** Takes it down; only an admin is given it. */
-  onTakeDown?: () => void;
-  armed: boolean;
-}
-
-const Sticky = ({ note, now, onTakeDown, armed }: StickyProps) => (
-  <li className={`sticky sticky--${note.colour} ${tiltOf(note.id)}`}>
-    <p className="sticky__body">{note.body}</p>
-    <p className="sticky__time">
-      <time dateTime={note.postedAt}>{goneIn(note.postedAt, now)}</time>
-    </p>
-    {onTakeDown ? (
-      <button type="button" className="sticky__remove" onClick={onTakeDown}>
-        {armed ? "Sure? Take down" : "Take down"}
-      </button>
-    ) : null}
-  </li>
-);
 
 interface ComposerProps {
   left: number;
@@ -177,6 +154,14 @@ export const StickyBoard = () => {
     };
   }, []);
 
+  const vote = async (id: string, value: Vote) => {
+    const fresh = await voteOnNote(id, value);
+
+    if (fresh) {
+      setBoard(fresh);
+    }
+  };
+
   const takeDown = async (id: string) => {
     if ((await takeDownNote(id)) && board) {
       setBoard({
@@ -200,7 +185,8 @@ export const StickyBoard = () => {
         </h2>
         <p className="page__sub">
           Leave a note for whoever comes by. No names, and every note comes down
-          after a day.
+          after a day. Drag the notes wherever you like: only you see where you
+          put them.
         </p>
       </div>
 
@@ -223,21 +209,15 @@ export const StickyBoard = () => {
       ) : null}
 
       {notes && notes.length > 0 ? (
-        <ul className="stickies">
-          {notes.map((note) => (
-            <Sticky
-              key={note.id}
-              note={note}
-              now={now}
-              armed={armed === note.id}
-              onTakeDown={
-                board?.admin
-                  ? () => press(note.id, () => takeDown(note.id))
-                  : undefined
-              }
-            />
-          ))}
-        </ul>
+        <Corkboard
+          notes={notes}
+          now={now}
+          armed={armed}
+          onVote={board?.left === null ? null : vote}
+          onTakeDown={
+            board?.admin ? (id) => press(id, () => takeDown(id)) : null
+          }
+        />
       ) : null}
     </section>
   );

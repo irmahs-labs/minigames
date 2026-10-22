@@ -1,9 +1,10 @@
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 
-import { noteRequest } from "../src/board/api";
+import { noteRequest, voteRequest } from "../src/board/api";
 import type { Board, Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY, isValidBody, tidy } from "../src/board/rules";
+import type { Vote } from "../src/board/rules";
 import { brewRequest } from "../src/games/booster-potion/api";
 import type {
   Book,
@@ -77,6 +78,20 @@ const readNote = async (request: Request): Promise<NoteRequest | null> => {
   }
 };
 
+/** The vote a request gives, or null when it is not one. */
+const readVote = async (request: Request): Promise<Vote | null> => {
+  try {
+    const parsed = voteRequest.safeParse(await request.json());
+
+    return parsed.success ? parsed.data.vote : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Plenty for anyone reading the board; too few to stuff a count. */
+const VOTES_PER_MINUTE = 60;
+
 /** A note's id as the database has it: a bigint, so at most 18 digits. */
 const NOTE_ID = /^\d{1,18}$/u;
 
@@ -100,7 +115,8 @@ interface AppOptions {
   };
   /** The hub's sticky board. */
   notes: {
-    readNotes: () => Promise<Note[]>;
+    /** The notes up now, with the votes `userId` gave them. */
+    readNotes: (userId: string | null) => Promise<Note[]>;
     countNotes: (userId: string) => Promise<number>;
     postNote: (
       userId: string,
@@ -108,6 +124,8 @@ interface AppOptions {
       limit: number
     ) => Promise<Note | null>;
     removeNote: (id: string) => Promise<boolean>;
+    /** False when there is no such note up. */
+    voteNote: (userId: string, id: string, vote: Vote) => Promise<boolean>;
   };
   /** Whether a visitor can take notes down, from their cookie. */
   isAdmin: IsAdmin;
@@ -137,6 +155,7 @@ export const createApp = ({
 }: AppOptions) => {
   const app = new Hono<{ Variables: Variables }>();
   const brews = createLimiter({ max: BREWS_PER_MINUTE, windowMs: 60_000 });
+  const votes = createLimiter({ max: VOTES_PER_MINUTE, windowMs: 60_000 });
   const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
   app.get("/healthz", (c) => c.text("ok"));
@@ -316,14 +335,15 @@ export const createApp = ({
 
   /**
    * The board as a visitor sees it, from their cookie: never who stuck a
-   * note. An admin is asked of the account service only when signed in.
+   * note or who voted. An admin is asked of the account service only when
+   * signed in.
    */
   const boardFor = async (
     account: SessionAccount | null,
     cookie: string | undefined
   ): Promise<Board> => {
     const [up, mine, admin] = await Promise.all([
-      notes.readNotes(),
+      notes.readNotes(account?.id ?? null),
       account ? notes.countNotes(account.id) : null,
       account ? isAdmin(cookie) : false,
     ]);
@@ -372,6 +392,39 @@ export const createApp = ({
     }
 
     return c.json(await boardFor(account, c.req.header("cookie")));
+  });
+
+  // A thumbs up or down from someone signed in, on the site itself: one
+  // each per note, which they can change or take back (0).
+  app.put("/api/board/notes/:id/vote", async (c) => {
+    if (c.req.header("origin") !== appOrigin) {
+      return c.text("Votes are only taken from the site itself.", 403);
+    }
+
+    const cookie = c.req.header("cookie");
+    const { account } = await whoIs(cookie);
+
+    if (!account) {
+      return c.text("Sign in to vote.", 401);
+    }
+
+    if (!votes.allow(account.id)) {
+      return c.text("That's a lot of votes. Try again in a minute.", 429);
+    }
+
+    const vote = await readVote(c.req.raw);
+
+    if (vote === null) {
+      return c.text("That vote was not understood.", 400);
+    }
+
+    const id = c.req.param("id");
+
+    if (!(NOTE_ID.test(id) && (await notes.voteNote(account.id, id, vote)))) {
+      return c.text("There is no such note.", 404);
+    }
+
+    return c.json(await boardFor(account, cookie));
   });
 
   // Takes a note down before its day is up: admins only, listed for

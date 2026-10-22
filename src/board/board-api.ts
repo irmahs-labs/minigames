@@ -1,5 +1,6 @@
 import { board } from "./api";
 import type { Board, NoteRequest } from "./api";
+import type { Vote } from "./rules";
 
 /** The board as the server shows this reader, or null when it can't be reached. */
 export const fetchBoard = async (): Promise<Board | null> => {
@@ -43,6 +44,33 @@ export const stickNote = async (note: NoteRequest): Promise<Stuck> => {
       : { message: "The board's answer made no sense.", ok: false };
   } catch {
     return { message: "The board can't be reached right now.", ok: false };
+  }
+};
+
+/** Gives a thumbs up (1), down (-1) or neither (0); the board after, or null. */
+export const voteOnNote = async (
+  id: string,
+  vote: Vote
+): Promise<Board | null> => {
+  try {
+    const response = await fetch(
+      `/api/board/notes/${encodeURIComponent(id)}/vote`,
+      {
+        body: JSON.stringify({ vote }),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const parsed = board.safeParse(await response.json());
+
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
   }
 };
 
