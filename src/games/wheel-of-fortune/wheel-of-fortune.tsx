@@ -24,14 +24,14 @@ import {
 import { landingRotation, randomIndex } from "./wheel";
 import { WheelView, sliceColors } from "./wheel-view";
 
-/** A wheel's name as a filename for its panel's pill: "Team lunch" → team-lunch. */
+/** A wheel's name as a filename for its panel's pill: "Team lunch" → team-lunch.gif. */
 const legendFor = (name: string) => {
   const slug = name
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/gu, "-")
     .replaceAll(/^-|-$/gu, "");
 
-  return `${slug || "untitled"}.wheel`;
+  return `${slug || "untitled"}.gif`;
 };
 
 const WheelOfFortune = ({ name }: GameProps) => {
@@ -144,7 +144,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
             aria-labelledby="slices-title"
             className="panel panel--slices"
           >
-            <span className="legend">slices</span>
+            <span className="legend">slices.txt</span>
 
             <div className="stack">
               <label className="field-label" htmlFor="wheel-name">
