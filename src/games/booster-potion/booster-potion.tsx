@@ -658,7 +658,7 @@ const BoosterPotion = ({ name }: GameProps) => {
 
         <div className="layout">
           <section aria-label="Ingredients" className="panel panel--pantry">
-            <span className="legend">pantry</span>
+            <span className="legend">pantry.csv</span>
 
             <div className="stack">
               <h2 className="display turn">Bases</h2>
@@ -691,7 +691,7 @@ const BoosterPotion = ({ name }: GameProps) => {
             aria-labelledby="cauldron-title"
             className="panel panel--log"
           >
-            <span className="legend">cauldron</span>
+            <span className="legend">cauldron.bat</span>
 
             <div className="stack">
               <p className="kicker">In the cauldron</p>

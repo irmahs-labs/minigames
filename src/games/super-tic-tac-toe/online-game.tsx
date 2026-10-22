@@ -199,7 +199,7 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
     <>
       <div className="layout">
         <section aria-label="The planets" className="panel panel--system">
-          <span className="legend">solar.system</span>
+          <span className="legend">solar.sys</span>
           <BoardView
             game={game}
             onPlay={move}

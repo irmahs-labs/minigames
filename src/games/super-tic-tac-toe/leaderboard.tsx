@@ -81,7 +81,7 @@ export const Leaderboard = () => {
 
   return (
     <section aria-labelledby="board-title" className="panel panel--board">
-      <span className="legend">leaderboard</span>
+      <span className="legend">leaderboard.csv</span>
       <h2 id="board-title" className="display turn">
         Leaderboard
       </h2>

@@ -44,7 +44,7 @@ export const EndDialog = ({
       onClose={onClose}
     >
       <div className="panel result__panel">
-        <span className="legend">game.over</span>
+        <span className="legend">game-over.log</span>
         <h2 id="end-title" className="result__winner display">
           {headline}
         </h2>
