@@ -42,15 +42,17 @@ export const RECIPES: readonly Recipe[] = [
     forms: { Ginger: "fresh" },
     ingredients: ["Lemon", "Ginger", "Cayenne"],
     name: "Firecracker",
-    note: "A lemony ginger shot with a cayenne kick, as the juice bars sell it.",
-    source: "https://cookunity.com/meals/winter-wellness-juice-bundle",
+    note: "A lemon and ginger shot with a cayenne kick.",
+    source:
+      "https://www.alphafoodie.com/lemon-ginger-and-cayenne-immunity-shots/",
   },
   {
     forms: { Ginger: "fresh" },
     ingredients: ["Lemon", "Ginger", "Honey"],
     name: "Bright Spark",
     note: "A lemon, honey and ginger shot.",
-    source: "https://voelkel.bio/en/produkt/ginger-shot-lemon-honey-0-5l-3/",
+    source:
+      "https://savannahbee.com/blogs/recipes/lemon-ginger-and-honey-shooter",
   },
   {
     forms: { Ginger: "fresh" },
@@ -64,8 +66,7 @@ export const RECIPES: readonly Recipe[] = [
     ingredients: ["Orange", "Ginger"],
     name: "Orange Ember",
     note: "An orange and ginger shot.",
-    source:
-      "https://www.onlineapo.at/en/Biotta-Immune-SHOT-Ingwer-Orange-Bio-10-x-50-ml/RA5761844",
+    source: "https://wetrinifood.com/orange-ginger-shots/",
   },
   {
     forms: { Ginger: "fresh" },
@@ -80,7 +81,7 @@ export const RECIPES: readonly Recipe[] = [
     name: "Root Awakening",
     note: "An apple, lemon and ginger shot.",
     source:
-      "https://groceries.morrisons.com/products/moju-ginger-shots/115561158",
+      "https://www.goodnature.com/recipes/ginger-shot-recipe-benefits/print",
   },
   {
     forms: { Ginger: "fresh" },
@@ -140,7 +141,8 @@ export const RECIPES: readonly Recipe[] = [
     ingredients: ["Orange", "Lemon", "Ginger", "Turmeric"],
     name: "Amber Crown",
     note: "A citrus turmeric shot.",
-    source: "https://voelkel.bio/en/produkt/ginger-shot-turmeric-0-5l-2/",
+    source:
+      "https://theflexitarian.co.uk/wprm_print/easy-ginger-turmeric-shot-recipe",
   },
   {
     forms: { Turmeric: "powder" },
@@ -150,12 +152,11 @@ export const RECIPES: readonly Recipe[] = [
     source: "https://ellegourmet.ca/wprm_print/flu-fighter-wellness-shots",
   },
   {
-    forms: { Turmeric: "fresh" },
+    forms: { Turmeric: "powder" },
     ingredients: ["Mango", "Orange", "Turmeric", "Cayenne"],
     name: "Sunset Elixir",
-    note: "A hot mango shot.",
-    source:
-      "https://www.brake.co.uk/drinks-snacks/cold-beverages/pure-juice-smoothies/juice-shots/moju-hot-mango-juice-shot-60ml/p/187106",
+    note: "A mango and orange juice with turmeric and a pinch of cayenne.",
+    source: "https://cookidoo.com.au/recipes/recipe/en-au/r120329",
   },
   {
     forms: { Turmeric: "powder" },
@@ -373,11 +374,11 @@ export const RECIPES: readonly Recipe[] = [
       "https://savannahbee.com/blogs/recipes/celery-ginger-and-hot-honey-shooter",
   },
   {
-    forms: { Ginger: "fresh", Wheatgrass: "fresh" },
-    ingredients: ["Wheatgrass", "Pineapple", "Lemon", "Ginger"],
-    name: "Emerald Field",
-    note: "A wheatgrass shot.",
-    source: "https://www.costco.com/.product.4000177379.html",
+    forms: { Ginger: "fresh" },
+    ingredients: ["Pineapple", "Lemon", "Ginger", "Honey"],
+    name: "Sunlit Grove",
+    note: "A pineapple, lemon and ginger shot.",
+    source: "https://wetrinifood.com/ginger-pineapple-lemon-shot/",
   },
   {
     forms: { Ginger: "fresh", Wheatgrass: "fresh" },
@@ -394,11 +395,11 @@ export const RECIPES: readonly Recipe[] = [
     source: "https://www.masalaherb.com/wheatgrass-juice-power-punch/",
   },
   {
-    ingredients: ["Apple", "Spirulina"],
-    name: "Pond Apple",
-    note: "An apple and spirulina shot.",
-    source:
-      "https://www.ocado.com/products/plenish-apple-spirulina-detox-shot/639162011",
+    forms: { Wheatgrass: "fresh" },
+    ingredients: ["Wheatgrass", "Apple"],
+    name: "Green Orchard",
+    note: "Wheatgrass blended into apple juice, then strained.",
+    source: "https://www.masalaherb.com/wheatgrass-juice-power-punch/",
   },
   {
     ingredients: ["Lemon", "Spirulina", "Cayenne"],

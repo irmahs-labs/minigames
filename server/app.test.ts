@@ -35,6 +35,7 @@ const lobby = createLobby({ onFinish: () => null, random: () => 0 });
 
 /** Stands in for the potion_brews table: who brewed what, in order. */
 const brewLog: { potion: string; id: string; name: string }[] = [];
+let latest: { name: string; potion: string; at: string } | null = null;
 
 const brewersOf = (potion: string, userId: string | null): Brewers => {
   const rows = brewLog.filter((row) => row.potion === potion);
@@ -47,6 +48,14 @@ const brewersOf = (potion: string, userId: string | null): Brewers => {
 };
 
 const potions = {
+  readBrewers: (potion: string) =>
+    Promise.resolve(
+      brewLog.flatMap((row) =>
+        row.potion === potion
+          ? [{ at: "2026-10-22T10:00:00.000Z", name: row.name }]
+          : []
+      )
+    ),
   readBrews: (userId: string | null) =>
     Promise.resolve(
       new Map(
@@ -56,6 +65,7 @@ const potions = {
         ])
       )
     ),
+  readLatest: () => Promise.resolve(latest),
   recordBrew: (potion: string, account: { id: string; name: string }) => {
     const isNew = !brewLog.some(
       (row) => row.potion === potion && row.id === account.id
@@ -64,6 +74,8 @@ const potions = {
     if (isNew) {
       brewLog.push({ id: account.id, name: account.name, potion });
     }
+
+    latest = { at: new Date().toISOString(), name: account.name, potion };
 
     const brewers = brewersOf(potion, account.id);
 
@@ -255,10 +267,14 @@ const bodyOf = async (response: Promise<Response>) => {
 
 describe("/api/potions", () => {
   it("shows everyone the book, every page locked until someone brews it", async () => {
-    const { pages } = await bodyOf(fetch(`http://${base}/api/potions`));
+    const book = await bodyOf(fetch(`http://${base}/api/potions`));
 
-    expect(pages).toHaveLength(100);
-    expect(pages[0]).toEqual({ clue: expect.any(String), state: "locked" });
+    expect(book.latest).toBeNull();
+    expect(book.pages).toHaveLength(100);
+    expect(book.pages[0]).toEqual({
+      clue: expect.any(String),
+      state: "locked",
+    });
   });
 
   it("takes brews only from the site itself, and only signed in", async () => {
@@ -317,10 +333,31 @@ describe("/api/potions", () => {
 
     expect(book.pages[0]).toMatchObject({
       by: "Ana L.",
-      ingredients: ["Apple", "Lime", "Fresh ginger", "Cayenne"],
+      // Fruit, then spices, each alphabetically.
+      ingredients: ["Apple", "Lime", "Cayenne", "Fresh ginger"],
       state: "found",
       yours: true,
     });
+    expect(book.latest).toMatchObject({
+      name: "Ben",
+      potion: "Ember's Embrace",
+    });
+  });
+
+  it("names everyone who brewed a potion, first first", async () => {
+    const query = new URLSearchParams({ potion: "Ember's Embrace" });
+
+    const { brewers } = await bodyOf(
+      fetch(`http://${base}/api/potions/brewers?${query}`)
+    );
+
+    expect(brewers.map((brewer: { name: string }) => brewer.name)).toEqual([
+      "Ana L.",
+      "Ben",
+    ]);
+    expect(
+      await statusOf(fetch(`http://${base}/api/potions/brewers?potion=Soup`))
+    ).toBe(404);
   });
 
   it("lets nobody try every mix in a hurry", async () => {

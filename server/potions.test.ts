@@ -5,7 +5,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { connect } from "./db";
-import { readBrews, recordBrew } from "./potions";
+import { readBrewers, readBrews, readLatest, recordBrew } from "./potions";
 
 const url = process.env.TEST_DATABASE_URL;
 const pool = connect(url ?? "postgres://unused");
@@ -72,5 +72,29 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
       count: 2,
       yours: false,
     });
+  });
+
+  it("keeps the last brew, a repeat included", async () => {
+    expect(await readLatest(pool)).toBeNull();
+
+    await recordBrew(pool, "Ember's Embrace", ana);
+    await recordBrew(pool, "Autumn Hearth", ben);
+    await recordBrew(pool, "Ember's Embrace", ana);
+
+    expect(await readLatest(pool)).toMatchObject({
+      name: "Ana L.",
+      potion: "Ember's Embrace",
+    });
+  });
+
+  it("lists everyone who brewed a potion, first first", async () => {
+    await recordBrew(pool, "Ember's Embrace", ben);
+    await recordBrew(pool, "Ember's Embrace", ana);
+    await recordBrew(pool, "Ember's Embrace", ben);
+
+    const brewers = await readBrewers(pool, "Ember's Embrace");
+
+    expect(brewers.map((brewer) => brewer.name)).toEqual(["Ben", "Ana L."]);
+    expect(Date.parse(brewers[0]?.at ?? "")).not.toBeNaN();
   });
 });

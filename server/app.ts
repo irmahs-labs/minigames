@@ -2,8 +2,18 @@ import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 
 import { brewRequest } from "../src/games/booster-potion/api";
-import type { Book, BrewAnswer } from "../src/games/booster-potion/api";
-import { bookOf, brew, foundPageOf } from "../src/games/booster-potion/brewing";
+import type {
+  Book,
+  BrewAnswer,
+  Brewer,
+  LatestBrew,
+} from "../src/games/booster-potion/api";
+import {
+  bookOf,
+  brew,
+  foundPageOf,
+  isPotion,
+} from "../src/games/booster-potion/brewing";
 import { isValidSelection } from "../src/games/booster-potion/rules";
 import type { Selection } from "../src/games/booster-potion/rules";
 import {
@@ -48,6 +58,8 @@ interface AppOptions {
   potions: {
     readBrews: (userId: string | null) => Promise<BrewLog>;
     recordBrew: (potion: string, account: SessionAccount) => Promise<Recorded>;
+    readLatest: () => Promise<LatestBrew | null>;
+    readBrewers: (potion: string) => Promise<Brewer[]>;
   };
   /** The site's own origin; sockets from any other are refused. */
   appOrigin: string;
@@ -104,9 +116,23 @@ export const createApp = ({
 
   app.get("/api/potions", async (c) => {
     const { account } = await whoIs(c.req.header("cookie"));
-    const log = await potions.readBrews(account?.id ?? null);
 
-    return c.json({ pages: bookOf(log) } satisfies Book);
+    const [log, latest] = await Promise.all([
+      potions.readBrews(account?.id ?? null),
+      potions.readLatest(),
+    ]);
+
+    return c.json({ latest, pages: bookOf(log) } satisfies Book);
+  });
+
+  app.get("/api/potions/brewers", async (c) => {
+    const potion = c.req.query("potion") ?? "";
+
+    if (!isPotion(potion)) {
+      return c.text("There is no potion by that name.", 404);
+    }
+
+    return c.json({ brewers: await potions.readBrewers(potion) });
   });
 
   // The server brews, so the page never needs the recipes: it sends what is

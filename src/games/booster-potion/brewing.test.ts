@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { bookOf, brew, clueOf, foundPageOf } from "./brewing";
+import { bookOf, brew, clueOf, foundPageOf, shelvedPartsOf } from "./brewing";
 import { RECIPES } from "./recipes";
 import type { Recipe } from "./recipes";
 import { EMPTY, choose, setForm } from "./rules";
@@ -92,6 +92,15 @@ describe("brew", () => {
 });
 
 describe("the book's pages", () => {
+  it("lists ingredients shelf by shelf, alphabetically on each", () => {
+    expect(
+      shelvedPartsOf(recipe("Spice Road")).map((part) => part.name)
+    ).toEqual(["Black tea", "Cardamom", "Cinnamon", "Ginger"]);
+    expect(
+      shelvedPartsOf(recipe("Ember's Embrace")).map((part) => part.name)
+    ).toEqual(["Apple", "Lime", "Cayenne", "Ginger"]);
+  });
+
   it("gives a locked page the kinds and forms it takes, and nothing more", () => {
     expect(clueOf(recipe("Autumn Hearth"))).toBe("fruit + dried spice");
   });

@@ -7,8 +7,8 @@ import { currentAccount, signInUrl } from "../../lib/account";
 import type { Account } from "../../lib/account";
 import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
-import type { BrewAnswer, Page } from "./api";
-import { fetchBook, postBrew } from "./book-api";
+import type { Book, BrewAnswer, Brewer, LatestBrew, Page } from "./api";
+import { fetchBook, fetchBrewers, postBrew } from "./book-api";
 import { BrewDialog, listed } from "./brew-dialog";
 import { BASE_KINDS, KIND_EMOJI, PANTRY, TIPS, TOPPING_KINDS } from "./pantry";
 import type { Form, Kind } from "./pantry";
@@ -144,9 +144,103 @@ const Cauldron = ({
   </ul>
 );
 
+/** The book is fetched again this often, so the last brew stays current. */
+const REFRESH_MS = 30_000;
+
+/** "just now", "5 min ago", "3 h ago", "2 days ago". */
+const ago = (iso: string, now: number) => {
+  const minutes = Math.floor((now - Date.parse(iso)) / 60_000);
+
+  if (minutes < 1) {
+    return "just now";
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours} h ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+};
+
+const day = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+
 /** "First brewed by Irma H. and 3 more". */
 const bylineOf = ({ by, others }: Extract<Page, { state: "found" }>) =>
   others > 0 ? `First brewed by ${by} and ${others} more` : `Brewed by ${by}`;
+
+/**
+ * Who brewed a page's potion: the byline, which opens the full list, first
+ * first, fetched the first time it is opened.
+ */
+const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
+  const [open, setOpen] = useState(false);
+  // undefined until fetched, null when it cannot be had.
+  const [brewers, setBrewers] = useState<Brewer[] | null | undefined>();
+
+  const byline = `${bylineOf(page)}${page.yours ? " · you brewed it too" : ""}`;
+
+  if (page.others === 0) {
+    return <p className="recipe-card__by">{byline}</p>;
+  }
+
+  const toggle = async () => {
+    setOpen(!open);
+
+    if (brewers === undefined) {
+      setBrewers(await fetchBrewers(page.name));
+    }
+  };
+
+  return (
+    <div className="stack">
+      <button
+        type="button"
+        className="recipe-card__by recipe-card__by--open"
+        aria-expanded={open}
+        onClick={toggle}
+      >
+        {byline} {open ? "▴" : "▾"}
+      </button>
+      {open && brewers === undefined ? (
+        <p className="recipe-card__note">Looking them up…</p>
+      ) : null}
+      {open && brewers === null ? (
+        <p className="recipe-card__note">The list cannot be had right now.</p>
+      ) : null}
+      {open && brewers ? (
+        <ol className="brewers">
+          {brewers.map((brewer, i) => (
+            // Two people may share a name; their place in the list is theirs.
+            // oxlint-disable-next-line no-array-index-key
+            <li key={i}>
+              {brewer.name} <span>{day(brewer.at)}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+};
+
+/** The last brew by anyone, in the book's corner: who, what and when. */
+const LastBrew = ({ latest, now }: { latest: LatestBrew; now: number }) => (
+  <p className="book__latest" aria-live="polite">
+    <span aria-hidden="true">🧪 </span>
+    Last brew: {latest.name}, {latest.potion}, {ago(latest.at, now)}
+  </p>
+);
 
 /** A page of the shared book: the recipe and who found it, or its clue. */
 const BookPage = ({ page }: { page: Page }) => {
@@ -170,10 +264,7 @@ const BookPage = ({ page }: { page: Page }) => {
       <h3 className="display recipe-card__name">🧪 {page.name}</h3>
       <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
       <p className="recipe-card__note">{page.note}</p>
-      <p className="recipe-card__by">
-        {bylineOf(page)}
-        {page.yours ? " · you brewed it too" : ""}
-      </p>
+      <Brewers page={page} />
       <a
         className="recipe-card__source"
         href={page.source}
@@ -191,7 +282,8 @@ const BoosterPotion = ({ name }: GameProps) => {
   // undefined until the server answers, or when it cannot be reached.
   const [account, setAccount] = useState<Account | null | undefined>();
   // undefined while loading, null when the book cannot be had.
-  const [pages, setPages] = useState<Page[] | null | undefined>();
+  const [book, setBook] = useState<Book | null | undefined>();
+  const [now, setNow] = useState(Date.now);
   const [answer, setAnswer] = useState<BrewAnswer | null>(null);
   const [brewing, setBrewing] = useState(false);
   const [trouble, setTrouble] = useState<string | null>(null);
@@ -202,18 +294,36 @@ const BoosterPotion = ({ name }: GameProps) => {
     let current = true;
 
     const load = async () => {
-      const [who, book] = await Promise.all([currentAccount(), fetchBook()]);
+      const [who, first] = await Promise.all([currentAccount(), fetchBook()]);
 
       if (current) {
         setAccount(who);
-        setPages(book);
+        setBook(first);
+        setNow(Date.now());
+      }
+    };
+
+    // Others brew too: the book is fetched again now and then, while the
+    // page is in view, so their finds and the last brew show up.
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      const fresh = await fetchBook();
+
+      if (current && fresh) {
+        setBook(fresh);
+        setNow(Date.now());
       }
     };
 
     void load();
+    const timer = window.setInterval(refresh, REFRESH_MS);
 
     return () => {
       current = false;
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -238,10 +348,11 @@ const BoosterPotion = ({ name }: GameProps) => {
       // A potion is done with; a mystery stays in to be changed one by one.
       setSelection(EMPTY);
       // Others may have found potions too: the whole book comes back fresh.
-      const book = await fetchBook();
+      const fresh = await fetchBook();
 
-      if (book) {
-        setPages(book);
+      if (fresh) {
+        setBook(fresh);
+        setNow(Date.now());
       }
     }
 
@@ -271,11 +382,12 @@ const BoosterPotion = ({ name }: GameProps) => {
       return "Brews go in the shared book under your irmahs.dev name.";
     }
 
-    return account === undefined && pages !== undefined
+    return account === undefined && book !== undefined
       ? "The cauldron can't be reached right now."
       : "";
   };
 
+  const pages = book?.pages;
   const found = pages?.filter((page) => page.state === "found") ?? [];
   const yours = found.filter((page) => page.yours).length;
   const chosen = selection.map((part) => part.name);
@@ -401,6 +513,7 @@ const BoosterPotion = ({ name }: GameProps) => {
 
         <section aria-labelledby="book-title" className="panel panel--board">
           <span className="legend">recipe.book</span>
+          {book?.latest ? <LastBrew latest={book.latest} now={now} /> : null}
           <div className="stack">
             <h2 id="book-title" className="display turn">
               Recipe book
@@ -416,10 +529,10 @@ const BoosterPotion = ({ name }: GameProps) => {
             ) : null}
           </div>
 
-          {pages === undefined ? (
+          {book === undefined ? (
             <p className="hint">Opening the book…</p>
           ) : null}
-          {pages === null ? (
+          {book === null ? (
             <p className="hint">The recipe book cannot be reached right now.</p>
           ) : null}
           {pages ? (

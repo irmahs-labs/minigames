@@ -40,8 +40,28 @@ const lockedPage = z.object({
 
 export const page = z.discriminatedUnion("state", [foundPage, lockedPage]);
 
-/** GET /api/potions: every page of the book, in order. */
-export const book = z.object({ pages: z.array(page) });
+/** The most recent brew by anyone, shown in the book's corner. */
+const latestBrew = z.object({
+  /** When, as an ISO date. */
+  at: z.string(),
+  name: z.string(),
+  potion: z.string(),
+});
+
+/** GET /api/potions: every page of the book, in order, and the last brew. */
+export const book = z.object({
+  latest: z.nullable(latestBrew),
+  pages: z.array(page),
+});
+
+const brewer = z.object({
+  /** When they first brewed it, as an ISO date. */
+  at: z.string(),
+  name: z.string(),
+});
+
+/** GET /api/potions/brewers?potion=…: everyone who brewed it, first first. */
+export const brewers = z.object({ brewers: z.array(brewer) });
 
 /** The answer to a brew. */
 export const brewAnswer = z.discriminatedUnion("type", [
@@ -73,5 +93,9 @@ export type FoundPage = z.infer<typeof foundPage>;
 export type Page = z.infer<typeof page>;
 
 export type Book = z.infer<typeof book>;
+
+export type LatestBrew = z.infer<typeof latestBrew>;
+
+export type Brewer = z.infer<typeof brewer>;
 
 export type BrewAnswer = z.infer<typeof brewAnswer>;

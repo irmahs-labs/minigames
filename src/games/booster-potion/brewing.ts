@@ -4,6 +4,7 @@
  * React code.
  */
 import type { BrewAnswer, FoundPage, Page } from "./api";
+import { BASE_KINDS, TOPPING_KINDS } from "./pantry";
 import { RECIPES } from "./recipes";
 import type { Recipe } from "./recipes";
 import { kindOf, labelOf } from "./rules";
@@ -27,9 +28,22 @@ export const partsOf = (recipe: Recipe): readonly Part[] =>
     return form ? { form, name } : { name };
   });
 
+const SHELVES: readonly string[] = [...BASE_KINDS, ...TOPPING_KINDS];
+
+const shelfOf = (name: string) => SHELVES.indexOf(kindOf(name) ?? "fruit");
+
+/**
+ * A recipe's ingredients as the book lists them: shelf by shelf, in the
+ * pantry's order, and alphabetically on each shelf.
+ */
+export const shelvedPartsOf = (recipe: Recipe): readonly Part[] =>
+  partsOf(recipe).toSorted(
+    (a, b) => shelfOf(a.name) - shelfOf(b.name) || a.name.localeCompare(b.name)
+  );
+
 /** A locked page's clue: "fruit + dried spice + sweetener". */
 export const clueOf = (recipe: Recipe) =>
-  partsOf(recipe)
+  shelvedPartsOf(recipe)
     .map(({ form, name }) => {
       const kind = kindOf(name) ?? "fruit";
 
@@ -39,7 +53,7 @@ export const clueOf = (recipe: Recipe) =>
 
 export const foundPageOf = (recipe: Recipe, brewers: Brewers): FoundPage => ({
   by: brewers.by,
-  ingredients: partsOf(recipe).map(labelOf),
+  ingredients: shelvedPartsOf(recipe).map(labelOf),
   name: recipe.name,
   note: recipe.note,
   others: brewers.count - 1,
@@ -57,6 +71,10 @@ export const bookOf = (brews: ReadonlyMap<string, Brewers>): Page[] =>
       ? foundPageOf(recipe, brewers)
       : { clue: clueOf(recipe), state: "locked" };
   });
+
+/** Whether a potion by this name is in the book. */
+export const isPotion = (name: string) =>
+  RECIPES.some((recipe) => recipe.name === name);
 
 const sameNames = (recipe: Recipe, selection: Selection) =>
   recipe.ingredients.length === selection.length &&

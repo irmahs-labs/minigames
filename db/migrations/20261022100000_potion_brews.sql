@@ -11,9 +11,14 @@ create table potion_brews (
   user_id uuid not null,
   -- As shown to everyone, "Irma H.", as it was when they brewed it.
   name text not null,
+  -- The first time they brewed it, which decides who was first.
   brewed_at timestamptz not null default now(),
+  -- The latest time they brewed it, for the book's "last brew".
+  last_brewed_at timestamptz not null default now(),
   primary key (potion, user_id)
 );
+
+create index potion_brews_by_last on potion_brews (last_brewed_at desc);
 
 -- migrate:down
 drop table potion_brews;

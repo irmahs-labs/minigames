@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
 
+import type { Brewer, LatestBrew } from "../src/games/booster-potion/api";
 import type { Brewers } from "../src/games/booster-potion/brewing";
 import type { SessionAccount } from "./session";
 
@@ -57,10 +58,13 @@ export const recordBrew = async (
   potion: string,
   account: SessionAccount
 ): Promise<Recorded> => {
-  const inserted = await pool.query(
+  // A repeat brew only moves last_brewed_at. xmax is 0 on a row this
+  // statement inserted, and set on one it updated.
+  const saved = await pool.query<{ inserted: boolean }>(
     `insert into potion_brews (potion, user_id, name)
      values ($1, $2, $3)
-     on conflict (potion, user_id) do nothing`,
+     on conflict (potion, user_id) do update set last_brewed_at = now()
+     returning (xmax = 0) as inserted`,
     [potion, account.id, account.name]
   );
 
@@ -84,7 +88,39 @@ export const recordBrew = async (
     throw new Error(`The brew of ${potion} was not saved`);
   }
 
-  const isNew = inserted.rowCount === 1;
+  const isNew = saved.rows[0]?.inserted ?? false;
 
   return { brewers: brewersOf(row), first: isNew && row.first, isNew };
+};
+
+/** The most recent brew by anyone, a repeat included, or null for none. */
+export const readLatest = async (pool: Pool): Promise<LatestBrew | null> => {
+  const { rows } = await pool.query<{ name: string; potion: string; at: Date }>(
+    `select name, potion, last_brewed_at as at
+     from potion_brews
+     order by last_brewed_at desc
+     limit 1`
+  );
+
+  const [row] = rows;
+
+  return row
+    ? { at: row.at.toISOString(), name: row.name, potion: row.potion }
+    : null;
+};
+
+/** Everyone who has brewed `potion`, first first. */
+export const readBrewers = async (
+  pool: Pool,
+  potion: string
+): Promise<Brewer[]> => {
+  const { rows } = await pool.query<{ name: string; at: Date }>(
+    `select name, brewed_at as at
+     from potion_brews
+     where potion = $1
+     order by brewed_at, user_id`,
+    [potion]
+  );
+
+  return rows.map((row) => ({ at: row.at.toISOString(), name: row.name }));
 };

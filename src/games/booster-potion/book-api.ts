@@ -1,9 +1,9 @@
-import { book, brewAnswer } from "./api";
-import type { BrewAnswer, Page } from "./api";
+import { book, brewAnswer, brewers } from "./api";
+import type { Book, BrewAnswer, Brewer } from "./api";
 import type { Selection } from "./rules";
 
 /** The shared recipe book, or null when the server cannot be reached. */
-export const fetchBook = async (): Promise<Page[] | null> => {
+export const fetchBook = async (): Promise<Book | null> => {
   try {
     const response = await fetch("/api/potions");
 
@@ -13,7 +13,7 @@ export const fetchBook = async (): Promise<Page[] | null> => {
 
     const parsed = book.safeParse(await response.json());
 
-    return parsed.success ? parsed.data.pages : null;
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }
@@ -46,5 +46,25 @@ export const postBrew = async (selection: Selection): Promise<BrewResult> => {
       : { message: "The cauldron's answer made no sense.", ok: false };
   } catch {
     return { message: "The cauldron can't be reached right now.", ok: false };
+  }
+};
+
+/** Everyone who brewed a potion, first first; null when it cannot be had. */
+export const fetchBrewers = async (
+  potion: string
+): Promise<Brewer[] | null> => {
+  try {
+    const query = new URLSearchParams({ potion });
+    const response = await fetch(`/api/potions/brewers?${query}`);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const parsed = brewers.safeParse(await response.json());
+
+    return parsed.success ? parsed.data.brewers : null;
+  } catch {
+    return null;
   }
 };

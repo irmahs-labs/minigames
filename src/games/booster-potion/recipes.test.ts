@@ -7,6 +7,17 @@ import { formsOf, isValidSelection, kindOf, labelOf } from "./rules";
 
 const ALL_FOUND = RECIPES.map((recipe) => recipe.name);
 
+/** Shops and product pages a recipe once linked to, instead of a recipe. */
+const SHOPS = [
+  "brake.co.uk",
+  "cookunity.com",
+  "costco.com",
+  "morrisons.com",
+  "ocado.com",
+  "onlineapo.at",
+  "voelkel.bio",
+];
+
 describe("the recipe book", () => {
   it("has a hundred potions with different names", () => {
     expect(RECIPES).toHaveLength(100);
@@ -76,6 +87,18 @@ describe("the recipe book", () => {
 
   it.each(RECIPES)("$name can be put in the cauldron", (recipe) => {
     expect(isValidSelection(partsOf(recipe))).toBe(true);
+  });
+
+  it.each(RECIPES)("$name links to a recipe, not a shop", (recipe) => {
+    const { hostname } = new URL(recipe.source);
+
+    expect(SHOPS.some((shop) => hostname.endsWith(shop))).toBe(false);
+  });
+
+  it("keeps every shelf in alphabetical order", () => {
+    for (const names of Object.values(PANTRY)) {
+      expect(names).toEqual(names.toSorted((a, b) => a.localeCompare(b)));
+    }
   });
 
   it("makes every potion from a different mix", () => {

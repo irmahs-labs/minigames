@@ -6,7 +6,7 @@ import { connect } from "./db";
 import { env } from "./env";
 import { createLobby } from "./lobby";
 import type { FinishedGame } from "./lobby";
-import { readBrews, recordBrew } from "./potions";
+import { readBrewers, readBrews, readLatest, recordBrew } from "./potions";
 import { readLeaderboard, recordGame } from "./scores";
 import { askAccountService } from "./session";
 
@@ -34,7 +34,9 @@ const { app, injectWebSocket } = createApp({
   appOrigin: env.appOrigin,
   lobby,
   potions: {
+    readBrewers: (potion) => readBrewers(pool, potion),
     readBrews: (userId) => readBrews(pool, userId),
+    readLatest: () => readLatest(pool),
     recordBrew: (potion, account) => recordBrew(pool, potion, account),
   },
   readLeaderboard: (userId) => readLeaderboard(pool, userId),
