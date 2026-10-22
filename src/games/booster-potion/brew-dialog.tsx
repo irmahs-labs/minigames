@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import type { BrewAnswer } from "./api";
+import type { BrewAnswer, Mystery, SoloBrewAnswer } from "./api";
 
 /** "Apple, Lime, Fresh ginger and Cayenne"; "Garlic and Honey". */
 export const listed = (names: readonly string[]) =>
@@ -13,11 +13,21 @@ const sentence = (text: string) => (text.endsWith(".") ? text : `${text}.`);
 
 const WORDS = ["none", "one", "two", "three", "four"] as const;
 
-const hintFor = ({
-  closest,
-  size,
-  wrongForm,
-}: Extract<BrewAnswer, { type: "mystery" }>) => {
+/** What the popup says about a brew. */
+export interface DialogView {
+  kicker: string;
+  title: string;
+  lines: string[];
+  /** The main button's label. */
+  again: string;
+}
+
+/**
+ * The hint at the potion a mystery nearly was. `unfound` says whose finding
+ * counts: "nobody has found yet" for the shared book, "you have still to
+ * find" for the player's own.
+ */
+const hintFor = ({ closest, size, wrongForm }: Mystery, unfound: string) => {
   if (wrongForm) {
     const wanted = listed(wrongForm.wanted.map((part) => part.toLowerCase()));
 
@@ -25,7 +35,7 @@ const hintFor = ({
   }
 
   if (!closest) {
-    return `None of these ${WORDS[size] ?? size} is in a potion nobody has found yet.`;
+    return `None of these ${WORDS[size] ?? size} is in a potion ${unfound}.`;
   }
 
   const { name, needs, shared } = closest;
@@ -42,25 +52,66 @@ const hintFor = ({
   return `${shared === needs - 1 ? "So close! " : ""}${count} in ${name}${takes}.`;
 };
 
-const kickerFor = ({
-  first,
-  isNew,
-}: Extract<BrewAnswer, { type: "potion" }>) => {
-  if (first) {
-    return "First in the world to brew it!";
+const mysteryView = (answer: Mystery, unfound: string): DialogView => ({
+  again: "Try again",
+  kicker: "The cauldron bubbles",
+  lines: [hintFor(answer, unfound)],
+  title: "Mystery Potion",
+});
+
+/** A brew for the shared book: who was first, and whether it was you. */
+export const sharedView = (answer: BrewAnswer): DialogView => {
+  if (answer.type === "mystery") {
+    return mysteryView(answer, "nobody has found yet");
   }
 
-  return isNew ? "New to you" : "You brewed";
+  const { first, isNew, page } = answer;
+
+  let kicker = "You brewed";
+
+  if (first) {
+    kicker = "First in the world to brew it!";
+  } else if (isNew) {
+    kicker = "New to you";
+  }
+
+  return {
+    again: "Brew another",
+    kicker,
+    lines: [
+      `${listed(page.ingredients)}. ${page.note}`,
+      first
+        ? "Your name is on its page in the recipe book, for everyone to see."
+        : sentence(`First brewed by ${page.by}`),
+    ],
+    title: `🧪 ${page.name}`,
+  };
+};
+
+/** A brew for the player's own book. */
+export const soloView = (answer: SoloBrewAnswer): DialogView => {
+  if (answer.type === "mystery") {
+    return mysteryView(answer, "you have still to find");
+  }
+
+  const { isNew, page } = answer;
+
+  return {
+    again: "Brew another",
+    kicker: isNew ? "New potion for your book!" : "You brewed",
+    lines: [`${listed(page.ingredients)}. ${page.note}`],
+    title: `🧪 ${page.name}`,
+  };
 };
 
 interface BrewDialogProps {
-  /** What came out of the cauldron; the dialog is open while it is set. */
-  answer: BrewAnswer | null;
+  /** What to say about the brew; the dialog is open while it is set. */
+  view: DialogView | null;
   onClose: () => void;
 }
 
-/** The popup that names the potion and who found it, or hints at one. */
-export const BrewDialog = ({ answer, onClose }: BrewDialogProps) => {
+/** The popup that names the potion, or hints at the one it nearly was. */
+export const BrewDialog = ({ view, onClose }: BrewDialogProps) => {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -70,15 +121,12 @@ export const BrewDialog = ({ answer, onClose }: BrewDialogProps) => {
       return;
     }
 
-    if (answer && !dialog.open) {
+    if (view && !dialog.open) {
       dialog.showModal();
-    } else if (!answer && dialog.open) {
+    } else if (!view && dialog.open) {
       dialog.close();
     }
-  }, [answer]);
-
-  const potion = answer?.type === "potion" ? answer : null;
-  const mystery = answer?.type === "mystery" ? answer : null;
+  }, [view]);
 
   // The browser centres and layers the bare dialog; the panel look sits inside.
   return (
@@ -90,28 +138,18 @@ export const BrewDialog = ({ answer, onClose }: BrewDialogProps) => {
     >
       <div className="panel result__panel">
         <span className="legend">potion.log</span>
-        <p className="kicker">
-          {potion ? kickerFor(potion) : "The cauldron bubbles"}
-        </p>
+        <p className="kicker">{view?.kicker}</p>
         <h2 id="brew-title" className="result__winner display">
-          {potion ? `🧪 ${potion.page.name}` : "Mystery Potion"}
+          {view?.title}
         </h2>
-        <p className="result__note">
-          {potion
-            ? `${listed(potion.page.ingredients)}. ${potion.page.note}`
-            : null}
-          {mystery ? hintFor(mystery) : null}
-        </p>
-        {potion ? (
-          <p className="result__note">
-            {potion.first
-              ? "Your name is on its page in the recipe book, for everyone to see."
-              : sentence(`First brewed by ${potion.page.by}`)}
+        {view?.lines.map((line) => (
+          <p key={line} className="result__note">
+            {line}
           </p>
-        ) : null}
+        ))}
         <div className="result__actions">
           <button type="button" className="btn btn--primary" onClick={onClose}>
-            {potion ? "Brew another" : "Try again"}
+            {view?.again}
           </button>
         </div>
       </div>

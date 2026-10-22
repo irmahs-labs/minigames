@@ -63,7 +63,22 @@ const brewer = z.object({
 /** GET /api/potions/brewers?potion=…: everyone who brewed it, first first. */
 export const brewers = z.object({ brewers: z.array(brewer) });
 
-/** The answer to a brew. */
+/** A brew that made no potion: a hint at the one it nearly was. */
+const mystery = z.object({
+  /** The potion still to find that shares the most of these ingredients. */
+  closest: z.nullable(
+    z.object({ name: z.string(), needs: z.int(), shared: z.int() })
+  ),
+  /** How many ingredients went in. */
+  size: z.int(),
+  type: z.literal("mystery"),
+  /** A potion with exactly these ingredients, wanting some in another form. */
+  wrongForm: z.nullable(
+    z.object({ name: z.string(), wanted: z.array(z.string()) })
+  ),
+});
+
+/** The answer to a brew for the shared book. */
 export const brewAnswer = z.discriminatedUnion("type", [
   z.object({
     /** Nobody had brewed it before: this player's name is on it now. */
@@ -73,19 +88,37 @@ export const brewAnswer = z.discriminatedUnion("type", [
     page: foundPage,
     type: z.literal("potion"),
   }),
+  mystery,
+]);
+
+/** A page of a player's own book that they have found, and when. */
+const soloFoundPage = z.object({
+  /** When they first brewed it, as an ISO date. */
+  foundAt: z.string(),
+  ingredients: z.array(z.string()),
+  name: z.string(),
+  note: z.string(),
+  source: z.string(),
+  state: z.literal("found"),
+});
+
+export const soloPage = z.discriminatedUnion("state", [
+  soloFoundPage,
+  lockedPage,
+]);
+
+/** GET /api/potions/solo: the player's own book, every page in order. */
+export const soloBook = z.object({ pages: z.array(soloPage) });
+
+/** The answer to a brew for the player's own book. */
+export const soloBrewAnswer = z.discriminatedUnion("type", [
   z.object({
-    /** The potion still to find that shares the most of these ingredients. */
-    closest: z.nullable(
-      z.object({ name: z.string(), needs: z.int(), shared: z.int() })
-    ),
-    /** How many ingredients went in. */
-    size: z.int(),
-    type: z.literal("mystery"),
-    /** A potion with exactly these ingredients, wanting some in another form. */
-    wrongForm: z.nullable(
-      z.object({ name: z.string(), wanted: z.array(z.string()) })
-    ),
+    /** It was not in their book before. */
+    isNew: z.boolean(),
+    page: soloFoundPage,
+    type: z.literal("potion"),
   }),
+  mystery,
 ]);
 
 export type FoundPage = z.infer<typeof foundPage>;
@@ -99,3 +132,13 @@ export type LatestBrew = z.infer<typeof latestBrew>;
 export type Brewer = z.infer<typeof brewer>;
 
 export type BrewAnswer = z.infer<typeof brewAnswer>;
+
+export type Mystery = z.infer<typeof mystery>;
+
+export type SoloFoundPage = z.infer<typeof soloFoundPage>;
+
+export type SoloPage = z.infer<typeof soloPage>;
+
+export type SoloBook = z.infer<typeof soloBook>;
+
+export type SoloBrewAnswer = z.infer<typeof soloBrewAnswer>;

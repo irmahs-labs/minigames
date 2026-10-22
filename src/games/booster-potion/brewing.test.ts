@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { bookOf, brew, clueOf, foundPageOf, shelvedPartsOf } from "./brewing";
+import {
+  bookOf,
+  brew,
+  clueOf,
+  foundPageOf,
+  shelvedPartsOf,
+  soloBookOf,
+} from "./brewing";
 import { RECIPES } from "./recipes";
 import type { Recipe } from "./recipes";
 import { EMPTY, choose, setForm } from "./rules";
@@ -17,6 +24,10 @@ const pick = (...names: string[]) => {
 };
 
 const NOBODY = new Set<string>();
+
+const bookOfOne = () =>
+  soloBookOf(new Map([["Ember's Embrace", "2026-10-22T12:00:00.000Z"]]));
+
 const EVERYTHING = new Set(RECIPES.map((recipe) => recipe.name));
 
 const recipe = (name: string): Recipe => {
@@ -137,5 +148,16 @@ describe("the book's pages", () => {
       state: "locked",
     });
     expect(JSON.stringify(pages[1])).not.toContain("Spark of the Hearth");
+  });
+
+  it("gives a player's own book the day they found each page", () => {
+    const pages = bookOfOne();
+
+    expect(pages[0]).toMatchObject({
+      foundAt: "2026-10-22T12:00:00.000Z",
+      name: "Ember's Embrace",
+      state: "found",
+    });
+    expect(pages[1]).toMatchObject({ state: "locked" });
   });
 });

@@ -124,3 +124,51 @@ export const readBrewers = async (
 
   return rows.map((row) => ({ at: row.at.toISOString(), name: row.name }));
 };
+
+/** When the player found each potion in their own book, by name. */
+export const readSoloFinds = async (
+  pool: Pool,
+  userId: string
+): Promise<ReadonlyMap<string, string>> => {
+  const { rows } = await pool.query<{ potion: string; found_at: Date }>(
+    `select potion, found_at
+     from booster_potion_solo_brews
+     where user_id = $1`,
+    [userId]
+  );
+
+  return new Map(rows.map((row) => [row.potion, row.found_at.toISOString()]));
+};
+
+/**
+ * Puts `potion` in the player's own book. Brewing it again changes nothing:
+ * the page keeps the day it was first found.
+ */
+export const recordSoloBrew = async (
+  pool: Pool,
+  userId: string,
+  potion: string
+): Promise<{ isNew: boolean; foundAt: string }> => {
+  const { rows } = await pool.query<{ found_at: Date; inserted: boolean }>(
+    `insert into booster_potion_solo_brews (user_id, potion)
+     values ($1, $2)
+     on conflict (user_id, potion) do update set found_at = booster_potion_solo_brews.found_at
+     returning found_at, (xmax = 0) as inserted`,
+    [userId, potion]
+  );
+
+  const [row] = rows;
+
+  if (!row) {
+    throw new Error(`The solo brew of ${potion} was not saved`);
+  }
+
+  return { foundAt: row.found_at.toISOString(), isNew: row.inserted };
+};
+
+/** Empties the player's own book, to start over. */
+export const resetSolo = async (pool: Pool, userId: string) => {
+  await pool.query("delete from booster_potion_solo_brews where user_id = $1", [
+    userId,
+  ]);
+};

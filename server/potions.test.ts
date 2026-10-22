@@ -5,7 +5,15 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { connect } from "./db";
-import { readBrewers, readBrews, readLatest, recordBrew } from "./potions";
+import {
+  readBrewers,
+  readBrews,
+  readLatest,
+  readSoloFinds,
+  recordBrew,
+  recordSoloBrew,
+  resetSolo,
+} from "./potions";
 
 const url = process.env.TEST_DATABASE_URL;
 const pool = connect(url ?? "postgres://unused");
@@ -15,7 +23,9 @@ const ben = { id: "00000000-0000-4000-8000-00000000000b", name: "Ben" };
 
 describe.skipIf(!url)("the recipe book in Postgres", () => {
   beforeEach(async () => {
-    await pool.query("truncate booster_potion_brews");
+    await pool.query(
+      "truncate booster_potion_brews, booster_potion_solo_brews"
+    );
   });
 
   afterAll(async () => {
@@ -96,5 +106,31 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
 
     expect(brewers.map((brewer) => brewer.name)).toEqual(["Ben", "Ana L."]);
     expect(Date.parse(brewers[0]?.at ?? "")).not.toBeNaN();
+  });
+
+  it("keeps each player's own book apart from the shared one", async () => {
+    expect(await recordSoloBrew(pool, ana.id, "Autumn Hearth")).toMatchObject({
+      isNew: true,
+    });
+
+    const again = await recordSoloBrew(pool, ana.id, "Autumn Hearth");
+    const finds = await readSoloFinds(pool, ana.id);
+
+    expect(again.isNew).toBe(false);
+    expect([...finds.keys()]).toEqual(["Autumn Hearth"]);
+    expect(finds.get("Autumn Hearth")).toBe(again.foundAt);
+    expect(await readSoloFinds(pool, ben.id)).toEqual(new Map());
+    expect(await readBrews(pool, ana.id)).toEqual(new Map());
+  });
+
+  it("starts one player's own book over, and nobody else's", async () => {
+    await recordSoloBrew(pool, ana.id, "Autumn Hearth");
+    await recordSoloBrew(pool, ben.id, "Autumn Hearth");
+    await resetSolo(pool, ana.id);
+
+    expect(await readSoloFinds(pool, ana.id)).toEqual(new Map());
+    const bens = await readSoloFinds(pool, ben.id);
+
+    expect(bens.size).toBe(1);
   });
 });

@@ -3,7 +3,7 @@
  * the recipes, which the page never sees. Never import it from the game's
  * React code.
  */
-import type { BrewAnswer, FoundPage, Page } from "./api";
+import type { FoundPage, Mystery, Page, SoloFoundPage, SoloPage } from "./api";
 import { BASE_KINDS, TOPPING_KINDS } from "./pantry";
 import { RECIPES } from "./recipes";
 import type { Recipe } from "./recipes";
@@ -72,6 +72,28 @@ export const bookOf = (brews: ReadonlyMap<string, Brewers>): Page[] =>
       : { clue: clueOf(recipe), state: "locked" };
   });
 
+export const soloFoundPageOf = (
+  recipe: Recipe,
+  foundAt: string
+): SoloFoundPage => ({
+  foundAt,
+  ingredients: shelvedPartsOf(recipe).map(labelOf),
+  name: recipe.name,
+  note: recipe.note,
+  source: recipe.source,
+  state: "found",
+});
+
+/** A player's own book: found when they brewed it, `finds` saying when. */
+export const soloBookOf = (finds: ReadonlyMap<string, string>): SoloPage[] =>
+  RECIPES.map((recipe) => {
+    const foundAt = finds.get(recipe.name);
+
+    return foundAt
+      ? soloFoundPageOf(recipe, foundAt)
+      : { clue: clueOf(recipe), state: "locked" };
+  });
+
 /** Whether a potion by this name is in the book. */
 export const isPotion = (name: string) =>
   RECIPES.some((recipe) => recipe.name === name);
@@ -83,15 +105,14 @@ const sameNames = (recipe: Recipe, selection: Selection) =>
 const sharedWith = (recipe: Recipe, selection: Selection) =>
   selection.filter((part) => recipe.ingredients.includes(part.name)).length;
 
-export type Brewed =
-  | { type: "potion"; recipe: Recipe }
-  | Extract<BrewAnswer, { type: "mystery" }>;
+export type Brewed = { type: "potion"; recipe: Recipe } | Mystery;
 
 /**
  * Brews what is in the cauldron: a known potion when it is exactly one of
  * the recipes, forms and all, in any order. Otherwise a mystery, with a
  * hint: the forms to change when only forms are wrong, or else the closest
- * potion nobody has found yet.
+ * potion not in `found`: nobody's for the shared book, the player's for
+ * their own.
  */
 export const brew = (
   selection: Selection,

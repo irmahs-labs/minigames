@@ -1,5 +1,7 @@
-import { book, brewAnswer, brewers } from "./api";
-import type { Book, BrewAnswer, Brewer } from "./api";
+import type { ZodMiniType } from "zod/mini";
+
+import { book, brewAnswer, brewers, soloBook, soloBrewAnswer } from "./api";
+import type { Book, Brewer, SoloPage } from "./api";
 import type { Selection } from "./rules";
 
 /** The shared recipe book, or null when the server cannot be reached. */
@@ -19,14 +21,16 @@ export const fetchBook = async (): Promise<Book | null> => {
   }
 };
 
-export type BrewResult =
-  | { ok: true; answer: BrewAnswer }
-  | { ok: false; message: string };
+export type Sent<T> = { ok: true; answer: T } | { ok: false; message: string };
 
-/** Sends what is in the cauldron to be brewed, and what came of it. */
-export const postBrew = async (selection: Selection): Promise<BrewResult> => {
+/** Sends what is in the cauldron to `path` to be brewed, and what came of it. */
+const sendBrew = async <T>(
+  path: string,
+  selection: Selection,
+  schema: ZodMiniType<T>
+): Promise<Sent<T>> => {
   try {
-    const response = await fetch("/api/potions/brew", {
+    const response = await fetch(path, {
       body: JSON.stringify({ ingredients: selection }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -39,13 +43,49 @@ export const postBrew = async (selection: Selection): Promise<BrewResult> => {
       return { message: message || "The brew didn't go through.", ok: false };
     }
 
-    const parsed = brewAnswer.safeParse(await response.json());
+    const parsed = schema.safeParse(await response.json());
 
     return parsed.success
       ? { answer: parsed.data, ok: true }
       : { message: "The cauldron's answer made no sense.", ok: false };
   } catch {
     return { message: "The cauldron can't be reached right now.", ok: false };
+  }
+};
+
+/** Brews for the shared book. */
+export const postBrew = (selection: Selection) =>
+  sendBrew("/api/potions/brew", selection, brewAnswer);
+
+/** Brews for the player's own book. */
+export const postSoloBrew = (selection: Selection) =>
+  sendBrew("/api/potions/solo/brew", selection, soloBrewAnswer);
+
+/** The player's own book, or null when it cannot be had. */
+export const fetchSoloBook = async (): Promise<SoloPage[] | null> => {
+  try {
+    const response = await fetch("/api/potions/solo");
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const parsed = soloBook.safeParse(await response.json());
+
+    return parsed.success ? parsed.data.pages : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Empties the player's own book; false when it did not happen. */
+export const resetSoloBook = async (): Promise<boolean> => {
+  try {
+    const response = await fetch("/api/potions/solo", { method: "DELETE" });
+
+    return response.ok;
+  } catch {
+    return false;
   }
 };
 

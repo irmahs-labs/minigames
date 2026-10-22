@@ -37,6 +37,17 @@ const lobby = createLobby({ onFinish: () => null, random: () => 0 });
 const brewLog: { potion: string; id: string; name: string }[] = [];
 let latest: { name: string; potion: string; at: string } | null = null;
 
+/** Stands in for booster_potion_solo_brews: each player's own finds. */
+const soloLog = new Map<string, Map<string, string>>();
+
+const soloFindsOf = (userId: string) => {
+  const finds = soloLog.get(userId) ?? new Map<string, string>();
+
+  soloLog.set(userId, finds);
+
+  return finds;
+};
+
 const brewersOf = (potion: string, userId: string | null): Brewers => {
   const rows = brewLog.filter((row) => row.potion === potion);
 
@@ -66,6 +77,8 @@ const potions = {
       )
     ),
   readLatest: () => Promise.resolve(latest),
+  readSoloFinds: (userId: string) =>
+    Promise.resolve(new Map(soloFindsOf(userId))),
   recordBrew: (potion: string, account: { id: string; name: string }) => {
     const isNew = !brewLog.some(
       (row) => row.potion === potion && row.id === account.id
@@ -84,6 +97,21 @@ const potions = {
       first: isNew && brewers.count === 1,
       isNew,
     });
+  },
+  recordSoloBrew: (userId: string, potion: string) => {
+    const finds = soloFindsOf(userId);
+    const isNew = !finds.has(potion);
+
+    if (isNew) {
+      finds.set(potion, "2026-10-22T12:00:00.000Z");
+    }
+
+    return Promise.resolve({ foundAt: finds.get(potion) ?? "", isNew });
+  },
+  resetSolo: (userId: string) => {
+    soloLog.delete(userId);
+
+    return Promise.resolve();
   },
 };
 
@@ -371,5 +399,95 @@ describe("/api/potions", () => {
 
     expect(statuses.slice(0, 30).every((status) => status === 200)).toBe(true);
     expect(statuses[30]).toBe(429);
+  });
+});
+
+const soloBrewAs = (cookie: string, ingredients: Sent, origin = ORIGIN) =>
+  fetch(`http://${base}/api/potions/solo/brew`, {
+    body: JSON.stringify({ ingredients }),
+    headers: { "content-type": "application/json", cookie, origin },
+    method: "POST",
+  });
+
+const soloBookOf = (cookie: string) =>
+  fetch(`http://${base}/api/potions/solo`, { headers: { cookie } });
+
+const startOver = (cookie: string, origin = ORIGIN) =>
+  fetch(`http://${base}/api/potions/solo`, {
+    headers: { cookie, origin },
+    method: "DELETE",
+  });
+
+/** Autumn Hearth, a jujube and dried ginger tea. */
+const JUJUBE_TEA = [{ name: "Jujube" }, { form: "dried", name: "Ginger" }];
+
+describe("/api/potions/solo", () => {
+  it("keeps a book only for someone signed in", async () => {
+    expect(await statusOf(soloBookOf(""))).toBe(401);
+    expect(await statusOf(soloBrewAs("", JUJUBE_TEA))).toBe(401);
+    expect(await statusOf(startOver(""))).toBe(401);
+  });
+
+  it("starts every player's own book empty", async () => {
+    const { pages } = await bodyOf(soloBookOf("session=ana"));
+
+    expect(pages).toHaveLength(100);
+    expect(
+      pages.every((page: { state: string }) => page.state === "locked")
+    ).toBe(true);
+  });
+
+  it("puts a solo brew in the player's own book, and nowhere else", async () => {
+    const before = brewLog.length;
+
+    expect(await bodyOf(soloBrewAs("session=ana", JUJUBE_TEA))).toMatchObject({
+      isNew: true,
+      page: { foundAt: expect.any(String), name: "Autumn Hearth" },
+      type: "potion",
+    });
+    expect(await bodyOf(soloBrewAs("session=ana", JUJUBE_TEA))).toMatchObject({
+      isNew: false,
+    });
+
+    const own = await bodyOf(soloBookOf("session=ana"));
+    const bens = await bodyOf(soloBookOf("session=ben"));
+
+    expect(
+      own.pages.filter((page: { state: string }) => page.state === "found")
+    ).toHaveLength(1);
+    expect(
+      bens.pages.filter((page: { state: string }) => page.state === "found")
+    ).toHaveLength(0);
+    expect(brewLog).toHaveLength(before);
+  });
+
+  it("hints at the potions the player has still to find", async () => {
+    // Ana found Ember's Embrace in the shared book, not in her own.
+    const answer = await bodyOf(
+      soloBrewAs("session=ana", [
+        { name: "Apple" },
+        { name: "Lime" },
+        { form: "fresh", name: "Ginger" },
+        { form: "fresh", name: "Mint" },
+      ])
+    );
+
+    expect(answer).toMatchObject({
+      closest: { name: "Ember's Embrace", shared: 3 },
+      type: "mystery",
+    });
+  });
+
+  it("starts over only from the site itself", async () => {
+    expect(
+      await statusOf(startOver("session=ana", "https://evil.irmahs.dev"))
+    ).toBe(403);
+    expect(await statusOf(startOver("session=ana"))).toBe(204);
+
+    const { pages } = await bodyOf(soloBookOf("session=ana"));
+
+    expect(
+      pages.every((page: { state: string }) => page.state === "locked")
+    ).toBe(true);
   });
 });
