@@ -36,7 +36,15 @@ There is one recipe book, shared by everyone. Brewing takes an irmahs.dev accoun
 
 Booster Potion can also be played solo: **My own book** keeps a recipe book of your own on your irmahs.dev account, on every device. Its pages unlock only when you brew them, its hints point at the potions you have still to find, each page shows the day you found it, and **Start over** empties it. Solo brews never go in the shared book.
 
-The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard and the Booster Potion recipe book live on the server.
+## The sticky board
+
+Under the games, the hub has a **sticky board**: anyone signed in to their irmahs.dev account can stick a note on it, in lemon, matcha, strawberry or taro, for everyone to read. Notes are up to 200 characters and never show who wrote them. Each comes down a day after it went up, and the server deletes it, with who wrote it, within the hour after. Everyone can have 5 notes up at a time.
+
+Mini Games admins can take a note down before then. An admin is anyone the account service lists for `minigames-admin` in its `APP_ACCESS` secret (in irmahs-labs/auth), the same list that says who may open a private app such as Alma Housila. The server asks the account service's `GET /api/access/minigames-admin` with the visitor's cookie, and only a yes counts. To make yourself an admin, add `minigames-admin=you@gmail.com` to `APP_ACCESS`, separated from the other apps by `;`, and redeploy the account service.
+
+## Where things are kept
+
+The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
 
 ## Develop
 
@@ -55,9 +63,9 @@ npm run db:up     # Postgres on localhost:5434, migrations applied
 npm run dev:api   # the server on :3002; Vite forwards /api and /ws to it
 ```
 
-and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames:minigames@localhost:5434/minigames npm test` also runs the leaderboard's and the recipe book's database tests, which are skipped otherwise.
+and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames:minigames@localhost:5434/minigames npm test` also runs the leaderboard's, the recipe book's and the sticky board's database tests, which are skipped otherwise.
 
-The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/potions` (the shared recipe book), `/api/potions/brewers`, `/api/potions/brew`, and `/api/potions/solo` and `/api/potions/solo/brew` (each player's own book), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move. Booster Potion's recipes, `src/games/booster-potion/recipes.ts`, are read only by the server, which brews.
+The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/potions` (the shared recipe book), `/api/potions/brewers`, `/api/potions/brew`, `/api/potions/solo` and `/api/potions/solo/brew` (each player's own book), `/api/board` and `/api/board/notes` (the sticky board), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move. Booster Potion's recipes, `src/games/booster-potion/recipes.ts`, are read only by the server, which brews.
 
 ## Deploy
 
@@ -68,7 +76,7 @@ Secrets (Settings → Secrets and variables → Actions):
 | Secret | What |
 | --- | --- |
 | `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`, `DEPLOY_HOST` | Organization level, shared with the other repos |
-| `MINIGAMES_POSTGRES_PASSWORD` | The database's password (the leaderboard and the recipe book), `openssl rand -base64 32`. Read only when the database is first created |
+| `MINIGAMES_POSTGRES_PASSWORD` | The database's password (the leaderboard, the recipe book and the sticky board), `openssl rand -base64 32`. Read only when the database is first created |
 
 ### First setup (one time)
 

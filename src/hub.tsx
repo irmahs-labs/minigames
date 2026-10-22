@@ -1,10 +1,11 @@
+import { StickyBoard } from "./board/sticky-board";
 import { MiniGamesIcon } from "./components/app-icons";
 import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { APP_NAME } from "./lib/brand";
 import { Link } from "./lib/router";
 
-/** The front page: one card per game. */
+/** The front page: one card per game, and the sticky board under them. */
 export const Hub = () => (
   <>
     <Header icon={<MiniGamesIcon />} name={APP_NAME} href="/" />
@@ -23,6 +24,8 @@ export const Hub = () => (
           </li>
         ))}
       </ul>
+
+      <StickyBoard />
 
       <footer className="foot">
         <a href="https://irmahs.dev">irmahs.dev</a>

@@ -7,6 +7,13 @@ import { env } from "./env";
 import { createLobby } from "./lobby";
 import type { FinishedGame } from "./lobby";
 import {
+  countNotes,
+  postNote,
+  readNotes,
+  removeNote,
+  sweepNotes,
+} from "./notes";
+import {
   readBrewers,
   readBrews,
   readLatest,
@@ -16,7 +23,7 @@ import {
   resetSolo,
 } from "./potions";
 import { readLeaderboard, recordGame } from "./scores";
-import { askAccountService } from "./session";
+import { askAccountService, askAdminAccess } from "./session";
 
 const pool = connect(env.databaseUrl);
 
@@ -32,6 +39,25 @@ const saveGame = async (game: FinishedGame) => {
   }
 };
 
+/**
+ * Deletes the notes whose day is up. The board never shows them anyway; this
+ * removes them, and who stuck them, for good. A failed sweep is tried again
+ * at the next.
+ */
+const sweep = async () => {
+  try {
+    await sweepNotes(pool);
+  } catch (error) {
+    console.error("Could not sweep the sticky board", error);
+  }
+};
+
+const SWEEP_MS = 60 * 60 * 1000;
+
+void sweep();
+
+setInterval(sweep, SWEEP_MS);
+
 const lobby = createLobby({
   onFinish: (game) => {
     void saveGame(game);
@@ -40,7 +66,14 @@ const lobby = createLobby({
 
 const { app, injectWebSocket } = createApp({
   appOrigin: env.appOrigin,
+  isAdmin: askAdminAccess(env.authUrl),
   lobby,
+  notes: {
+    countNotes: (userId) => countNotes(pool, userId),
+    postNote: (userId, note, limit) => postNote(pool, userId, note, limit),
+    readNotes: () => readNotes(pool),
+    removeNote: (id) => removeNote(pool, id),
+  },
   potions: {
     readBrewers: (potion) => readBrewers(pool, potion),
     readBrews: (userId) => readBrews(pool, userId),
