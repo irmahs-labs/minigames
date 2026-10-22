@@ -30,7 +30,9 @@ Every online game counts on the **leaderboard**, which anyone can see, signed in
 
 Nobody's total drops below 0. Players appear as first name and last initial, "Irma H.".
 
-The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games and the leaderboard live on the server.
+**Booster Potion.** A potion-mixing game, from [Wellness Witch](https://github.com/irmahs/WellnessWitch). Its 100 potions are real wellness shots, teas and tonics, each cut down to its two to four core ingredients and linked to the recipe it comes from: ginger and turmeric shots, beet and green shots, switchel, fire cider and oxymels, jamu, golden milk, masala chai, kadha, sorrel, yuja-cha, jujube and goji teas, agua frescas and more. Put any two to four ingredients in the cauldron and brew. A few come more than one way, and you pick which in the cauldron: ginger fresh or dried (a ginger shot takes fresh, a ginger tea dried), turmeric fresh or powder, cinnamon as a stick or powder, mint fresh or dried, wheatgrass fresh or powder. Every ingredient has a one-line tip on what it is known for ("Ginger: eases nausea, with anti-inflammatory compounds"), shown when you hover it and under it in the cauldron. The right mix makes a potion, which goes in the recipe book with a fact or a caution about it, like cooking elderberries. Anything else is a Mystery Potion, with a hint: the form to change when only that is wrong, or else how many of the ingredients are in the closest potion still to find, and its name. Pages not yet found show the kinds of ingredient they take.
+
+The Wheel of Fortune, the same-screen game and the Booster Potion recipe book keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games and the leaderboard live on the server.
 
 ## Develop
 

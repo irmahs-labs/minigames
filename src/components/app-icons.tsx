@@ -77,3 +77,35 @@ export const SuperTicTacToeIcon = () => (
     />
   </svg>
 );
+
+/** A corked potion bottle, half full, with two bubbles rising. */
+export const BoosterPotionIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M17 10h6v6.2a9 9 0 1 1-6 0z"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11.05 25h17.9a9 9 0 0 1-17.9 0z"
+      fill="#afc584"
+      stroke="#2f3b34"
+      strokeWidth="1.2"
+    />
+    <rect x="16" y="6.5" width="8" height="3.5" rx="1" fill="#2f3b34" />
+    <circle cx="18" cy="29" r="1.3" fill="#fff3cf" />
+    <circle cx="22.5" cy="27.5" r="1" fill="#fff3cf" />
+  </svg>
+);
