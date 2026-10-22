@@ -248,7 +248,7 @@ const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
 /** The last brew by anyone, in the book's corner: who, what and when. */
 const LastBrew = ({ latest, now }: { latest: LatestBrew; now: number }) => (
   <p className="book__latest" aria-live="polite">
-    <span aria-hidden="true">🧪 </span>
+    <span aria-hidden="true">🔮 </span>
     Last brew: {latest.name}, {latest.potion}, {ago(latest.at, now)}
   </p>
 );
@@ -272,7 +272,7 @@ const BookPage = ({ page }: { page: Page }) => {
           : "recipe-card recipe-card--found"
       }
     >
-      <h3 className="display recipe-card__name">🧪 {page.name}</h3>
+      <h3 className="display recipe-card__name">🔮 {page.name}</h3>
       <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
       <p className="recipe-card__note">{page.note}</p>
       <Brewers page={page} />
@@ -307,7 +307,7 @@ const SoloBookPage = ({ page }: { page: SoloPage }) => {
 
   return (
     <li className="recipe-card recipe-card--found">
-      <h3 className="display recipe-card__name">🧪 {page.name}</h3>
+      <h3 className="display recipe-card__name">🔮 {page.name}</h3>
       <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
       <p className="recipe-card__note">{page.note}</p>
       <p className="recipe-card__by">Found {day(page.foundAt)}</p>
@@ -714,7 +714,7 @@ const BoosterPotion = ({ name }: GameProps) => {
                   disabled={!ready || brewing || account === undefined}
                   onClick={brewIt}
                 >
-                  {brewing ? "Brewing…" : "🧪 Brew"}
+                  {brewing ? "Brewing…" : "🔮 Brew"}
                 </button>
               )}
               <button
