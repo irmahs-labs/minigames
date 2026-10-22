@@ -1,5 +1,5 @@
-import { FORMS, PANTRY, RECIPES } from "./pantry";
-import type { Form, Kind, Recipe } from "./pantry";
+import { FORMS, PANTRY } from "./pantry";
+import type { Form, Kind } from "./pantry";
 
 /** An ingredient in the cauldron or a recipe, with its form if it has one. */
 export interface Part {
@@ -9,18 +9,6 @@ export interface Part {
 
 /** The ingredients in the cauldron, in the order they went in. */
 export type Selection = readonly Part[];
-
-export type Brewed =
-  | { type: "potion"; recipe: Recipe; isNew: boolean }
-  | {
-      type: "mystery";
-      /** How many ingredients went in. */
-      size: number;
-      /** A potion with exactly these ingredients, some in another form. */
-      wrongForm: { recipe: Recipe; wanted: readonly Part[] } | null;
-      /** The unfound potion sharing the most of these ingredients, if any. */
-      closest: { recipe: Recipe; shared: number } | null;
-    };
 
 /** A brew takes two to four ingredients, as the real recipes do. */
 export const MIN_INGREDIENTS = 2;
@@ -39,14 +27,6 @@ export const kindOf = (name: string): Kind | undefined => KIND_OF.get(name);
 
 /** The forms an ingredient comes in; none for most. */
 export const formsOf = (name: string): readonly Form[] => FORMS.get(name) ?? [];
-
-/** A recipe's ingredients with their forms. */
-export const partsOf = (recipe: Recipe): readonly Part[] =>
-  recipe.ingredients.map((name) => {
-    const form = recipe.forms?.[name];
-
-    return form ? { form, name } : { name };
-  });
 
 /** "Fresh ginger", "Turmeric powder", "Lemon". */
 export const labelOf = ({ form, name }: Part) => {
@@ -91,59 +71,20 @@ export const setForm = (
 export const isReady = (selection: Selection) =>
   selection.length >= MIN_INGREDIENTS;
 
-const sameNames = (recipe: Recipe, selection: Selection) =>
-  recipe.ingredients.length === selection.length &&
-  selection.every((part) => recipe.ingredients.includes(part.name));
-
-const sharedWith = (recipe: Recipe, selection: Selection) =>
-  selection.filter((part) => recipe.ingredients.includes(part.name)).length;
-
 /**
- * Brews what is in the cauldron: a known potion when it is exactly one of
- * the recipes, forms and all, in any order. Otherwise a mystery, with a
- * hint: the form to change when only forms are wrong, or else the closest
- * potion not yet found.
+ * What may go in a cauldron: two to four different ingredients from the
+ * pantry, each in a form it comes in, or with none when it has none. The
+ * server checks every brew sent to it with this.
  */
-export const brew = (
-  selection: Selection,
-  found: readonly string[]
-): Brewed => {
-  const matching = RECIPES.filter((r) => sameNames(r, selection));
+export const isValidSelection = (selection: Selection) =>
+  selection.length >= MIN_INGREDIENTS &&
+  selection.length <= MAX_INGREDIENTS &&
+  new Set(selection.map((part) => part.name)).size === selection.length &&
+  selection.every(({ form, name }) => {
+    const forms = formsOf(name);
 
-  const recipe = matching.find((r) =>
-    selection.every((part) => r.forms?.[part.name] === part.form)
-  );
-
-  if (recipe) {
-    return { isNew: !found.includes(recipe.name), recipe, type: "potion" };
-  }
-
-  const [nearly] = matching;
-
-  const wrongForm = nearly
-    ? {
-        recipe: nearly,
-        wanted: partsOf(nearly).filter(
-          (part) =>
-            selection.find((chosen) => chosen.name === part.name)?.form !==
-            part.form
-        ),
-      }
-    : null;
-
-  let closest: { recipe: Recipe; shared: number } | null = null;
-
-  for (const candidate of RECIPES) {
-    const shared = sharedWith(candidate, selection);
-
-    if (
-      !found.includes(candidate.name) &&
-      shared > 0 &&
-      shared > (closest?.shared ?? 0)
-    ) {
-      closest = { recipe: candidate, shared };
-    }
-  }
-
-  return { closest, size: selection.length, type: "mystery", wrongForm };
-};
+    return (
+      kindOf(name) !== undefined &&
+      (form === undefined ? forms.length === 0 : forms.includes(form))
+    );
+  });

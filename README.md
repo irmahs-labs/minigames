@@ -30,9 +30,11 @@ Every online game counts on the **leaderboard**, which anyone can see, signed in
 
 Nobody's total drops below 0. Players appear as first name and last initial, "Irma H.".
 
-**Booster Potion.** A potion-mixing game, from [Wellness Witch](https://github.com/irmahs/WellnessWitch). Its 100 potions are real wellness shots, teas and tonics, each cut down to its two to four core ingredients and linked to the recipe it comes from: ginger and turmeric shots, beet and green shots, switchel, fire cider and oxymels, jamu, golden milk, masala chai, kadha, sorrel, yuja-cha, jujube and goji teas, agua frescas and more. Put any two to four ingredients in the cauldron and brew. A few come more than one way, and you pick which in the cauldron: ginger fresh or dried (a ginger shot takes fresh, a ginger tea dried), turmeric fresh or powder, cinnamon as a stick or powder, mint fresh or dried, wheatgrass fresh or powder. Every ingredient has a one-line tip on what it is known for ("Ginger: eases nausea, with anti-inflammatory compounds"), shown when you hover it and under it in the cauldron. The right mix makes a potion, which goes in the recipe book with a fact or a caution about it, like cooking elderberries. Anything else is a Mystery Potion, with a hint: the form to change when only that is wrong, or else how many of the ingredients are in the closest potion still to find, and its name. Pages not yet found show the kinds of ingredient they take.
+**Booster Potion.** A potion-mixing game, from [Wellness Witch](https://github.com/irmahs/WellnessWitch). Its 100 potions are real wellness shots, teas and tonics, each cut down to its two to four core ingredients and linked to the recipe it comes from: ginger and turmeric shots, beet and green shots, switchel, fire cider and oxymels, jamu, golden milk, masala chai, kadha, sorrel, yuja-cha, jujube and goji teas, agua frescas and more. Put any two to four ingredients in the cauldron and brew. A few come more than one way, and you pick which in the cauldron: ginger fresh or dried (a ginger shot takes fresh, a ginger tea dried), turmeric fresh or powder, cinnamon as a stick or powder, mint fresh or dried, wheatgrass fresh or powder. Every ingredient has a one-line tip on what it is known for ("Ginger: eases nausea, with anti-inflammatory compounds"), shown when you hover it and under it in the cauldron. The right mix makes a potion, with a fact or a caution about it, like cooking elderberries. Anything else is a Mystery Potion, with a hint: the form to change when only that is wrong, or else how many of the ingredients are in the closest potion nobody has found yet, and its name.
 
-The Wheel of Fortune, the same-screen game and the Booster Potion recipe book keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games and the leaderboard live on the server.
+There is one recipe book, shared by everyone. Brewing takes an irmahs.dev account: the first person to brew a potion puts their name on its page ("First brewed by Irma H. and 3 more"), and anyone can read the book, signed in or not. Pages nobody has found yet show only the kinds of ingredient they take. The server brews, so the recipes never reach the browser, and it takes at most 30 brews a minute from anyone.
+
+The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard and the Booster Potion recipe book live on the server.
 
 ## Develop
 
@@ -51,9 +53,9 @@ npm run db:up     # Postgres on localhost:5434, migrations applied
 npm run dev:api   # the server on :3002; Vite forwards /api and /ws to it
 ```
 
-and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames:minigames@localhost:5434/minigames npm test` also runs the leaderboard's database tests, which are skipped otherwise.
+and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames:minigames@localhost:5434/minigames npm test` also runs the leaderboard's and the recipe book's database tests, which are skipped otherwise.
 
-The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me` and `/api/leaderboard`, and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move.
+The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/potions` (the recipe book) and `/api/potions/brew`, and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move. Booster Potion's recipes, `src/games/booster-potion/recipes.ts`, are read only by the server, which brews.
 
 ## Deploy
 
@@ -64,7 +66,7 @@ Secrets (Settings → Secrets and variables → Actions):
 | Secret | What |
 | --- | --- |
 | `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`, `DEPLOY_HOST` | Organization level, shared with the other repos |
-| `MINIGAMES_POSTGRES_PASSWORD` | The leaderboard database's password, `openssl rand -base64 32`. Read only when the database is first created |
+| `MINIGAMES_POSTGRES_PASSWORD` | The database's password (the leaderboard and the recipe book), `openssl rand -base64 32`. Read only when the database is first created |
 
 ### First setup (one time)
 

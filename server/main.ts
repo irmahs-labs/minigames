@@ -6,6 +6,7 @@ import { connect } from "./db";
 import { env } from "./env";
 import { createLobby } from "./lobby";
 import type { FinishedGame } from "./lobby";
+import { readBrews, recordBrew } from "./potions";
 import { readLeaderboard, recordGame } from "./scores";
 import { askAccountService } from "./session";
 
@@ -32,6 +33,10 @@ const lobby = createLobby({
 const { app, injectWebSocket } = createApp({
   appOrigin: env.appOrigin,
   lobby,
+  potions: {
+    readBrews: (userId) => readBrews(pool, userId),
+    recordBrew: (potion, account) => recordBrew(pool, potion, account),
+  },
   readLeaderboard: (userId) => readLeaderboard(pool, userId),
   whoIs: askAccountService(env.authUrl),
 });

@@ -1030,9 +1030,14 @@ a:hover {
   color: var(--text-muted);
   font-weight: 400;
 }
+/* The book scrolls in its own frame, so a hundred pages never make the
+   page itself endless. */
 .book {
+  max-height: min(70vh, 640px);
   margin: 0;
-  padding: 0;
+  padding: 4px 6px 4px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
@@ -1068,6 +1073,16 @@ a:hover {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
+}
+.recipe-card__by {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+/* A page the player has brewed too: the outline turns to the hard one. */
+.recipe-card--yours {
+  border-width: var(--stroke-panel);
+  box-shadow: var(--shadow-soft);
 }
 .recipe-card__source {
   margin-top: 2px;
