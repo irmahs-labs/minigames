@@ -16,7 +16,15 @@ import {
   TOPPING_KINDS,
 } from "./pantry";
 import type { Kind, Recipe } from "./pantry";
-import { EMPTY, brew, choose, ingredientsOf, isReady, kindOf } from "./rules";
+import {
+  EMPTY,
+  MAX_INGREDIENTS,
+  MIN_INGREDIENTS,
+  brew,
+  choose,
+  isReady,
+  kindOf,
+} from "./rules";
 import type { Brewed, Selection } from "./rules";
 import { loadFound, saveFound } from "./state";
 
@@ -64,44 +72,46 @@ const Shelf = ({
   </fieldset>
 );
 
+/** What an empty place in the cauldron says: the fourth is up to you. */
+const EMPTY_SLOTS = [
+  "an ingredient",
+  "an ingredient",
+  "an ingredient",
+  "a fourth, if the recipe takes one",
+];
+
 /** The four places in the cauldron, filled in the order they were picked. */
-const Cauldron = ({ selection }: { selection: Selection }) => {
-  const slots = [
-    ...[0, 1].map((i) => ({ group: "base", name: selection.bases[i] })),
-    ...[0, 1].map((i) => ({ group: "topping", name: selection.toppings[i] })),
-  ];
+const Cauldron = ({ selection }: { selection: Selection }) => (
+  <ul className="cauldron">
+    {EMPTY_SLOTS.map((empty, i) => {
+      const name = selection[i];
+      const kind = name ? kindOf(name) : undefined;
 
-  return (
-    <ul className="cauldron">
-      {slots.map(({ group, name }, i) => {
-        const kind = name ? kindOf(name) : undefined;
-
-        return (
-          // The slots are fixed places, so their position is the key.
-          // oxlint-disable-next-line no-array-index-key
-          <li
-            key={i}
-            className={
-              name ? "cauldron__slot" : "cauldron__slot cauldron__slot--empty"
-            }
-          >
-            <span aria-hidden="true">{kind ? KIND_EMOJI[kind] : "·"}</span>
-            <span className="stack">
-              {name ?? `a ${group}`}
-              {name && TIPS.has(name) ? (
-                <span className="cauldron__tip">{TIPS.get(name)}</span>
-              ) : null}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-};
+      return (
+        // The slots are fixed places, so their position is the key.
+        // oxlint-disable-next-line no-array-index-key
+        <li
+          key={i}
+          className={
+            name ? "cauldron__slot" : "cauldron__slot cauldron__slot--empty"
+          }
+        >
+          <span aria-hidden="true">{kind ? KIND_EMOJI[kind] : "·"}</span>
+          <span className="stack">
+            {name ?? empty}
+            {name && TIPS.has(name) ? (
+              <span className="cauldron__tip">{TIPS.get(name)}</span>
+            ) : null}
+          </span>
+        </li>
+      );
+    })}
+  </ul>
+);
 
 /** A page of the recipe book: the whole recipe once found, its kinds before. */
 const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
-  const kinds = kindsOf(ingredientsOf(recipe));
+  const kinds = kindsOf(recipe.ingredients);
 
   return (
     <li className={found ? "recipe-card recipe-card--found" : "recipe-card"}>
@@ -109,12 +119,20 @@ const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
         {found ? `🧪 ${recipe.name}` : "🔒 ???"}
       </h3>
       <p className="recipe-card__recipe">
-        {found
-          ? listed(ingredientsOf(recipe))
-          : `${kinds.slice(0, 2).join(" + ")} · ${kinds.slice(2).join(" + ")}`}
+        {found ? listed(recipe.ingredients) : kinds.join(" + ")}
       </p>
-      {found && recipe.note ? (
-        <p className="recipe-card__note">{recipe.note}</p>
+      {found ? (
+        <>
+          <p className="recipe-card__note">{recipe.note}</p>
+          <a
+            className="recipe-card__source"
+            href={recipe.source}
+            target="_blank"
+            rel="noreferrer"
+          >
+            The real recipe ↗
+          </a>
+        </>
       ) : null}
     </li>
   );
@@ -127,7 +145,6 @@ const BoosterPotion = ({ name }: GameProps) => {
   const confirm = useConfirm();
 
   const ready = isReady(selection);
-  const chosen = [...selection.bases, ...selection.toppings];
 
   useEffect(() => saveFound(found), [found]);
 
@@ -150,18 +167,18 @@ const BoosterPotion = ({ name }: GameProps) => {
     setBrewed(result);
   };
 
-  const needed = () => {
-    const bases = 2 - selection.bases.length;
-    const toppings = 2 - selection.toppings.length;
+  const status = () => {
+    if (selection.length === MAX_INGREDIENTS) {
+      return "Four in. Give it a stir!";
+    }
 
-    const parts = [
-      bases > 0 ? `${bases} more base${bases === 1 ? "" : "s"}` : "",
-      toppings > 0
-        ? `${toppings} more topping${toppings === 1 ? "" : "s"}`
-        : "",
-    ].filter(Boolean);
+    if (ready) {
+      return "Three in. Brew now, or add a fourth.";
+    }
 
-    return `Pick ${parts.join(" and ")}.`;
+    const more = MIN_INGREDIENTS - selection.length;
+
+    return `Pick ${more} more, from any shelf.`;
   };
 
   return (
@@ -174,7 +191,7 @@ const BoosterPotion = ({ name }: GameProps) => {
       </Header>
       <main className="page">
         <p className="page__sub">
-          mix four ingredients, find all {RECIPES.length} potions
+          mix real wellness shots, find all {RECIPES.length} potions
         </p>
 
         <div className="layout">
@@ -183,26 +200,26 @@ const BoosterPotion = ({ name }: GameProps) => {
 
             <div className="stack">
               <h2 className="display turn">Bases</h2>
-              <p className="hint">Any two: a fruit, a vegetable or a liquid.</p>
+              <p className="hint">Juices, fruit and vegetables.</p>
             </div>
             {BASE_KINDS.map((kind) => (
               <Shelf
                 key={kind}
                 kind={kind}
-                chosen={chosen}
+                chosen={selection}
                 onChoose={(next) => setSelection(choose(selection, next))}
               />
             ))}
 
             <div className="stack">
               <h2 className="display turn">Toppings</h2>
-              <p className="hint">Any two, for the kick and the flavour.</p>
+              <p className="hint">The kick, the colour and the sweetness.</p>
             </div>
             {TOPPING_KINDS.map((kind) => (
               <Shelf
                 key={kind}
                 kind={kind}
-                chosen={chosen}
+                chosen={selection}
                 onChoose={(next) => setSelection(choose(selection, next))}
               />
             ))}
@@ -222,7 +239,7 @@ const BoosterPotion = ({ name }: GameProps) => {
             </div>
             <Cauldron selection={selection} />
             <p className="turn__note" aria-live="polite">
-              {ready ? "Two bases and two toppings. Give it a stir!" : needed()}
+              {status()}
             </p>
 
             <div className="result__actions">
@@ -237,7 +254,7 @@ const BoosterPotion = ({ name }: GameProps) => {
               <button
                 type="button"
                 className="btn btn--quiet"
-                disabled={chosen.length === 0}
+                disabled={selection.length === 0}
                 onClick={() => setSelection(EMPTY)}
               >
                 Empty it
@@ -247,10 +264,13 @@ const BoosterPotion = ({ name }: GameProps) => {
             <div className="stack">
               <h3 className="field-label">How to play</h3>
               <ol className="how-to">
-                <li>Pick two bases, like lemon and apple.</li>
-                <li>Pick two toppings, like ginger and cayenne.</li>
                 <li>
-                  Brew. The right four make one of the {RECIPES.length} potions.
+                  Pick three or four ingredients from any shelves, like lemon,
+                  ginger and honey.
+                </li>
+                <li>
+                  Brew. The right ones make one of {RECIPES.length} potions,
+                  each a real wellness shot or drink.
                 </li>
                 <li>
                   Anything else is a Mystery Potion, with a hint at the potion

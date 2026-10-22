@@ -1015,6 +1015,7 @@ a:hover {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  align-items: start;
   gap: 12px;
 }
 /* A page of the recipe book: dashed and muted until its potion is found. */
@@ -1046,6 +1047,12 @@ a:hover {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
+}
+.recipe-card__source {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-accent);
 }
 
 @media (max-width: 600px) {

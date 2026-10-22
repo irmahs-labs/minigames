@@ -1,21 +1,24 @@
-import { BASE_KINDS, PANTRY, RECIPES } from "./pantry";
-import type { BaseKind, Kind, Recipe } from "./pantry";
+import { PANTRY, RECIPES } from "./pantry";
+import type { Kind, Recipe } from "./pantry";
 
-/** The ingredients in the cauldron, by name: up to two of each group. */
-export interface Selection {
-  bases: readonly string[];
-  toppings: readonly string[];
-}
+/** The ingredients in the cauldron, by name, in the order they went in. */
+export type Selection = readonly string[];
 
 export type Brewed =
   | { type: "potion"; recipe: Recipe; isNew: boolean }
   | {
       type: "mystery";
+      /** How many ingredients went in. */
+      size: number;
       /** The unfound potion sharing the most of these ingredients, if any. */
       closest: { recipe: Recipe; shared: number } | null;
     };
 
-export const EMPTY: Selection = { bases: [], toppings: [] };
+/** A brew takes three or four ingredients, as the real recipes do. */
+export const MIN_INGREDIENTS = 3;
+export const MAX_INGREDIENTS = 4;
+
+export const EMPTY: Selection = [];
 
 const KIND_OF = new Map<string, Kind>(
   Object.entries(PANTRY).flatMap(([kind, names]) =>
@@ -26,53 +29,42 @@ const KIND_OF = new Map<string, Kind>(
 
 export const kindOf = (name: string): Kind | undefined => KIND_OF.get(name);
 
-const isBaseKind = (kind: Kind): kind is BaseKind =>
-  BASE_KINDS.some((base) => base === kind);
-
 /**
  * Pressing an ingredient: takes it out if it is in, and otherwise adds it,
- * pushing out the oldest of its group when that group already holds two.
- * Two of a kind are fine: lemon and apple, ginger and turmeric.
+ * pushing out the oldest when the cauldron already holds four.
  */
 export const choose = (selection: Selection, name: string): Selection => {
-  const kind = kindOf(name);
-
-  if (!kind) {
+  if (!kindOf(name)) {
     return selection;
   }
 
-  const group = isBaseKind(kind) ? "bases" : "toppings";
-  const chosen = selection[group];
-
-  if (chosen.includes(name)) {
-    return { ...selection, [group]: chosen.filter((n) => n !== name) };
+  if (selection.includes(name)) {
+    return selection.filter((n) => n !== name);
   }
 
-  return { ...selection, [group]: [...chosen, name].slice(-2) };
+  return [...selection, name].slice(-MAX_INGREDIENTS);
 };
 
 export const isReady = (selection: Selection) =>
-  selection.bases.length === 2 && selection.toppings.length === 2;
+  selection.length >= MIN_INGREDIENTS;
 
-export const ingredientsOf = (recipe: Recipe): readonly string[] => [
-  ...recipe.bases,
-  ...recipe.toppings,
-];
-
-const sharedWith = (recipe: Recipe, names: readonly string[]) =>
-  ingredientsOf(recipe).filter((name) => names.includes(name)).length;
+const sharedWith = (recipe: Recipe, names: Selection) =>
+  recipe.ingredients.filter((name) => names.includes(name)).length;
 
 /**
- * Brews the four ingredients in the cauldron: a known potion when they are
- * exactly one of the recipes, in any order, and otherwise a mystery, with the
- * closest potion not yet found as the hint.
+ * Brews what is in the cauldron: a known potion when it is exactly one of
+ * the recipes, in any order, and otherwise a mystery, with the closest
+ * potion not yet found as the hint.
  */
 export const brew = (
   selection: Selection,
   found: readonly string[]
 ): Brewed => {
-  const names = [...selection.bases, ...selection.toppings];
-  const recipe = RECIPES.find((r) => sharedWith(r, names) === 4);
+  const recipe = RECIPES.find(
+    (r) =>
+      r.ingredients.length === selection.length &&
+      sharedWith(r, selection) === selection.length
+  );
 
   if (recipe) {
     return { isNew: !found.includes(recipe.name), recipe, type: "potion" };
@@ -81,7 +73,7 @@ export const brew = (
   let closest: { recipe: Recipe; shared: number } | null = null;
 
   for (const candidate of RECIPES) {
-    const shared = sharedWith(candidate, names);
+    const shared = sharedWith(candidate, selection);
 
     if (
       !found.includes(candidate.name) &&
@@ -92,5 +84,5 @@ export const brew = (
     }
   }
 
-  return { closest, type: "mystery" };
+  return { closest, size: selection.length, type: "mystery" };
 };

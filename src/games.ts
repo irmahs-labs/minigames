@@ -39,7 +39,7 @@ export const GAMES: readonly Game[] = [
   {
     Screen: lazy(() => import("./games/booster-potion/booster-potion")),
     blurb:
-      "Mix two bases and two toppings into real wellness shots, from the ginger shot on. Twenty to discover.",
+      "Brew real wellness shots in the cauldron, from the ginger shot to fire cider. Fifty to discover.",
     legend: "booster-potion.games",
     name: "Booster Potion",
     slug: "booster-potion",

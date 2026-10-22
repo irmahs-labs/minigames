@@ -1,22 +1,32 @@
 import { useEffect, useRef } from "react";
 
 import { RECIPES } from "./pantry";
-import { ingredientsOf } from "./rules";
 import type { Brewed } from "./rules";
 
-/** "Apple, Celery, Cinnamon and Flax." */
+/** "Apple, Lime, Ginger and Cayenne." */
 export const listed = (names: readonly string[]) =>
   `${names.slice(0, -1).join(", ")} and ${names.at(-1) ?? ""}`;
 
-const hintFor = (brewed: Extract<Brewed, { type: "mystery" }>) => {
-  if (!brewed.closest) {
-    return "None of these four is in a potion you have still to find.";
+const WORDS = ["none", "one", "two", "three", "four"] as const;
+
+const hintFor = ({ closest, size }: Extract<Brewed, { type: "mystery" }>) => {
+  if (!closest) {
+    return `None of these ${WORDS[size] ?? size} is in a potion you have still to find.`;
   }
 
-  const { recipe, shared } = brewed.closest;
-  const count = shared === 1 ? "1 of these 4 is" : `${shared} of these 4 are`;
+  const { recipe, shared } = closest;
+  const needs = recipe.ingredients.length;
 
-  return `${shared === 3 ? "So close! " : ""}${count} in ${recipe.name}.`;
+  if (shared === needs) {
+    return `Everything in ${recipe.name} is in there, and one thing more.`;
+  }
+
+  const count =
+    shared === 1 ? `1 of these ${size} is` : `${shared} of these ${size} are`;
+
+  const takes = needs === size ? "" : `, which takes ${WORDS[needs] ?? needs}`;
+
+  return `${shared === needs - 1 ? "So close! " : ""}${count} in ${recipe.name}${takes}.`;
 };
 
 interface BrewDialogProps {
@@ -71,7 +81,7 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
         <p className="result__note">
           {potion
             ? [
-                `${listed(ingredientsOf(potion.recipe))}.`,
+                `${listed(potion.recipe.ingredients)}.`,
                 potion.recipe.note,
                 potion.isNew ? progress : "",
               ]
