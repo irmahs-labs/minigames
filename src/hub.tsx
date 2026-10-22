@@ -36,7 +36,6 @@ export const Hub = () => {
           </ul>
 
           <StickyBoard sides={sides} />
-
         </main>
         <div ref={setSides} className="hub__sides" />
       </div>
