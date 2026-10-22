@@ -263,7 +263,7 @@ export const createApp = ({
     const { account } = await whoIs(c.req.header("cookie"));
 
     if (!account) {
-      return c.text("Sign in to keep your own book.", 401);
+      return c.text("Sign in to keep your own grimoire.", 401);
     }
 
     const finds = await potions.readSoloFinds(account.id);
@@ -300,7 +300,7 @@ export const createApp = ({
 
   app.delete("/api/potions/solo", async (c) => {
     if (c.req.header("origin") !== appOrigin) {
-      return c.text("Only the site itself can start a book over.", 403);
+      return c.text("Only the site itself can start a grimoire over.", 403);
     }
 
     const { account } = await whoIs(c.req.header("cookie"));

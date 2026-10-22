@@ -289,7 +289,12 @@ const BookPage = ({ page }: { page: Page }) => {
 };
 
 const MODE_KEY = "minigames:booster-potion:mode:v1";
-const MODES = { shared: "Everyone's book", solo: "My own book" } as const;
+
+const MODES = {
+  shared: "Everyone's grimoire",
+  solo: "My own grimoire",
+} as const;
+
 const modeSchema = z.enum(["shared", "solo"]);
 
 type Mode = z.infer<typeof modeSchema>;
@@ -340,11 +345,11 @@ const SoloBook = ({
 
   return (
     <section aria-labelledby="solo-title" className="panel panel--board">
-      <span className="legend">my.recipe.book</span>
+      <span className="legend">my-grimoire.epub</span>
       <div className="slices__head">
         <div className="stack">
           <h2 id="solo-title" className="display turn">
-            My recipe book
+            My grimoire
           </h2>
           {soloPages ? (
             <span className="slices__count">
@@ -367,8 +372,8 @@ const SoloBook = ({
       {account === null ? (
         <div className="stack">
           <p className="turn__note">
-            Play on your own: every potion you find goes in a book of your own,
-            kept on your irmahs.dev account, on every device.
+            Play on your own: every potion you find goes in a grimoire of your
+            own, kept on your irmahs.dev account, on every device.
           </p>
           <div>
             <a href={signInUrl()} className="btn btn--primary">
@@ -378,10 +383,10 @@ const SoloBook = ({
         </div>
       ) : null}
       {account && soloPages === undefined ? (
-        <p className="hint">Opening your book…</p>
+        <p className="hint">Opening your grimoire…</p>
       ) : null}
       {account && soloPages === null ? (
-        <p className="hint">Your book cannot be reached right now.</p>
+        <p className="hint">Your grimoire cannot be reached right now.</p>
       ) : null}
       {soloPages ? (
         <ul className="book">
@@ -393,9 +398,9 @@ const SoloBook = ({
         </ul>
       ) : null}
       <p className="hint">
-        Your own book, apart from the shared one: what you brew here never goes
-        in it. Every potion is a real wellness shot, tea or tonic, for fun and
-        not as medical advice.
+        Your own grimoire, apart from the shared one: what you brew here never
+        goes in it. Every potion is a real wellness shot, tea or tonic, for fun
+        and not as medical advice.
       </p>
     </section>
   );
@@ -417,11 +422,11 @@ const SharedBook = ({
 
   return (
     <section aria-labelledby="book-title" className="panel panel--board">
-      <span className="legend">recipe.book</span>
+      <span className="legend">grimoire.epub</span>
       {book?.latest ? <LastBrew latest={book.latest} now={now} /> : null}
       <div className="stack">
         <h2 id="book-title" className="display turn">
-          Recipe book
+          Grimoire
         </h2>
         {pages ? (
           <span className="slices__count">
@@ -434,9 +439,11 @@ const SharedBook = ({
         ) : null}
       </div>
 
-      {book === undefined ? <p className="hint">Opening the book…</p> : null}
+      {book === undefined ? (
+        <p className="hint">Opening the grimoire…</p>
+      ) : null}
       {book === null ? (
-        <p className="hint">The recipe book cannot be reached right now.</p>
+        <p className="hint">The grimoire cannot be reached right now.</p>
       ) : null}
       {pages ? (
         <ul className="book">
@@ -448,9 +455,9 @@ const SharedBook = ({
         </ul>
       ) : null}
       <p className="hint">
-        One book for everyone: the first to brew a potion puts their name on it.
-        Every potion is a real wellness shot, tea or tonic, for fun and not as
-        medical advice.
+        One grimoire for everyone: the first to brew a potion puts their name on
+        it. Every potion is a real wellness shot, tea or tonic, for fun and not
+        as medical advice.
       </p>
     </section>
   );
@@ -583,7 +590,7 @@ const BoosterPotion = ({ name }: GameProps) => {
     if (await resetSoloBook()) {
       setSoloPages(await fetchSoloBook());
     } else {
-      setTrouble("Your book could not be started over. Try again.");
+      setTrouble("Your grimoire could not be started over. Try again.");
     }
   };
 
@@ -608,8 +615,8 @@ const BoosterPotion = ({ name }: GameProps) => {
 
     if (account === null) {
       return mode === "solo"
-        ? "Your own book is kept on your irmahs.dev account."
-        : "Brews go in the shared book under your irmahs.dev name.";
+        ? "Your own grimoire is kept on your irmahs.dev account."
+        : "Brews go in the shared grimoire under your irmahs.dev name.";
     }
 
     return account === undefined && book !== undefined
@@ -629,10 +636,10 @@ const BoosterPotion = ({ name }: GameProps) => {
       </Header>
       <main className="page">
         <p className="page__sub">
-          brew real wellness shots and teas, and put your name in the book
+          brew real wellness shots and teas, and put your name in the grimoire
         </p>
 
-        <nav aria-label="Which book" className="picker">
+        <nav aria-label="Which grimoire" className="picker">
           {modeSchema.options.map((option) => (
             <button
               key={option}
@@ -748,7 +755,7 @@ const BoosterPotion = ({ name }: GameProps) => {
                 </li>
                 <li>
                   {mode === "solo"
-                    ? "Each one goes in your own book, kept on your account."
+                    ? "Each one goes in your own grimoire, kept on your account."
                     : "The first to brew a potion puts their name on its page, for everyone."}{" "}
                   Anything else is a Mystery Potion, with a hint.
                 </li>

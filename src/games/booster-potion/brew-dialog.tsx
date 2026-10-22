@@ -81,7 +81,7 @@ export const sharedView = (answer: BrewAnswer): DialogView => {
     lines: [
       `${listed(page.ingredients)}. ${page.note}`,
       first
-        ? "Your name is on its page in the recipe book, for everyone to see."
+        ? "Your name is on its page in the grimoire, for everyone to see."
         : sentence(`First brewed by ${page.by}`),
     ],
     title: `🔮 ${page.name}`,
@@ -98,7 +98,7 @@ export const soloView = (answer: SoloBrewAnswer): DialogView => {
 
   return {
     again: "Brew another",
-    kicker: isNew ? "New potion for your book!" : "You brewed",
+    kicker: isNew ? "New potion for your grimoire!" : "You brewed",
     lines: [`${listed(page.ingredients)}. ${page.note}`],
     title: `🔮 ${page.name}`,
   };
