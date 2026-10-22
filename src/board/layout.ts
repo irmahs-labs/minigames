@@ -47,6 +47,8 @@ export const heightOf = (body: string, extra = 0) => {
  * which is higher the more recently it was moved, so it lies on top.
  */
 const spot = z.object({
+  /** On a wide screen, the margin it hangs in; src/board/sides.ts. */
+  side: z.optional(z.enum(["left", "right"])),
   x: z.number().check(z.gte(0), z.lte(1)),
   y: z.number().check(z.gte(0)),
   z: z.int().check(z.gte(0)),

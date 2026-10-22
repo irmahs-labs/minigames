@@ -18,6 +18,13 @@ import {
 import type { Spot, Spots } from "./layout";
 import { goneIn } from "./rules";
 import type { Vote } from "./rules";
+import {
+  SIDE_SPOTS_KEY,
+  sideLeftOf,
+  sideSpotAt,
+  sidesHeight,
+  startingSideSpots,
+} from "./sides";
 
 /** How far an arrow key moves a note; with Shift, four times as far. */
 const KEY_STEP = 16;
@@ -88,7 +95,41 @@ const ThumbsRow = ({ note, onVote }: Thumbs) => {
   );
 };
 
+/** How notes are laid out, and where this browser keeps their spots. */
+interface Layout {
+  key: string;
+  starts: (heights: readonly number[], width: number) => Spot[];
+  leftOf: (spot: Spot, width: number) => number;
+  spotAt: (
+    at: { left: number; top: number },
+    width: number,
+    deepest: number,
+    layer: number
+  ) => Spot;
+  height: (bottoms: readonly number[]) => number;
+}
+
+/** In the box under the games, on a phone or a narrow window. */
+const IN_THE_BOX: Layout = {
+  height: boardHeight,
+  key: SPOTS_KEY,
+  leftOf,
+  spotAt,
+  starts: startingSpots,
+};
+
+/** Down the empty margins either side of the hub, on a wide screen. */
+const ON_THE_SIDES: Layout = {
+  height: sidesHeight,
+  key: SIDE_SPOTS_KEY,
+  leftOf: sideLeftOf,
+  spotAt: sideSpotAt,
+  starts: startingSideSpots,
+};
+
 interface CorkboardProps {
+  /** In the box under the games, or down the page's sides. */
+  sides: boolean;
   notes: Note[];
   now: number;
   /** Votes a note; null when signed out. */
@@ -100,23 +141,25 @@ interface CorkboardProps {
 }
 
 /**
- * The notes on a corkboard: each starts in a tidy grid, newest first, and
- * can be dragged anywhere on it, by mouse, by its tape on a touch screen, or
- * with the arrow keys on its tape. Where you put a note is remembered in
- * this browser only.
+ * The notes, on a corkboard in the box or down the page's sides: each starts
+ * in tidy columns, newest first, and can be dragged anywhere there, by
+ * mouse, by its tape on a touch screen, or with the arrow keys on its tape.
+ * Where you put a note is remembered in this browser only.
  */
 export const Corkboard = ({
+  sides,
   notes,
   now,
   onVote,
   onTakeDown,
   armed,
 }: CorkboardProps) => {
+  const layout = sides ? ON_THE_SIDES : IN_THE_BOX;
   const board = useRef<HTMLUListElement>(null);
   const [width, setWidth] = useState(0);
 
   const [spots, setSpots] = useState<Spots>(() =>
-    readStored(SPOTS_KEY, spotsSchema, () => ({}))
+    readStored(layout.key, spotsSchema, () => ({}))
   );
 
   const [held, setHeld] = useState<Held | null>(null);
@@ -147,15 +190,15 @@ export const Corkboard = ({
   const ids = notes.map((note) => note.id).join(",");
 
   useEffect(
-    () => writeStored(SPOTS_KEY, keepUp(spots, ids.split(","))),
-    [spots, ids]
+    () => writeStored(layout.key, keepUp(spots, ids.split(","))),
+    [layout.key, spots, ids]
   );
 
   const heights = notes.map((note) =>
     heightOf(note.body, onTakeDown ? TAKE_DOWN_HEIGHT : 0)
   );
 
-  const starts = startingSpots(heights, width);
+  const starts = layout.starts(heights, width);
 
   const placed = notes.map((note, index): [Note, Spot, number] => [
     note,
@@ -170,7 +213,7 @@ export const Corkboard = ({
 
   /** Puts a note down at `left` and `top`, on top of the rest. */
   const drop = (id: string, left: number, top: number) => {
-    const place = spotAt(
+    const place = layout.spotAt(
       { left, top },
       width,
       deepestFor(bottomsBut(id)),
@@ -196,7 +239,7 @@ export const Corkboard = ({
 
     event.currentTarget.setPointerCapture(event.pointerId);
 
-    const left = leftOf(spot, width);
+    const left = layout.leftOf(spot, width);
 
     setHeld({
       from: { left, top: spot.y, x: event.clientX, y: event.clientY },
@@ -252,62 +295,68 @@ export const Corkboard = ({
     const step = event.shiftKey ? KEY_STEP * 4 : KEY_STEP;
     const [across, down] = arrow;
 
-    drop(id, leftOf(spot, width) + across * step, spot.y + down * step);
+    drop(id, layout.leftOf(spot, width) + across * step, spot.y + down * step);
   };
 
-  const height = boardHeight(bottomsBut(""));
+  const height = layout.height(bottomsBut(""));
 
-  return (
-    <div className="corkboard-frame">
-      <ul ref={board} className="corkboard" style={{ height }}>
-        {width > 0
-          ? placed.map(([note, spot]) => {
-              const holding = held?.id === note.id ? held : null;
+  const pinned = (
+    <ul
+      ref={board}
+      className={sides ? "corkboard corkboard--sides" : "corkboard"}
+      style={{ height }}
+    >
+      {width > 0
+        ? placed.map(([note, spot]) => {
+            const holding = held?.id === note.id ? held : null;
 
-              return (
-                <li
-                  key={note.id}
-                  className={`sticky sticky--${note.colour} ${holding?.moved ? "sticky--held" : tiltOf(note.id)}`}
-                  style={{
-                    left: holding ? holding.left : leftOf(spot, width),
-                    top: holding ? holding.top : spot.y,
-                    zIndex: holding ? 10_000 : spot.z,
-                  }}
-                  onPointerDown={(event) => grab(event, note.id, spot)}
-                  onPointerMove={move}
-                  onPointerUp={release}
-                  onPointerCancel={release}
-                >
+            return (
+              <li
+                key={note.id}
+                className={`sticky sticky--${note.colour} ${holding?.moved ? "sticky--held" : tiltOf(note.id)}`}
+                style={{
+                  left: holding ? holding.left : layout.leftOf(spot, width),
+                  top: holding ? holding.top : spot.y,
+                  zIndex: holding ? 10_000 : spot.z,
+                }}
+                onPointerDown={(event) => grab(event, note.id, spot)}
+                onPointerMove={move}
+                onPointerUp={release}
+                onPointerCancel={release}
+              >
+                <button
+                  type="button"
+                  className="sticky__tape"
+                  aria-label="Move this note: drag it, or use the arrow keys"
+                  onKeyDown={(event) => nudge(event, note.id, spot)}
+                />
+                <p className="sticky__body">{note.body}</p>
+                <p className="sticky__time">
+                  <time dateTime={note.postedAt}>
+                    {goneIn(note.postedAt, now)}
+                  </time>
+                </p>
+                <ThumbsRow
+                  note={note}
+                  onVote={onVote ? (vote) => onVote(note.id, vote) : null}
+                />
+                {onTakeDown ? (
                   <button
                     type="button"
-                    className="sticky__tape"
-                    aria-label="Move this note: drag it, or use the arrow keys"
-                    onKeyDown={(event) => nudge(event, note.id, spot)}
-                  />
-                  <p className="sticky__body">{note.body}</p>
-                  <p className="sticky__time">
-                    <time dateTime={note.postedAt}>
-                      {goneIn(note.postedAt, now)}
-                    </time>
-                  </p>
-                  <ThumbsRow
-                    note={note}
-                    onVote={onVote ? (vote) => onVote(note.id, vote) : null}
-                  />
-                  {onTakeDown ? (
-                    <button
-                      type="button"
-                      className="sticky__remove"
-                      onClick={() => onTakeDown(note.id)}
-                    >
-                      {armed === note.id ? "Sure? Take down" : "Take down"}
-                    </button>
-                  ) : null}
-                </li>
-              );
-            })
-          : null}
-      </ul>
-    </div>
+                    className="sticky__remove"
+                    onClick={() => onTakeDown(note.id)}
+                  >
+                    {armed === note.id ? "Sure? Take down" : "Take down"}
+                  </button>
+                ) : null}
+              </li>
+            );
+          })
+        : null}
+    </ul>
   );
+
+  // On the sides the notes hang straight on the page; in the box, in a
+  // frame that scrolls.
+  return sides ? pinned : <div className="corkboard-frame">{pinned}</div>;
 };

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { SubmitEvent } from "react";
+import { createPortal } from "react-dom";
 
 import { signInUrl } from "../lib/account";
 import { useConfirm } from "../lib/use-confirm";
@@ -15,6 +16,7 @@ import {
   tidy,
 } from "./rules";
 import type { Colour, Vote } from "./rules";
+import { sidesFit } from "./sides";
 
 /** Others stick notes too: the board is fetched again this often while in view. */
 const REFRESH_MS = 30_000;
@@ -118,11 +120,65 @@ const Composer = ({ left, onStuck }: ComposerProps) => {
 };
 
 /**
- * The sticky board on the hub: notes anyone signed in can stick up, with no
- * name on them, each coming down a day after it went up.
+ * How wide `element` is, kept up to date: 0 until it is there and measured.
+ * A ResizeObserver reports the size as soon as it starts watching.
  */
-export const StickyBoard = () => {
+const useWidth = (element: HTMLElement | null) => {
+  const [width, setWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!(element && "ResizeObserver" in window)) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth));
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [element]);
+
+  return width;
+};
+
+/** Sticking a note up: the form, or why there is none. */
+const Postbox = ({
+  board,
+  onStuck,
+}: {
+  board: Board | null | undefined;
+  onStuck: (board: Board) => void;
+}) => {
+  if (board === null) {
+    return <p className="hint">The board can&apos;t be reached right now.</p>;
+  }
+
+  if (!board) {
+    return null;
+  }
+
+  return board.left === null ? (
+    <a href={signInUrl()} className="btn btn--primary stickies__sign-in">
+      Sign in to stick a note
+    </a>
+  ) : (
+    <Composer left={board.left} onStuck={onStuck} />
+  );
+};
+
+interface StickyBoardProps {
+  /** The layer as wide as the page, for the notes to hang in its margins. */
+  sides: HTMLElement | null;
+}
+
+/**
+ * The sticky board on the hub: notes anyone signed in can stick up, with no
+ * name on them, each coming down a day after it went up. On a wide screen
+ * the notes hang down the page's sides; otherwise in the box.
+ */
+export const StickyBoard = ({ sides }: StickyBoardProps) => {
   const [board, setBoard] = useState<Board | null | undefined>();
+  const pageWidth = useWidth(sides);
   const [now, setNow] = useState(Date.now);
   const { armed, press } = useConfirm();
 
@@ -171,54 +227,57 @@ export const StickyBoard = () => {
     }
   };
 
+  // On a page with margins wide enough for a note, the notes hang there.
+  const onTheSides = sides !== null && sidesFit(pageWidth);
+
   // Notes whose day ran out since the last fetch are already down.
   const notes = board?.notes.filter(
     (note) => Date.parse(note.postedAt) + LIFETIME_MS > now
   );
 
+  const pinned =
+    notes && notes.length > 0 ? (
+      <Corkboard
+        sides={onTheSides}
+        notes={notes}
+        now={now}
+        armed={armed}
+        onVote={board?.left === null ? null : vote}
+        onTakeDown={board?.admin ? (id) => press(id, () => takeDown(id)) : null}
+      />
+    ) : null;
+
   return (
-    <section className="panel panel--stickies" aria-labelledby="stickies-title">
-      <span className="legend">sticky-notes.txt</span>
-      <div className="stickies__head">
-        <h2 id="stickies-title" className="display stickies__title">
-          The sticky board
-        </h2>
-        <p className="page__sub">
-          Leave a note for whoever comes by. No names, and every note comes down
-          after a day. Drag the notes wherever you like: only you see where you
-          put them.
-        </p>
-      </div>
+    <>
+      {pinned && onTheSides && sides ? createPortal(pinned, sides) : null}
+      <section
+        className="panel panel--stickies"
+        aria-labelledby="stickies-title"
+      >
+        <span className="legend">sticky-notes.txt</span>
+        <div className="stickies__head">
+          <h2 id="stickies-title" className="display stickies__title">
+            The sticky board
+          </h2>
+          <p className="page__sub">
+            Leave a note for whoever comes by. No names, and every note comes
+            down after a day. Drag the notes wherever you like: only you see
+            where you put them.
+          </p>
+        </div>
 
-      {board === null ? (
-        <p className="hint">The board can&apos;t be reached right now.</p>
-      ) : null}
+        <Postbox board={board} onStuck={setBoard} />
 
-      {board && board.left === null ? (
-        <a href={signInUrl()} className="btn btn--primary stickies__sign-in">
-          Sign in to stick a note
-        </a>
-      ) : null}
+        {notes && notes.length === 0 ? (
+          <p className="hint">The board is bare. Stick the first note!</p>
+        ) : null}
 
-      {board && board.left !== null ? (
-        <Composer left={board.left} onStuck={setBoard} />
-      ) : null}
+        {pinned && onTheSides ? (
+          <p className="hint">The notes hang on both sides of the page.</p>
+        ) : null}
 
-      {notes && notes.length === 0 ? (
-        <p className="hint">The board is bare. Stick the first note!</p>
-      ) : null}
-
-      {notes && notes.length > 0 ? (
-        <Corkboard
-          notes={notes}
-          now={now}
-          armed={armed}
-          onVote={board?.left === null ? null : vote}
-          onTakeDown={
-            board?.admin ? (id) => press(id, () => takeDown(id)) : null
-          }
-        />
-      ) : null}
-    </section>
+        {pinned && !onTheSides ? pinned : null}
+      </section>
+    </>
   );
 };

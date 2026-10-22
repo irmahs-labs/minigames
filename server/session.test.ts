@@ -55,9 +55,9 @@ afterAll(() => {
 });
 
 describe("askAdminAccess", () => {
-  it("asks the account service about minigames-admin", async () => {
+  it("asks the account service about Alma Housila's list", async () => {
     expect(await isAdmin("session=irma")).toBe(true);
-    expect(asked).toEqual(["minigames-admin"]);
+    expect(asked).toEqual(["alma-housila"]);
   });
 
   it("says no for anyone the account service refuses", async () => {
