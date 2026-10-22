@@ -345,7 +345,7 @@ const SoloBook = ({
 
   return (
     <section aria-labelledby="solo-title" className="panel panel--board">
-      <span className="legend">my-grimoire.pdf</span>
+      <span className="legend">my-grimoire.epub</span>
       <div className="slices__head">
         <div className="stack">
           <h2 id="solo-title" className="display turn">
@@ -422,7 +422,7 @@ const SharedBook = ({
 
   return (
     <section aria-labelledby="book-title" className="panel panel--board">
-      <span className="legend">grimoire.pdf</span>
+      <span className="legend">grimoire.epub</span>
       {book?.latest ? <LastBrew latest={book.latest} now={now} /> : null}
       <div className="stack">
         <h2 id="book-title" className="display turn">
