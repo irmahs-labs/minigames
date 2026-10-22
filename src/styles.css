@@ -1010,6 +1010,11 @@ a:hover {
   font-size: 14px;
   line-height: 1.4;
 }
+.recipe-card__note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
 
 @media (max-width: 600px) {
   .app-header {

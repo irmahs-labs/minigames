@@ -51,8 +51,8 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
 
   const progress =
     found === RECIPES.length
-      ? ` That's all ${RECIPES.length}: the recipe book is full! 🎉`
-      : ` ${found} of ${RECIPES.length} found.`;
+      ? `That's all ${RECIPES.length}: the recipe book is full! 🎉`
+      : `${found} of ${RECIPES.length} found.`;
 
   // The browser centres and layers the bare dialog; the panel look sits inside.
   return (
@@ -70,7 +70,13 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
         </h2>
         <p className="result__note">
           {potion
-            ? `${listed(ingredientsOf(potion.recipe))}.${potion.isNew ? progress : ""}`
+            ? [
+                `${listed(ingredientsOf(potion.recipe))}.`,
+                potion.recipe.note,
+                potion.isNew ? progress : "",
+              ]
+                .filter(Boolean)
+                .join(" ")
             : null}
           {mystery ? hintFor(mystery) : null}
         </p>

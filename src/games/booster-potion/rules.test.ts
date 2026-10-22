@@ -26,22 +26,19 @@ describe("the recipe book", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it.each(RECIPES)(
-    "$name takes two bases and two toppings of different kinds",
-    (recipe) => {
-      const bases = recipe.bases.map(kindOf);
-      const toppings = recipe.toppings.map(kindOf);
+  it.each(RECIPES)("$name takes two bases and two toppings", (recipe) => {
+    const bases = recipe.bases.map(kindOf);
+    const toppings = recipe.toppings.map(kindOf);
 
-      expect(bases.every((kind) => BASE_KINDS.some((k) => k === kind))).toBe(
-        true
-      );
-      expect(
-        toppings.every((kind) => TOPPING_KINDS.some((k) => k === kind))
-      ).toBe(true);
-      expect(bases[0]).not.toBe(bases[1]);
-      expect(toppings[0]).not.toBe(toppings[1]);
-    }
-  );
+    expect(bases.every((kind) => BASE_KINDS.some((k) => k === kind))).toBe(
+      true
+    );
+    expect(
+      toppings.every((kind) => TOPPING_KINDS.some((k) => k === kind))
+    ).toBe(true);
+    expect(recipe.bases[0]).not.toBe(recipe.bases[1]);
+    expect(recipe.toppings[0]).not.toBe(recipe.toppings[1]);
+  });
 
   it("makes every potion from a different four", () => {
     const sets = RECIPES.map((recipe) =>
@@ -54,9 +51,9 @@ describe("the recipe book", () => {
 
 describe("choose", () => {
   it("puts bases and toppings in their own groups", () => {
-    expect(pick("Apple", "Mint", "Tea", "Chia")).toEqual({
+    expect(pick("Apple", "Mint", "Tea", "Honey")).toEqual({
       bases: ["Apple", "Tea"],
-      toppings: ["Mint", "Chia"],
+      toppings: ["Mint", "Honey"],
     });
   });
 
@@ -67,11 +64,14 @@ describe("choose", () => {
     });
   });
 
-  it("swaps an ingredient for another of the same kind, in its place", () => {
-    expect(pick("Apple", "Tea", "Lemon").bases).toEqual(["Lemon", "Tea"]);
+  it("takes two of a kind, like lemon and apple, ginger and turmeric", () => {
+    expect(pick("Lemon", "Apple", "Ginger", "Turmeric")).toEqual({
+      bases: ["Lemon", "Apple"],
+      toppings: ["Ginger", "Turmeric"],
+    });
   });
 
-  it("pushes out the oldest when a full group gets a third kind", () => {
+  it("pushes out the oldest when a full group gets a third", () => {
     expect(pick("Apple", "Tea", "Kale").bases).toEqual(["Tea", "Kale"]);
   });
 
@@ -83,44 +83,41 @@ describe("choose", () => {
 describe("isReady", () => {
   it("wants exactly two bases and two toppings", () => {
     expect(isReady(pick("Apple", "Tea", "Mint"))).toBe(false);
-    expect(isReady(pick("Apple", "Tea", "Mint", "Chia"))).toBe(true);
+    expect(isReady(pick("Apple", "Tea", "Mint", "Honey"))).toBe(true);
   });
 });
 
 describe("brew", () => {
   it("makes the potion whose four ingredients are in, in any order", () => {
-    const brewed = brew(pick("Flax", "Celery", "Cinnamon", "Apple"), []);
+    const brewed = brew(pick("Cayenne", "Apple", "Ginger", "Lemon"), []);
 
     expect(brewed).toMatchObject({
       isNew: true,
-      recipe: { name: "Whispering Woods" },
+      recipe: { name: "Ember's Embrace" },
       type: "potion",
     });
   });
 
-  it("can brew the potion with Cardamom in it", () => {
-    const brewed = brew(
-      pick("Coconut Water", "Pineapple", "Chrysanthemum", "Cardamom"),
-      []
-    );
+  it("makes the orange, carrot, ginger and turmeric shot", () => {
+    const brewed = brew(pick("Orange", "Carrot", "Ginger", "Turmeric"), []);
 
     expect(brewed).toMatchObject({
-      recipe: { name: "Tide of Tranquility" },
+      recipe: { name: "Golden Harvest" },
       type: "potion",
     });
   });
 
   it("knows a potion that was found before", () => {
-    const brewed = brew(pick("Apple", "Celery", "Cinnamon", "Flax"), [
-      "Whispering Woods",
+    const brewed = brew(pick("Lemon", "Apple", "Ginger", "Cayenne"), [
+      "Ember's Embrace",
     ]);
 
     expect(brewed).toMatchObject({ isNew: false, type: "potion" });
   });
 
   it("hints at the unfound potion sharing the most ingredients", () => {
-    // Apple, Celery and Cinnamon are in Whispering Woods; Mint is not.
-    const brewed = brew(pick("Apple", "Celery", "Cinnamon", "Mint"), []);
+    // Lemon, Apple and Ginger are in Ember's Embrace; Turmeric is not.
+    const brewed = brew(pick("Lemon", "Apple", "Ginger", "Turmeric"), []);
 
     expect(brewed).toEqual({
       closest: { recipe: RECIPES[0], shared: 3 },
@@ -129,26 +126,20 @@ describe("brew", () => {
   });
 
   it("leaves found potions out of the hint", () => {
-    const brewed = brew(pick("Apple", "Celery", "Cinnamon", "Mint"), [
-      "Whispering Woods",
+    const brewed = brew(pick("Lemon", "Apple", "Ginger", "Turmeric"), [
+      "Ember's Embrace",
     ]);
 
     expect(brewed).toMatchObject({
-      closest: { shared: 2 },
+      closest: { recipe: { name: "Golden Harvest" }, shared: 2 },
       type: "mystery",
-    });
-    expect(brewed).not.toMatchObject({
-      closest: { recipe: { name: "Whispering Woods" } },
     });
   });
 
   it("gives no hint when nothing matches a potion still to find", () => {
     const all = RECIPES.map((recipe) => recipe.name);
 
-    const brewed = brew(
-      pick("Watermelon", "Coconut Water", "Hemp", "Hibiscus"),
-      all
-    );
+    const brewed = brew(pick("Watermelon", "Tea", "Sage", "Maca"), all);
 
     expect(brewed).toEqual({ closest: null, type: "mystery" });
   });

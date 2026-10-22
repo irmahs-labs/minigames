@@ -98,6 +98,9 @@ const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
           ? listed(ingredientsOf(recipe))
           : `${kinds.slice(0, 2).join(" + ")} · ${kinds.slice(2).join(" + ")}`}
       </p>
+      {found && recipe.note ? (
+        <p className="recipe-card__note">{recipe.note}</p>
+      ) : null}
     </li>
   );
 };
@@ -165,7 +168,7 @@ const BoosterPotion = ({ name }: GameProps) => {
 
             <div className="stack">
               <h2 className="display turn">Bases</h2>
-              <p className="hint">Two, of different kinds.</p>
+              <p className="hint">Any two: a fruit, a vegetable or a liquid.</p>
             </div>
             {BASE_KINDS.map((kind) => (
               <Shelf
@@ -178,7 +181,7 @@ const BoosterPotion = ({ name }: GameProps) => {
 
             <div className="stack">
               <h2 className="display turn">Toppings</h2>
-              <p className="hint">Two, of different kinds.</p>
+              <p className="hint">Any two, for the kick and the flavour.</p>
             </div>
             {TOPPING_KINDS.map((kind) => (
               <Shelf
@@ -229,12 +232,8 @@ const BoosterPotion = ({ name }: GameProps) => {
             <div className="stack">
               <h3 className="field-label">How to play</h3>
               <ol className="how-to">
-                <li>
-                  Pick two bases of different kinds, like a fruit and a liquid.
-                </li>
-                <li>
-                  Pick two toppings of different kinds, like a herb and a seed.
-                </li>
+                <li>Pick two bases, like lemon and apple.</li>
+                <li>Pick two toppings, like ginger and cayenne.</li>
                 <li>
                   Brew. The right four make one of the {RECIPES.length} potions.
                 </li>
@@ -276,7 +275,10 @@ const BoosterPotion = ({ name }: GameProps) => {
               />
             ))}
           </ul>
-          <p className="hint">Saved in this browser only.</p>
+          <p className="hint">
+            Every potion is a real wellness shot or drink, for fun and not as
+            medical advice. The recipe book is saved in this browser only.
+          </p>
         </section>
 
         <BrewDialog

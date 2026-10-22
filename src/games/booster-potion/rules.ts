@@ -30,9 +30,9 @@ const isBaseKind = (kind: Kind): kind is BaseKind =>
   BASE_KINDS.some((base) => base === kind);
 
 /**
- * Pressing an ingredient: takes it out if it is in, swaps it for the one of
- * the same kind if there is one, and otherwise adds it, pushing out the
- * oldest of its group when that group already holds two.
+ * Pressing an ingredient: takes it out if it is in, and otherwise adds it,
+ * pushing out the oldest of its group when that group already holds two.
+ * Two of a kind are fine: lemon and apple, ginger and turmeric.
  */
 export const choose = (selection: Selection, name: string): Selection => {
   const kind = kindOf(name);
@@ -46,12 +46,6 @@ export const choose = (selection: Selection, name: string): Selection => {
 
   if (chosen.includes(name)) {
     return { ...selection, [group]: chosen.filter((n) => n !== name) };
-  }
-
-  const same = chosen.findIndex((n) => kindOf(n) === kind);
-
-  if (same !== -1) {
-    return { ...selection, [group]: chosen.with(same, name) };
   }
 
   return { ...selection, [group]: [...chosen, name].slice(-2) };
