@@ -412,8 +412,19 @@ a:hover {
   color: var(--on-accent);
   font-weight: 700;
 }
-.foot {
+/* The foot of every page: small and quiet, under a hairline. */
+.site-foot {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 28px 32px;
+  border-top: var(--stroke-base) solid var(--outline);
+  color: var(--text-muted);
   font-size: 14px;
+  text-align: center;
+}
+.site-foot__name {
+  color: var(--text);
+  font: 600 15px/1.2 var(--display);
 }
 .empty {
   display: flex;
