@@ -41,7 +41,7 @@ The server (`server/`, Hono on Node) serves the built site, `/api`, and `/ws`, t
 
 - Who someone is comes only from the shared irmahs.dev sign-in cookie, asked of the account service (irmahs-labs/auth) by `server/session.ts`; never from anything the browser sends. `/ws` refuses any `Origin` but the site's own, since the cookie is shared by every `*.irmahs.dev` page.
 - The server is the referee: `server/lobby.ts` runs the queue, the rooms and their five-minute clocks in memory, and checks every move with the same `rules.ts` the browser uses. Scoring is `src/games/super-tic-tac-toe/scoring.ts`.
-- The schema is the dbmate migrations in `db/migrations/`. Never edit a migration that is already merged: add a new one with `npm run db:new -- <name>`, with a matching `-- migrate:down`.
+- The schema is the dbmate migrations in `db/migrations/`. Every table is named after its game's slug in snake_case (`super_tic_tac_toe_players`, `booster_potion_brews`), so the shared database says whose each table is. Never edit a migration that is already merged: add a new one with `npm run db:new -- <name>`, with a matching `-- migrate:down`.
 
 ## Adding a game
 

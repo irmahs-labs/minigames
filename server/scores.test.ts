@@ -37,7 +37,7 @@ const game = (
 
 const totals = async () => {
   const { rows } = await pool.query(
-    "select name, points, wins, losses, draws from players order by name"
+    "select name, points, wins, losses, draws from super_tic_tac_toe_players order by name"
   );
 
   return rows;
@@ -45,7 +45,9 @@ const totals = async () => {
 
 describe.skipIf(!url)("the leaderboard in Postgres", () => {
   beforeEach(async () => {
-    await pool.query("truncate games, players");
+    await pool.query(
+      "truncate super_tic_tac_toe_games, super_tic_tac_toe_players"
+    );
   });
 
   afterAll(async () => {
@@ -80,7 +82,7 @@ describe.skipIf(!url)("the leaderboard in Postgres", () => {
     ]);
 
     const { rows } = await pool.query(
-      "select count(*)::integer as n from games"
+      "select count(*)::integer as n from super_tic_tac_toe_games"
     );
 
     expect(rows).toEqual([{ n: 1 }]);
@@ -117,7 +119,7 @@ describe.skipIf(!url)("the leaderboard in Postgres", () => {
     );
 
     await pool.query(
-      `insert into players (user_id, name, points)
+      `insert into super_tic_tac_toe_players (user_id, name, points)
        select id::uuid, 'Player', 100 from unnest($1::text[]) as id`,
       [ids]
     );

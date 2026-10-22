@@ -38,7 +38,10 @@ jobs:
             (umask 077 && cat > .env)
             export COMPOSE_FILE=compose.prod.yaml
             docker compose up -d --wait db
+            # The new site is built before the schema changes, so the old one
+            # meets the new schema only while the containers swap.
+            docker compose build app
             docker compose run --rm migrate up
-            docker compose up -d --build --remove-orphans --wait app
+            docker compose up -d --remove-orphans --wait app
             docker image prune -f
             docker builder prune -f --filter until=168h'
