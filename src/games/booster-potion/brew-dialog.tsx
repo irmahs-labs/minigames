@@ -1,15 +1,30 @@
 import { useEffect, useRef } from "react";
 
 import { RECIPES } from "./pantry";
+import { labelOf, partsOf } from "./rules";
 import type { Brewed } from "./rules";
 
-/** "Apple, Lime, Ginger and Cayenne." */
+/** "Apple, Lime, Fresh ginger and Cayenne"; "Garlic and Honey". */
 export const listed = (names: readonly string[]) =>
-  `${names.slice(0, -1).join(", ")} and ${names.at(-1) ?? ""}`;
+  names.length < 2
+    ? (names[0] ?? "")
+    : `${names.slice(0, -1).join(", ")} and ${names.at(-1) ?? ""}`;
 
 const WORDS = ["none", "one", "two", "three", "four"] as const;
 
-const hintFor = ({ closest, size }: Extract<Brewed, { type: "mystery" }>) => {
+const hintFor = ({
+  closest,
+  size,
+  wrongForm,
+}: Extract<Brewed, { type: "mystery" }>) => {
+  if (wrongForm) {
+    const wanted = listed(
+      wrongForm.wanted.map((part) => labelOf(part).toLowerCase())
+    );
+
+    return `All the right ingredients for ${wrongForm.recipe.name}, but it wants ${wanted}.`;
+  }
+
   if (!closest) {
     return `None of these ${WORDS[size] ?? size} is in a potion you have still to find.`;
   }
@@ -18,7 +33,7 @@ const hintFor = ({ closest, size }: Extract<Brewed, { type: "mystery" }>) => {
   const needs = recipe.ingredients.length;
 
   if (shared === needs) {
-    return `Everything in ${recipe.name} is in there, and one thing more.`;
+    return `Everything in ${recipe.name} is in there, and more besides.`;
   }
 
   const count =
@@ -81,7 +96,7 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
         <p className="result__note">
           {potion
             ? [
-                `${listed(potion.recipe.ingredients)}.`,
+                `${listed(partsOf(potion.recipe).map(labelOf))}.`,
                 potion.recipe.note,
                 potion.isNew ? progress : "",
               ]

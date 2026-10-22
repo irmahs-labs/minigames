@@ -15,23 +15,39 @@ import {
   TIPS,
   TOPPING_KINDS,
 } from "./pantry";
-import type { Kind, Recipe } from "./pantry";
+import type { Form, Kind, Recipe } from "./pantry";
 import {
   EMPTY,
-  MAX_INGREDIENTS,
   MIN_INGREDIENTS,
   brew,
   choose,
+  formsOf,
   isReady,
   kindOf,
+  labelOf,
+  partsOf,
+  setForm,
 } from "./rules";
-import type { Brewed, Selection } from "./rules";
+import type { Brewed, Part, Selection } from "./rules";
 import { loadFound, saveFound } from "./state";
 
 const title = (kind: Kind) => `${kind[0]?.toUpperCase()}${kind.slice(1)}`;
 
-const kindsOf = (names: readonly string[]) =>
-  names.map((name) => kindOf(name) ?? "fruit");
+/** A locked page's clue: "fruit + dried spice + sweetener". */
+const kindsOf = (parts: readonly Part[]) =>
+  parts
+    .map(({ form, name }) => {
+      const kind = kindOf(name) ?? "fruit";
+
+      return form ? `${form} ${kind}` : kind;
+    })
+    .join(" + ");
+
+const FORM_NAMES: Record<Form, string> = {
+  dried: "Dried",
+  fresh: "Fresh",
+  powder: "Powder",
+};
 
 /** "Apple cider vinegar" → tip-apple-cider-vinegar, for aria-describedby. */
 const tipId = (name: string) =>
@@ -72,19 +88,49 @@ const Shelf = ({
   </fieldset>
 );
 
-/** What an empty place in the cauldron says: the fourth is up to you. */
+/** What an empty place in the cauldron says: the last two are up to you. */
 const EMPTY_SLOTS = [
   "an ingredient",
   "an ingredient",
-  "an ingredient",
+  "a third, if the recipe takes one",
   "a fourth, if the recipe takes one",
 ];
 
+/** How an ingredient that comes more than one way goes in. */
+const FormPicker = ({
+  part,
+  onForm,
+}: {
+  part: Part;
+  onForm: (form: Form) => void;
+}) => (
+  <fieldset className="forms" aria-label={`${part.name}: how it goes in`}>
+    {formsOf(part.name).map((form) => (
+      <button
+        key={form}
+        type="button"
+        className="forms__option"
+        aria-pressed={form === part.form}
+        onClick={() => onForm(form)}
+      >
+        {FORM_NAMES[form]}
+      </button>
+    ))}
+  </fieldset>
+);
+
 /** The four places in the cauldron, filled in the order they were picked. */
-const Cauldron = ({ selection }: { selection: Selection }) => (
+const Cauldron = ({
+  selection,
+  onForm,
+}: {
+  selection: Selection;
+  onForm: (name: string, form: Form) => void;
+}) => (
   <ul className="cauldron">
     {EMPTY_SLOTS.map((empty, i) => {
-      const name = selection[i];
+      const part = selection[i];
+      const name = part?.name;
       const kind = name ? kindOf(name) : undefined;
 
       return (
@@ -98,9 +144,15 @@ const Cauldron = ({ selection }: { selection: Selection }) => (
         >
           <span aria-hidden="true">{kind ? KIND_EMOJI[kind] : "·"}</span>
           <span className="stack">
-            {name ?? empty}
+            {part ? labelOf(part) : empty}
             {name && TIPS.has(name) ? (
               <span className="cauldron__tip">{TIPS.get(name)}</span>
+            ) : null}
+            {part?.form ? (
+              <FormPicker
+                part={part}
+                onForm={(form) => onForm(part.name, form)}
+              />
             ) : null}
           </span>
         </li>
@@ -111,7 +163,7 @@ const Cauldron = ({ selection }: { selection: Selection }) => (
 
 /** A page of the recipe book: the whole recipe once found, its kinds before. */
 const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
-  const kinds = kindsOf(recipe.ingredients);
+  const parts = partsOf(recipe);
 
   return (
     <li className={found ? "recipe-card recipe-card--found" : "recipe-card"}>
@@ -119,7 +171,7 @@ const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
         {found ? `🧪 ${recipe.name}` : "🔒 ???"}
       </h3>
       <p className="recipe-card__recipe">
-        {found ? listed(recipe.ingredients) : kinds.join(" + ")}
+        {found ? listed(parts.map(labelOf)) : kindsOf(parts)}
       </p>
       {found ? (
         <>
@@ -168,18 +220,20 @@ const BoosterPotion = ({ name }: GameProps) => {
   };
 
   const status = () => {
-    if (selection.length === MAX_INGREDIENTS) {
-      return "Four in. Give it a stir!";
+    if (!ready) {
+      const more = MIN_INGREDIENTS - selection.length;
+
+      return `Pick ${more} more, from any shelf.`;
     }
 
-    if (ready) {
-      return "Three in. Brew now, or add a fourth.";
-    }
-
-    const more = MIN_INGREDIENTS - selection.length;
-
-    return `Pick ${more} more, from any shelf.`;
+    return [
+      "Two in. Brew now, or add more.",
+      "Three in. Brew now, or add a fourth.",
+      "Four in. Give it a stir!",
+    ][selection.length - MIN_INGREDIENTS];
   };
+
+  const chosen = selection.map((part) => part.name);
 
   return (
     <>
@@ -191,7 +245,7 @@ const BoosterPotion = ({ name }: GameProps) => {
       </Header>
       <main className="page">
         <p className="page__sub">
-          mix real wellness shots, find all {RECIPES.length} potions
+          mix real wellness shots and teas, find all {RECIPES.length} potions
         </p>
 
         <div className="layout">
@@ -206,7 +260,7 @@ const BoosterPotion = ({ name }: GameProps) => {
               <Shelf
                 key={kind}
                 kind={kind}
-                chosen={selection}
+                chosen={chosen}
                 onChoose={(next) => setSelection(choose(selection, next))}
               />
             ))}
@@ -219,7 +273,7 @@ const BoosterPotion = ({ name }: GameProps) => {
               <Shelf
                 key={kind}
                 kind={kind}
-                chosen={selection}
+                chosen={chosen}
                 onChoose={(next) => setSelection(choose(selection, next))}
               />
             ))}
@@ -237,7 +291,12 @@ const BoosterPotion = ({ name }: GameProps) => {
                 {ready ? "Ready to brew" : "Pick your ingredients"}
               </h2>
             </div>
-            <Cauldron selection={selection} />
+            <Cauldron
+              selection={selection}
+              onForm={(ingredient, form) =>
+                setSelection(setForm(selection, ingredient, form))
+              }
+            />
             <p className="turn__note" aria-live="polite">
               {status()}
             </p>
@@ -265,12 +324,17 @@ const BoosterPotion = ({ name }: GameProps) => {
               <h3 className="field-label">How to play</h3>
               <ol className="how-to">
                 <li>
-                  Pick three or four ingredients from any shelves, like lemon,
+                  Pick two to four ingredients from any shelves, like lemon,
                   ginger and honey.
                 </li>
                 <li>
+                  Some come fresh, dried or as a powder: pick which in the
+                  cauldron. A ginger shot takes fresh ginger; a ginger tea,
+                  dried.
+                </li>
+                <li>
                   Brew. The right ones make one of {RECIPES.length} potions,
-                  each a real wellness shot or drink.
+                  each a real wellness shot, tea or tonic.
                 </li>
                 <li>
                   Anything else is a Mystery Potion, with a hint at the potion
@@ -311,8 +375,8 @@ const BoosterPotion = ({ name }: GameProps) => {
             ))}
           </ul>
           <p className="hint">
-            Every potion is a real wellness shot or drink, for fun and not as
-            medical advice. The recipe book is saved in this browser only.
+            Every potion is a real wellness shot, tea or tonic, for fun and not
+            as medical advice. The recipe book is saved in this browser only.
           </p>
         </section>
 

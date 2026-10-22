@@ -1003,6 +1003,27 @@ a:hover {
   line-height: 1.35;
   color: var(--text-muted);
 }
+/* Fresh, dried or powder: a small segmented choice under the ingredient. */
+.forms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+}
+.forms__option {
+  min-height: 32px;
+  padding: 0 10px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  font: 700 12px/1.2 var(--body);
+}
+.forms__option[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--on-selected);
+}
 .cauldron__slot--empty {
   border-style: dashed;
   background: transparent;
