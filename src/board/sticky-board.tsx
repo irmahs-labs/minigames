@@ -193,7 +193,7 @@ export const StickyBoard = () => {
 
   return (
     <section className="panel panel--stickies" aria-labelledby="stickies-title">
-      <span className="legend">sticky.board</span>
+      <span className="legend">sticky-notes.txt</span>
       <div className="stickies__head">
         <h2 id="stickies-title" className="display stickies__title">
           The sticky board
