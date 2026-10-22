@@ -29,7 +29,7 @@ const BREWERS = `
          (array_agg(name order by brewed_at, user_id))[1] as by,
          count(*)::integer as count,
          coalesce(bool_or(user_id = $1::uuid), false) as yours
-  from potion_brews`;
+  from booster_potion_brews`;
 
 const brewersOf = ({ by, count, yours }: BrewersRow): Brewers => ({
   by,
@@ -61,7 +61,7 @@ export const recordBrew = async (
   // A repeat brew only moves last_brewed_at. xmax is 0 on a row this
   // statement inserted, and set on one it updated.
   const saved = await pool.query<{ inserted: boolean }>(
-    `insert into potion_brews (potion, user_id, name)
+    `insert into booster_potion_brews (potion, user_id, name)
      values ($1, $2, $3)
      on conflict (potion, user_id) do update set last_brewed_at = now()
      returning (xmax = 0) as inserted`,
@@ -76,7 +76,7 @@ export const recordBrew = async (
             bool_or(user_id = $1::uuid) as yours,
             (array_agg(user_id order by brewed_at, user_id))[1] = $1::uuid
               as first
-     from potion_brews
+     from booster_potion_brews
      where potion = $2
      group by potion`,
     [account.id, potion]
@@ -97,7 +97,7 @@ export const recordBrew = async (
 export const readLatest = async (pool: Pool): Promise<LatestBrew | null> => {
   const { rows } = await pool.query<{ name: string; potion: string; at: Date }>(
     `select name, potion, last_brewed_at as at
-     from potion_brews
+     from booster_potion_brews
      order by last_brewed_at desc
      limit 1`
   );
@@ -116,7 +116,7 @@ export const readBrewers = async (
 ): Promise<Brewer[]> => {
   const { rows } = await pool.query<{ name: string; at: Date }>(
     `select name, brewed_at as at
-     from potion_brews
+     from booster_potion_brews
      where potion = $1
      order by brewed_at, user_id`,
     [potion]

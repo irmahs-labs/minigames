@@ -5,8 +5,9 @@
 --
 -- potion is the recipe's name in src/games/booster-potion/recipes.ts, so a
 -- renamed recipe starts again with nobody having brewed it. user_id is the
--- account's id from the irmahs.dev account service, as in players.
-create table potion_brews (
+-- account's id from the irmahs.dev account service, as in Super Tic-Tac-Toe's
+-- tables.
+create table booster_potion_brews (
   potion text not null,
   user_id uuid not null,
   -- As shown to everyone, "Irma H.", as it was when they brewed it.
@@ -18,7 +19,7 @@ create table potion_brews (
   primary key (potion, user_id)
 );
 
-create index potion_brews_by_last on potion_brews (last_brewed_at desc);
+create index booster_potion_brews_by_last on booster_potion_brews (last_brewed_at desc);
 
 -- migrate:down
-drop table potion_brews;
+drop table booster_potion_brews;

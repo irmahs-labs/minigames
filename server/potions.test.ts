@@ -15,7 +15,7 @@ const ben = { id: "00000000-0000-4000-8000-00000000000b", name: "Ben" };
 
 describe.skipIf(!url)("the recipe book in Postgres", () => {
   beforeEach(async () => {
-    await pool.query("truncate potion_brews");
+    await pool.query("truncate booster_potion_brews");
   });
 
   afterAll(async () => {

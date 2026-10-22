@@ -33,7 +33,7 @@ const whoIs: WhoIs = (cookie) =>
 
 const lobby = createLobby({ onFinish: () => null, random: () => 0 });
 
-/** Stands in for the potion_brews table: who brewed what, in order. */
+/** Stands in for the booster_potion_brews table: who brewed what, in order. */
 const brewLog: { potion: string; id: string; name: string }[] = [];
 let latest: { name: string; potion: string; at: string } | null = null;
 
