@@ -36,10 +36,6 @@ export const Hub = () => {
           </ul>
 
           <StickyBoard sides={sides} />
-
-          <footer className="foot">
-            <a href="https://irmahs.dev">irmahs.dev</a>
-          </footer>
         </main>
         <div ref={setSides} className="hub__sides" />
       </div>

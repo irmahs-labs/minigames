@@ -1,6 +1,8 @@
 import { Suspense } from "react";
+import type { ReactNode } from "react";
 
 import { MiniGamesIcon } from "./components/app-icons";
+import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { Hub } from "./hub";
@@ -23,10 +25,8 @@ const NotFound = () => (
   </>
 );
 
-export const App = () => {
-  // "/wheel-of-fortune/" and "/wheel-of-fortune" are the same page.
-  const path = usePath().replace(/\/+$/u, "") || "/";
-
+/** The page for `path`: the hub, a game, or none. */
+const PageAt = ({ path }: { path: string }): ReactNode => {
   if (path === "/") {
     return <Hub />;
   }
@@ -44,6 +44,19 @@ export const App = () => {
       <Suspense fallback={<main className="page" aria-busy="true" />}>
         <game.Screen name={game.name} />
       </Suspense>
+    </>
+  );
+};
+
+/** Every page, and the footer under it. */
+export const App = () => {
+  // "/wheel-of-fortune/" and "/wheel-of-fortune" are the same page.
+  const path = usePath().replace(/\/+$/u, "") || "/";
+
+  return (
+    <>
+      <PageAt path={path} />
+      <Footer />
     </>
   );
 };
