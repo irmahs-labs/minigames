@@ -1,6 +1,9 @@
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Hono } from "hono";
 
+import { noteRequest } from "../src/board/api";
+import type { Board, Note, NoteRequest } from "../src/board/api";
+import { NOTES_PER_DAY, isValidBody, tidy } from "../src/board/rules";
 import { brewRequest } from "../src/games/booster-potion/api";
 import type {
   Book,
@@ -29,7 +32,7 @@ import type { Client, Lobby } from "./lobby";
 import type { BrewLog, Recorded } from "./potions";
 import type { Leaderboard } from "./scores";
 import { shortName } from "./session";
-import type { SessionAccount, WhoIs } from "./session";
+import type { IsAdmin, SessionAccount, WhoIs } from "./session";
 
 /** Pings an open socket this often, so idle connections are not dropped. */
 const HEARTBEAT_MS = 30_000;
@@ -54,6 +57,29 @@ const readCauldron = async (request: Request): Promise<Selection | null> => {
   }
 };
 
+/**
+ * The note a request asks to stick up, tidied, or null when it is not JSON,
+ * not a note, or a note that cannot go up: empty or too long.
+ */
+const readNote = async (request: Request): Promise<NoteRequest | null> => {
+  try {
+    const parsed = noteRequest.safeParse(await request.json());
+
+    if (!parsed.success) {
+      return null;
+    }
+
+    const body = tidy(parsed.data.body);
+
+    return isValidBody(body) ? { body, colour: parsed.data.colour } : null;
+  } catch {
+    return null;
+  }
+};
+
+/** A note's id as the database has it: a bigint, so at most 18 digits. */
+const NOTE_ID = /^\d{1,18}$/u;
+
 interface AppOptions {
   lobby: Lobby;
   whoIs: WhoIs;
@@ -72,6 +98,19 @@ interface AppOptions {
     ) => Promise<{ isNew: boolean; foundAt: string }>;
     resetSolo: (userId: string) => Promise<void>;
   };
+  /** The hub's sticky board. */
+  notes: {
+    readNotes: () => Promise<Note[]>;
+    countNotes: (userId: string) => Promise<number>;
+    postNote: (
+      userId: string,
+      note: NoteRequest,
+      limit: number
+    ) => Promise<Note | null>;
+    removeNote: (id: string) => Promise<boolean>;
+  };
+  /** Whether a visitor can take notes down, from their cookie. */
+  isAdmin: IsAdmin;
   /** The site's own origin; sockets from any other are refused. */
   appOrigin: string;
 }
@@ -81,8 +120,8 @@ interface Variables {
 }
 
 /**
- * The server's routes: /api for who is signed in, the leaderboard and
- * Booster Potion's recipe book, and /ws, the socket online games are played
+ * The server's routes: /api for who is signed in, the leaderboard,
+ * Booster Potion's recipe book and the hub's sticky board, and /ws, the socket online games are played
  * over. Who a socket belongs to comes
  * from the shared irmahs.dev sign-in cookie, asked of the account service
  * when the socket opens, never from anything sent over it.
@@ -92,6 +131,8 @@ export const createApp = ({
   whoIs,
   readLeaderboard,
   potions,
+  notes,
+  isAdmin,
   appOrigin,
 }: AppOptions) => {
   const app = new Hono<{ Variables: Variables }>();
@@ -269,6 +310,92 @@ export const createApp = ({
     }
 
     await potions.resetSolo(account.id);
+
+    return c.body(null, 204);
+  });
+
+  /**
+   * The board as a visitor sees it, from their cookie: never who stuck a
+   * note. An admin is asked of the account service only when signed in.
+   */
+  const boardFor = async (
+    account: SessionAccount | null,
+    cookie: string | undefined
+  ): Promise<Board> => {
+    const [up, mine, admin] = await Promise.all([
+      notes.readNotes(),
+      account ? notes.countNotes(account.id) : null,
+      account ? isAdmin(cookie) : false,
+    ]);
+
+    return {
+      admin,
+      left: mine === null ? null : Math.max(0, NOTES_PER_DAY - mine),
+      notes: up,
+    };
+  };
+
+  app.get("/api/board", async (c) => {
+    const cookie = c.req.header("cookie");
+    const { account } = await whoIs(cookie);
+
+    return c.json(await boardFor(account, cookie));
+  });
+
+  // Notes go up only from the site itself, since the sign-in cookie reaches
+  // here from any irmahs.dev page, and only from someone signed in: the
+  // board never shows who, but holds each person to their notes a day.
+  app.post("/api/board/notes", async (c) => {
+    if (c.req.header("origin") !== appOrigin) {
+      return c.text("Notes are only taken from the site itself.", 403);
+    }
+
+    const { account } = await whoIs(c.req.header("cookie"));
+
+    if (!account) {
+      return c.text("Sign in to stick a note.", 401);
+    }
+
+    const note = await readNote(c.req.raw);
+
+    if (!note) {
+      return c.text("That note can't go up.", 400);
+    }
+
+    const posted = await notes.postNote(account.id, note, NOTES_PER_DAY);
+
+    if (!posted) {
+      return c.text(
+        `That's your ${NOTES_PER_DAY} notes for today. More once one comes down.`,
+        429
+      );
+    }
+
+    return c.json(await boardFor(account, c.req.header("cookie")));
+  });
+
+  // Takes a note down before its day is up: admins only, listed for
+  // ADMIN_APP in the account service's APP_ACCESS.
+  app.delete("/api/board/notes/:id", async (c) => {
+    if (c.req.header("origin") !== appOrigin) {
+      return c.text("Notes are only taken down from the site itself.", 403);
+    }
+
+    const { account } = await whoIs(c.req.header("cookie"));
+
+    if (!account) {
+      return c.text("Sign in to take a note down.", 401);
+    }
+
+    if (!(await isAdmin(c.req.header("cookie")))) {
+      return c.text("Only an admin can take a note down.", 403);
+    }
+
+    const id = c.req.param("id");
+
+    if (!(NOTE_ID.test(id) && (await notes.removeNote(id)))) {
+      return c.text("There is no such note.", 404);
+    }
 
     return c.body(null, 204);
   });

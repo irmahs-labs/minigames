@@ -55,6 +55,40 @@ export const askAccountService =
   };
 
 /**
+ * The app Mini Games' admins are listed under in the account service's
+ * APP_ACCESS secret, as for a private app: `minigames-admin=you@gmail.com`.
+ */
+export const ADMIN_APP = "minigames-admin";
+
+export type IsAdmin = (cookie: string | undefined) => Promise<boolean>;
+
+/**
+ * Whether the visitor is a Mini Games admin, asked of the account service the
+ * way Caddy asks before opening a private app (`GET /api/access/:app`). Only
+ * a 204 says yes, given when their Google-verified email is listed for
+ * ADMIN_APP; signed out it redirects to sign in, which is not followed, and
+ * anyone not listed gets a 403. When it cannot be asked, nobody is an admin.
+ */
+export const askAdminAccess =
+  (authUrl: string): IsAdmin =>
+  async (cookie) => {
+    if (!cookie) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${authUrl}/api/access/${ADMIN_APP}`, {
+        headers: { cookie },
+        redirect: "manual",
+      });
+
+      return response.status === 204;
+    } catch {
+      return false;
+    }
+  };
+
+/**
  * A name as the leaderboard and an opponent see it: the first name and the
  * last name's initial, "Irma Houversing" → "Irma H.". Nobody's full name or
  * photo is shown to strangers.

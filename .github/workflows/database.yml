@@ -1,6 +1,6 @@
 # Checks db/migrations/ on every change: they apply to an empty database and
-# roll back cleanly, and the leaderboard's and the recipe book's queries
-# work against what they build. Applying them to production is the deploy's job, not this one's.
+# roll back cleanly, and the leaderboard's, the recipe book's and the sticky
+# board's queries work against what they build. Applying them to production is the deploy's job, not this one's.
 name: Database
 
 on:
@@ -10,6 +10,7 @@ on:
       - "db/**"
       - "server/scores*.ts"
       - "server/potions*.ts"
+      - "server/notes*.ts"
       - "server/db.ts"
       - "compose.yaml"
       - ".github/workflows/database.yml"
@@ -18,6 +19,7 @@ on:
       - "db/**"
       - "server/scores*.ts"
       - "server/potions*.ts"
+      - "server/notes*.ts"
       - "server/db.ts"
       - "compose.yaml"
       - ".github/workflows/database.yml"
@@ -29,7 +31,7 @@ permissions:
 
 jobs:
   verify:
-    name: Migrations build, roll back, and serve the leaderboard and recipe book
+    name: Migrations build, roll back, and serve the leaderboard, recipe book and sticky board
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -50,7 +52,7 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: The leaderboard's and the recipe book's queries against the migrated database
-        run: npx vitest run server/scores.test.ts server/potions.test.ts
+      - name: The leaderboard's, the recipe book's and the sticky board's queries against the migrated database
+        run: npx vitest run server/scores.test.ts server/potions.test.ts server/notes.test.ts
         env:
           TEST_DATABASE_URL: postgres://minigames:minigames@localhost:5434/minigames

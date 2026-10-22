@@ -6,6 +6,8 @@ import { serve } from "@hono/node-server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 
+import type { Note, NoteRequest } from "../src/board/api";
+import { NOTES_PER_DAY } from "../src/board/rules";
 import type { Brewers } from "../src/games/booster-potion/brewing";
 import type { ServerMessage } from "../src/games/super-tic-tac-toe/online/protocol";
 import { createApp } from "./app";
@@ -115,11 +117,57 @@ const potions = {
   },
 };
 
+/** Stands in for hub_sticky_notes, newest last. */
+const noteLog: (Note & { userId: string })[] = [];
+
+const notes = {
+  countNotes: (userId: string) =>
+    Promise.resolve(noteLog.filter((note) => note.userId === userId).length),
+  postNote: (userId: string, note: NoteRequest, limit: number) => {
+    if (noteLog.filter((row) => row.userId === userId).length >= limit) {
+      return Promise.resolve(null);
+    }
+
+    const posted = {
+      ...note,
+      id: String(noteLog.length + 1),
+      postedAt: new Date().toISOString(),
+    };
+
+    noteLog.push({ ...posted, userId });
+
+    return Promise.resolve(posted);
+  },
+  readNotes: () =>
+    Promise.resolve(
+      noteLog.toReversed().map(({ body, colour, id, postedAt }) => ({
+        body,
+        colour,
+        id,
+        postedAt,
+      }))
+    ),
+  removeNote: (id: string) => {
+    const index = noteLog.findIndex((note) => note.id === id);
+
+    if (index === -1) {
+      return Promise.resolve(false);
+    }
+
+    noteLog.splice(index, 1);
+
+    return Promise.resolve(true);
+  },
+};
+
 const askedFor: (string | null)[] = [];
 
 const { app, injectWebSocket } = createApp({
   appOrigin: ORIGIN,
+  // Ana is listed for minigames-admin in the account service's APP_ACCESS.
+  isAdmin: (cookie) => Promise.resolve(cookie === "session=ana"),
   lobby,
+  notes,
   potions,
   readLeaderboard: (userId): Promise<Leaderboard> => {
     askedFor.push(userId);
@@ -489,5 +537,115 @@ describe("/api/potions/solo", () => {
     expect(
       pages.every((page: { state: string }) => page.state === "locked")
     ).toBe(true);
+  });
+});
+
+/** A note as the page would send it, sense or not: the request's body. */
+const noteOf = (body: string, colour = "lemon") =>
+  JSON.stringify({ body, colour });
+
+const stick = (cookie: string, sent: string, origin = ORIGIN) =>
+  fetch(`http://${base}/api/board/notes`, {
+    body: sent,
+    headers: { "content-type": "application/json", cookie, origin },
+    method: "POST",
+  });
+
+const takeDown = (cookie: string, id: string, origin = ORIGIN) =>
+  fetch(`http://${base}/api/board/notes/${id}`, {
+    headers: { cookie, origin },
+    method: "DELETE",
+  });
+
+const boardAs = (cookie = "") =>
+  bodyOf(fetch(`http://${base}/api/board`, { headers: { cookie } }));
+
+const notesUp = async (): Promise<Note[]> => {
+  const board = await boardAs();
+
+  return board.notes;
+};
+
+describe("/api/board", () => {
+  it("shows everyone the board, and a signed-out reader no notes to stick", async () => {
+    expect(await boardAs()).toEqual({
+      admin: false,
+      left: null,
+      notes: [],
+    });
+    expect(await boardAs("session=ben")).toEqual({
+      admin: false,
+      left: NOTES_PER_DAY,
+      notes: [],
+    });
+  });
+
+  it("takes notes only from the site itself, and only signed in", async () => {
+    const elsewhere = "https://evil.irmahs.dev";
+
+    expect(await statusOf(stick("session=ben", noteOf("hi"), elsewhere))).toBe(
+      403
+    );
+    expect(await statusOf(stick("", noteOf("hi")))).toBe(401);
+  });
+
+  it("refuses a note that cannot go up", async () => {
+    expect(await statusOf(stick("session=ben", noteOf(" \n ")))).toBe(400);
+    expect(await statusOf(stick("session=ben", noteOf("x".repeat(201))))).toBe(
+      400
+    );
+    expect(await statusOf(stick("session=ben", noteOf("hi", "plaid")))).toBe(
+      400
+    );
+    expect(await statusOf(stick("session=ben", "not json"))).toBe(400);
+  });
+
+  it("puts a note up tidied, with no name on it", async () => {
+    const board = await bodyOf(
+      stick("session=ben", noteOf("  good luck\r\n\r\n\r\ntoday!  ", "taro"))
+    );
+
+    expect(board.left).toBe(NOTES_PER_DAY - 1);
+    expect(board.notes).toEqual([
+      {
+        body: "good luck\n\ntoday!",
+        colour: "taro",
+        id: expect.any(String),
+        postedAt: expect.any(String),
+      },
+    ]);
+    expect(JSON.stringify(await boardAs())).not.toMatch(/Ben|userId/u);
+  });
+
+  it("holds each person to their notes a day", async () => {
+    for (let i = 1; i < NOTES_PER_DAY; i += 1) {
+      // One after another, as a person would.
+      // oxlint-disable-next-line no-await-in-loop
+      await stick("session=ben", noteOf(`note ${i}`));
+    }
+
+    const one = await stick("session=ben", noteOf("one too many"));
+
+    expect(one.status).toBe(429);
+    expect(await one.text()).toContain(`${NOTES_PER_DAY} notes`);
+    expect(await boardAs("session=ben")).toMatchObject({ left: 0 });
+  });
+
+  it("lets only an admin take a note down", async () => {
+    const [newest] = await notesUp();
+    const id = newest?.id ?? "";
+
+    expect(await statusOf(takeDown("", id))).toBe(401);
+    expect(await statusOf(takeDown("session=ben", id))).toBe(403);
+    expect(await statusOf(takeDown("session=cy", id))).toBe(403);
+    expect(
+      await statusOf(takeDown("session=ana", id, "https://evil.irmahs.dev"))
+    ).toBe(403);
+    expect(await boardAs("session=ana")).toMatchObject({ admin: true });
+
+    expect(await statusOf(takeDown("session=ana", id))).toBe(204);
+    expect(await notesUp()).not.toContainEqual(newest);
+    expect(await statusOf(takeDown("session=ana", id))).toBe(404);
+    expect(await statusOf(takeDown("session=ana", "1; drop table"))).toBe(404);
   });
 });
