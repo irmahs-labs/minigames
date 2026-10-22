@@ -42,6 +42,10 @@
   --note-matcha: #d4dd9c;
   --note-strawberry: #ffc6d3;
   --note-taro: #dccbff;
+  --note-blue: #c9dcff;
+  --note-white: #ffffff;
+  /* The strip of tape a note hangs by, see-through over the paper. */
+  --note-tape: #fffdf0b3;
 
   --stroke-base: 1.5px;
   --stroke-panel: 2px;
@@ -1165,6 +1169,12 @@ a:hover {
 .sticky--taro {
   background: var(--note-taro);
 }
+.sticky--blue {
+  background: var(--note-blue);
+}
+.sticky--white {
+  background: var(--note-white);
+}
 .composer {
   display: flex;
   flex-direction: column;
@@ -1222,30 +1232,59 @@ a:hover {
     0 0 0 3px var(--panel),
     0 0 0 5px var(--selected);
 }
-/* The board scrolls in its own frame, so a busy day never makes the hub
-   endless. */
-.stickies {
+/* The corkboard: a well the notes are pinned to, scrolling in its own
+   frame so a busy day never makes the hub endless. */
+.corkboard-frame {
   max-height: min(70vh, 640px);
-  margin: 0;
-  padding: 8px 8px 8px 4px;
+  padding: 18px 14px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
-  align-items: start;
-  gap: 18px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
 }
+.corkboard {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* A note sits where it was dropped; NOTE_WIDTH in src/board/layout.ts. */
 .sticky {
+  position: absolute;
+  width: 190px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-height: 140px;
-  padding: 14px 14px 10px;
+  padding: 16px 14px 10px;
   border: var(--stroke-base) solid var(--outline);
   border-radius: 4px;
   box-shadow: var(--shadow-soft);
   color: var(--ink);
+  cursor: grab;
+  user-select: none;
+}
+.sticky--held {
+  cursor: grabbing;
+  transform: scale(1.03);
+  box-shadow: var(--shadow-hard);
+}
+/* The tape at the top: what a finger drags by, and what the arrow keys
+   move. */
+.sticky__tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 64px;
+  height: 20px;
+  padding: 0;
+  translate: -50% 0;
+  border: 1px solid var(--outline);
+  border-radius: 2px;
+  background: var(--note-tape);
+  cursor: grab;
+  touch-action: none;
 }
 .sticky--tilt-0 {
   transform: rotate(-1.5deg);
@@ -1266,6 +1305,26 @@ a:hover {
 .sticky__time {
   margin: 0;
   font-size: 12px;
+  opacity: 0.75;
+}
+.sticky__votes {
+  display: flex;
+  gap: 6px;
+}
+.sticky__vote {
+  padding: 2px 9px;
+  border: var(--stroke-base) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font: 700 12px/1.4 var(--body);
+}
+.sticky__vote[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--on-selected);
+}
+.sticky__vote:disabled {
+  cursor: default;
   opacity: 0.75;
 }
 .sticky__remove {
