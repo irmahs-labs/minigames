@@ -1249,6 +1249,22 @@ a:hover {
   padding: 0;
   list-style: none;
 }
+/* On a wide screen the notes hang in the margins either side of the hub's
+   column, on a layer as wide as the page that lets clicks through to it. */
+.hub {
+  position: relative;
+}
+/* A little below the header, so the top notes' tape clears it. */
+.hub__sides {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+.corkboard--sides .sticky {
+  pointer-events: auto;
+}
 /* A note sits where it was dropped; NOTE_WIDTH in src/board/layout.ts. */
 .sticky {
   position: absolute;

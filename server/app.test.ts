@@ -203,7 +203,7 @@ const askedFor: (string | null)[] = [];
 
 const { app, injectWebSocket } = createApp({
   appOrigin: ORIGIN,
-  // Ana is listed for minigames-admin in the account service's APP_ACCESS.
+  // Ana is on Alma Housila's list in the account service's APP_ACCESS.
   isAdmin: (cookie) => Promise.resolve(cookie === "session=ana"),
   lobby,
   notes,

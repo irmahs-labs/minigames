@@ -55,10 +55,12 @@ export const askAccountService =
   };
 
 /**
- * The app Mini Games' admins are listed under in the account service's
- * APP_ACCESS secret, as for a private app: `minigames-admin=you@gmail.com`.
+ * The app whose list in the account service's APP_ACCESS secret makes
+ * someone a Mini Games admin. It reuses Alma Housila's list, Irma's own,
+ * so the secret needs no entry of its own: whoever may open Alma Housila
+ * may take notes down here.
  */
-export const ADMIN_APP = "minigames-admin";
+export const ADMIN_APP = "alma-housila";
 
 export type IsAdmin = (cookie: string | undefined) => Promise<boolean>;
 
