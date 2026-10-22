@@ -206,3 +206,61 @@ export const RECIPES: readonly Recipe[] = [
     toppings: ["Ginger", "Cinnamon"],
   },
 ];
+
+/**
+ * What each ingredient is known for, in a line: shown as its tooltip and
+ * under it in the cauldron. Kept to what is well established, with the
+ * cautions that matter; fun facts, not medical advice.
+ */
+const TIP_LIST = {
+  "Aloe Vera": "Soothing. Use inner-leaf or decolorized juice.",
+  Apple: "Fibre, and a sweetness that tames the sharp shots.",
+  "Apple cider vinegar":
+    "May help steady blood sugar after a meal. Always dilute.",
+  Ashwagandha: "An adaptogen studied for stress. Not for pregnancy.",
+  Basil: "Fresh and peppery, with antioxidants.",
+  Beetroot: "Nitrates, which can help blood flow and exercise.",
+  Berries: "Rich in antioxidants, the ones that colour them.",
+  "Black pepper": "Piperine, which helps the body take up turmeric.",
+  "Blue Pea": "Turns tea blue, and purple when lemon goes in.",
+  Cardamom: "A warm spice long used for digestion.",
+  Carrot: "Beta-carotene, which the body turns into vitamin A.",
+  Cayenne: "Capsaicin: the heat that clears your sinuses.",
+  Celery: "Mostly water, with potassium.",
+  Chrysanthemum: "A cooling tea in Chinese tradition.",
+  Cinnamon: "A warm spice that may help steady blood sugar.",
+  "Coconut Water": "Electrolytes, potassium above all.",
+  Collagen: "Protein, popular for skin and joints.",
+  Cucumber: "Mostly water: cooling and hydrating.",
+  "Elderberry juice": "Long taken for colds. Only ever cooked.",
+  Fennel: "Long used to ease bloating.",
+  Ginger: "Eases nausea, with anti-inflammatory compounds.",
+  Grapefruit: "Vitamin C. Interferes with some medicines.",
+  Hibiscus: "Tart and red; may help lower blood pressure.",
+  Honey: "Soothes a sore throat. Not for babies under one.",
+  Kale: "Vitamins K and C.",
+  Kombucha: "Fermented tea, with live cultures.",
+  Lavender: "A calming scent. Culinary lavender, and only a little.",
+  Lemon: "Vitamin C, and the sour kick of most shots.",
+  Lime: "Vitamin C, a little sharper than lemon.",
+  Maca: "A Peruvian root, taken for energy.",
+  "Maple syrup": "Sweetness, with a few minerals.",
+  Matcha: "Powdered green tea: caffeine with L-theanine, for calm focus.",
+  Mint: "Cooling, and long used for digestion.",
+  Nutmeg: "Warm and sweet. A pinch only: a lot is toxic.",
+  Orange: "Vitamin C and natural sweetness.",
+  Pineapple: "Bromelain, an enzyme that breaks down protein.",
+  Rose: "Fragrant, and soothing in tea.",
+  Rosemary: "Aromatic, and rich in antioxidants.",
+  Sage: "Earthy, long used for sore throats.",
+  Spinach: "Folate, iron and vitamin K.",
+  Spirulina: "Blue-green algae, rich in protein and iron.",
+  "Stone fruit": "Peach, apricot or plum: vitamins A and C.",
+  Tea: "Antioxidants, and a little caffeine.",
+  Thyme: "Long used for coughs.",
+  Tomato: "Lycopene, an antioxidant.",
+  Turmeric: "Curcumin, studied for inflammation. Best with black pepper.",
+  Watermelon: "Mostly water: hydrating.",
+} satisfies Record<string, string>;
+
+export const TIPS = new Map(Object.entries(TIP_LIST));

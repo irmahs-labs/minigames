@@ -12,6 +12,7 @@ import {
   KIND_EMOJI,
   PANTRY,
   RECIPES,
+  TIPS,
   TOPPING_KINDS,
 } from "./pantry";
 import type { Kind, Recipe } from "./pantry";
@@ -23,6 +24,10 @@ const title = (kind: Kind) => `${kind[0]?.toUpperCase()}${kind.slice(1)}`;
 
 const kindsOf = (names: readonly string[]) =>
   names.map((name) => kindOf(name) ?? "fruit");
+
+/** "Apple cider vinegar" → tip-apple-cider-vinegar, for aria-describedby. */
+const tipId = (name: string) =>
+  `tip-${name.toLowerCase().replaceAll(/[^a-z]+/gu, "-")}`;
 
 /** One kind's shelf of ingredients, each a button that goes in or comes out. */
 const Shelf = ({
@@ -40,15 +45,20 @@ const Shelf = ({
     </legend>
     <div className="shelf__items">
       {PANTRY[kind].map((name) => (
-        <button
-          key={name}
-          type="button"
-          className="chip"
-          aria-pressed={chosen.includes(name)}
-          onClick={() => onChoose(name)}
-        >
-          {name}
-        </button>
+        <span key={name} className="chip-wrap">
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={chosen.includes(name)}
+            aria-describedby={tipId(name)}
+            onClick={() => onChoose(name)}
+          >
+            {name}
+          </button>
+          <span role="tooltip" id={tipId(name)} className="tip">
+            {TIPS.get(name)}
+          </span>
+        </span>
       ))}
     </div>
   </fieldset>
@@ -76,7 +86,12 @@ const Cauldron = ({ selection }: { selection: Selection }) => {
             }
           >
             <span aria-hidden="true">{kind ? KIND_EMOJI[kind] : "·"}</span>
-            {name ?? `a ${group}`}
+            <span className="stack">
+              {name ?? `a ${group}`}
+              {name && TIPS.has(name) ? (
+                <span className="cauldron__tip">{TIPS.get(name)}</span>
+              ) : null}
+            </span>
           </li>
         );
       })}

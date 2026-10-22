@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BASE_KINDS, PANTRY, RECIPES, TOPPING_KINDS } from "./pantry";
+import { BASE_KINDS, PANTRY, RECIPES, TIPS, TOPPING_KINDS } from "./pantry";
 import { EMPTY, brew, choose, isReady, kindOf } from "./rules";
 import type { Selection } from "./rules";
 
@@ -38,6 +38,12 @@ describe("the recipe book", () => {
     ).toBe(true);
     expect(recipe.bases[0]).not.toBe(recipe.bases[1]);
     expect(recipe.toppings[0]).not.toBe(recipe.toppings[1]);
+  });
+
+  it("has a tip for every ingredient, and none for anything else", () => {
+    const names = Object.values(PANTRY).flat().toSorted();
+
+    expect([...TIPS.keys()].toSorted()).toEqual(names);
   });
 
   it("makes every potion from a different four", () => {

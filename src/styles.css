@@ -945,6 +945,32 @@ a:hover {
 .chip:hover {
   background: var(--raised-hover);
 }
+/* An ingredient's tip: a small dark label above it, on hover or keyboard focus. */
+.chip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 2;
+  display: none;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--strong);
+  color: var(--on-strong);
+  font: 600 13px/1.35 var(--body);
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.chip-wrap:hover .tip,
+.chip:focus-visible + .tip {
+  display: block;
+}
 .chip[aria-pressed="true"] {
   background: var(--selected);
   color: var(--on-selected);
@@ -970,6 +996,12 @@ a:hover {
   background: var(--raised);
   font-weight: 700;
   overflow-wrap: anywhere;
+}
+.cauldron__tip {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--text-muted);
 }
 .cauldron__slot--empty {
   border-style: dashed;
