@@ -30,7 +30,9 @@ Every online game counts on the **leaderboard**, which anyone can see, signed in
 
 Nobody's total drops below 0. Players appear as first name and last initial, "Irma H.".
 
-The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games and the leaderboard live on the server.
+**Booster Potion.** A potion-mixing game, from [Wellness Witch](https://github.com/irmahs/WellnessWitch). Put two bases (a fruit, vegetable or liquid, each of a different kind) and two toppings (a herb, powder, seed, spice or flower, each of a different kind) in the cauldron and brew. The right four make one of 20 potions, which goes in the recipe book. Anything else is a Mystery Potion, with a hint: how many of the four are in the closest potion still to find, and its name. Pages not yet found show the kinds of ingredient they take.
+
+The Wheel of Fortune, the same-screen game and the Booster Potion recipe book keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games and the leaderboard live on the server.
 
 ## Develop
 

@@ -36,4 +36,12 @@ export const GAMES: readonly Game[] = [
     name: "Super Tic-Tac-Toe",
     slug: "super-tic-tac-toe",
   },
+  {
+    Screen: lazy(() => import("./games/booster-potion/booster-potion")),
+    blurb:
+      "Mix two bases and two toppings in the cauldron. Twenty potions to discover.",
+    legend: "booster-potion.games",
+    name: "Booster Potion",
+    slug: "booster-potion",
+  },
 ];
