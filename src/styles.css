@@ -1030,9 +1030,14 @@ a:hover {
   color: var(--text-muted);
   font-weight: 400;
 }
+/* The book scrolls in its own frame, so a hundred pages never make the
+   page itself endless. */
 .book {
+  max-height: min(70vh, 640px);
   margin: 0;
-  padding: 0;
+  padding: 4px 6px 4px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
@@ -1068,6 +1073,52 @@ a:hover {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
+}
+.recipe-card__by {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+/* The byline opens the list of everyone who brewed it. */
+.recipe-card__by--open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.brewers {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.brewers span {
+  opacity: 0.75;
+}
+/* The last brew by anyone, on a pill in the book's top right corner. */
+.book__latest {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  max-width: calc(100% - 160px);
+  margin: 0;
+  padding: 2px 12px;
+  overflow: hidden;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 12px/1.4 var(--body);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* A page the player has brewed too: the outline turns to the hard one. */
+.recipe-card--yours {
+  border-width: var(--stroke-panel);
+  box-shadow: var(--shadow-soft);
 }
 .recipe-card__source {
   margin-top: 2px;
@@ -1148,6 +1199,13 @@ a:hover {
   }
   .panel--pantry {
     padding: 28px 16px 18px;
+  }
+  /* Too narrow for the corner: the last brew sits in full above the title. */
+  .book__latest {
+    position: static;
+    align-self: flex-start;
+    max-width: none;
+    white-space: normal;
   }
   .board th,
   .board td {

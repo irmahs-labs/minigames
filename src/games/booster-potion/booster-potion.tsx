@@ -1,47 +1,41 @@
 import { useEffect, useState } from "react";
+import * as z from "zod/mini";
 
 import { BoosterPotionIcon } from "../../components/app-icons";
 import { Header } from "../../components/header";
 import type { GameProps } from "../../games";
+import { currentAccount, signInUrl } from "../../lib/account";
+import type { Account } from "../../lib/account";
 import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
+import { readStored, writeStored } from "../../lib/storage";
 import { useConfirm } from "../../lib/use-confirm";
-import { BrewDialog, listed } from "./brew-dialog";
+import type { Book, Brewer, LatestBrew, Page, SoloPage } from "./api";
 import {
-  BASE_KINDS,
-  KIND_EMOJI,
-  PANTRY,
-  RECIPES,
-  TIPS,
-  TOPPING_KINDS,
-} from "./pantry";
-import type { Form, Kind, Recipe } from "./pantry";
+  fetchBook,
+  fetchBrewers,
+  fetchSoloBook,
+  postBrew,
+  postSoloBrew,
+  resetSoloBook,
+} from "./book-api";
+import { BrewDialog, listed, sharedView, soloView } from "./brew-dialog";
+import type { DialogView } from "./brew-dialog";
+import { BASE_KINDS, KIND_EMOJI, PANTRY, TIPS, TOPPING_KINDS } from "./pantry";
+import type { Form, Kind } from "./pantry";
 import {
   EMPTY,
   MIN_INGREDIENTS,
-  brew,
   choose,
   formsOf,
   isReady,
   kindOf,
   labelOf,
-  partsOf,
   setForm,
 } from "./rules";
-import type { Brewed, Part, Selection } from "./rules";
-import { loadFound, saveFound } from "./state";
+import type { Part, Selection } from "./rules";
 
 const title = (kind: Kind) => `${kind[0]?.toUpperCase()}${kind.slice(1)}`;
-
-/** A locked page's clue: "fruit + dried spice + sweetener". */
-const kindsOf = (parts: readonly Part[]) =>
-  parts
-    .map(({ form, name }) => {
-      const kind = kindOf(name) ?? "fruit";
-
-      return form ? `${form} ${kind}` : kind;
-    })
-    .join(" + ");
 
 const FORM_NAMES: Record<Form, string> = {
   dried: "Dried",
@@ -161,62 +155,436 @@ const Cauldron = ({
   </ul>
 );
 
-/** A page of the recipe book: the whole recipe once found, its kinds before. */
-const Page = ({ recipe, found }: { recipe: Recipe; found: boolean }) => {
-  const parts = partsOf(recipe);
+/** The book is fetched again this often, so the last brew stays current. */
+const REFRESH_MS = 30_000;
+
+/** "just now", "5 min ago", "3 h ago", "2 days ago". */
+const ago = (iso: string, now: number) => {
+  const minutes = Math.floor((now - Date.parse(iso)) / 60_000);
+
+  if (minutes < 1) {
+    return "just now";
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours} h ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+};
+
+const day = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+
+/** "First brewed by Irma H. and 3 more". */
+const bylineOf = ({ by, others }: Extract<Page, { state: "found" }>) =>
+  others > 0 ? `First brewed by ${by} and ${others} more` : `Brewed by ${by}`;
+
+/**
+ * Who brewed a page's potion: the byline, which opens the full list, first
+ * first, fetched the first time it is opened.
+ */
+const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
+  const [open, setOpen] = useState(false);
+  // undefined until fetched, null when it cannot be had.
+  const [brewers, setBrewers] = useState<Brewer[] | null | undefined>();
+
+  const byline = `${bylineOf(page)}${page.yours ? " · you brewed it too" : ""}`;
+
+  if (page.others === 0) {
+    return <p className="recipe-card__by">{byline}</p>;
+  }
+
+  const toggle = async () => {
+    setOpen(!open);
+
+    if (brewers === undefined) {
+      setBrewers(await fetchBrewers(page.name));
+    }
+  };
 
   return (
-    <li className={found ? "recipe-card recipe-card--found" : "recipe-card"}>
-      <h3 className="display recipe-card__name">
-        {found ? `🧪 ${recipe.name}` : "🔒 ???"}
-      </h3>
-      <p className="recipe-card__recipe">
-        {found ? listed(parts.map(labelOf)) : kindsOf(parts)}
-      </p>
-      {found ? (
-        <>
-          <p className="recipe-card__note">{recipe.note}</p>
-          <a
-            className="recipe-card__source"
-            href={recipe.source}
-            target="_blank"
-            rel="noreferrer"
-          >
-            The real recipe ↗
-          </a>
-        </>
+    <div className="stack">
+      <button
+        type="button"
+        className="recipe-card__by recipe-card__by--open"
+        aria-expanded={open}
+        onClick={toggle}
+      >
+        {byline} {open ? "▴" : "▾"}
+      </button>
+      {open && brewers === undefined ? (
+        <p className="recipe-card__note">Looking them up…</p>
       ) : null}
+      {open && brewers === null ? (
+        <p className="recipe-card__note">The list cannot be had right now.</p>
+      ) : null}
+      {open && brewers ? (
+        <ol className="brewers">
+          {brewers.map((brewer, i) => (
+            // Two people may share a name; their place in the list is theirs.
+            // oxlint-disable-next-line no-array-index-key
+            <li key={i}>
+              {brewer.name} <span>{day(brewer.at)}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+};
+
+/** The last brew by anyone, in the book's corner: who, what and when. */
+const LastBrew = ({ latest, now }: { latest: LatestBrew; now: number }) => (
+  <p className="book__latest" aria-live="polite">
+    <span aria-hidden="true">🔮 </span>
+    Last brew: {latest.name}, {latest.potion}, {ago(latest.at, now)}
+  </p>
+);
+
+/** A page of the shared book: the recipe and who found it, or its clue. */
+const BookPage = ({ page }: { page: Page }) => {
+  if (page.state === "locked") {
+    return (
+      <li className="recipe-card">
+        <h3 className="display recipe-card__name">🔒 ???</h3>
+        <p className="recipe-card__recipe">{page.clue}</p>
+      </li>
+    );
+  }
+
+  return (
+    <li
+      className={
+        page.yours
+          ? "recipe-card recipe-card--found recipe-card--yours"
+          : "recipe-card recipe-card--found"
+      }
+    >
+      <h3 className="display recipe-card__name">🔮 {page.name}</h3>
+      <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
+      <p className="recipe-card__note">{page.note}</p>
+      <Brewers page={page} />
+      <a
+        className="recipe-card__source"
+        href={page.source}
+        target="_blank"
+        rel="noreferrer"
+      >
+        The real recipe ↗
+      </a>
     </li>
+  );
+};
+
+const MODE_KEY = "minigames:booster-potion:mode:v1";
+const MODES = { shared: "Everyone's book", solo: "My own book" } as const;
+const modeSchema = z.enum(["shared", "solo"]);
+
+type Mode = z.infer<typeof modeSchema>;
+
+/** A page of the player's own book: the recipe once they found it. */
+const SoloBookPage = ({ page }: { page: SoloPage }) => {
+  if (page.state === "locked") {
+    return (
+      <li className="recipe-card">
+        <h3 className="display recipe-card__name">🔒 ???</h3>
+        <p className="recipe-card__recipe">{page.clue}</p>
+      </li>
+    );
+  }
+
+  return (
+    <li className="recipe-card recipe-card--found">
+      <h3 className="display recipe-card__name">🔮 {page.name}</h3>
+      <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
+      <p className="recipe-card__note">{page.note}</p>
+      <p className="recipe-card__by">Found {day(page.foundAt)}</p>
+      <a
+        className="recipe-card__source"
+        href={page.source}
+        target="_blank"
+        rel="noreferrer"
+      >
+        The real recipe ↗
+      </a>
+    </li>
+  );
+};
+
+/** The player's own book, kept on their account, with a way to start over. */
+const SoloBook = ({
+  account,
+  pages: soloPages,
+  onStartOver,
+}: {
+  account: Account | null | undefined;
+  pages: SoloPage[] | null | undefined;
+  onStartOver: () => Promise<void>;
+}) => {
+  const confirm = useConfirm();
+
+  const soloFound =
+    soloPages?.filter((page) => page.state === "found").length ?? 0;
+
+  return (
+    <section aria-labelledby="solo-title" className="panel panel--board">
+      <span className="legend">my.recipe.book</span>
+      <div className="slices__head">
+        <div className="stack">
+          <h2 id="solo-title" className="display turn">
+            My recipe book
+          </h2>
+          {soloPages ? (
+            <span className="slices__count">
+              {soloFound} <span>of {soloPages.length} found</span>
+            </span>
+          ) : null}
+        </div>
+        {soloPages ? (
+          <button
+            type="button"
+            className="btn btn--quiet"
+            disabled={soloFound === 0}
+            onClick={() => confirm.press("reset", onStartOver)}
+          >
+            {confirm.armed === "reset" ? "Sure? Start over" : "Start over"}
+          </button>
+        ) : null}
+      </div>
+
+      {account === null ? (
+        <div className="stack">
+          <p className="turn__note">
+            Play on your own: every potion you find goes in a book of your own,
+            kept on your irmahs.dev account, on every device.
+          </p>
+          <div>
+            <a href={signInUrl()} className="btn btn--primary">
+              Sign in
+            </a>
+          </div>
+        </div>
+      ) : null}
+      {account && soloPages === undefined ? (
+        <p className="hint">Opening your book…</p>
+      ) : null}
+      {account && soloPages === null ? (
+        <p className="hint">Your book cannot be reached right now.</p>
+      ) : null}
+      {soloPages ? (
+        <ul className="book">
+          {soloPages.map((page, i) => (
+            // Pages keep their place in the book, found or not.
+            // oxlint-disable-next-line no-array-index-key
+            <SoloBookPage key={i} page={page} />
+          ))}
+        </ul>
+      ) : null}
+      <p className="hint">
+        Your own book, apart from the shared one: what you brew here never goes
+        in it. Every potion is a real wellness shot, tea or tonic, for fun and
+        not as medical advice.
+      </p>
+    </section>
+  );
+};
+
+/** The book everyone shares: who found what, and the last brew. */
+const SharedBook = ({
+  account,
+  book,
+  now,
+}: {
+  account: Account | null | undefined;
+  book: Book | null | undefined;
+  now: number;
+}) => {
+  const pages = book?.pages;
+  const found = pages?.filter((page) => page.state === "found") ?? [];
+  const yours = found.filter((page) => page.yours).length;
+
+  return (
+    <section aria-labelledby="book-title" className="panel panel--board">
+      <span className="legend">recipe.book</span>
+      {book?.latest ? <LastBrew latest={book.latest} now={now} /> : null}
+      <div className="stack">
+        <h2 id="book-title" className="display turn">
+          Recipe book
+        </h2>
+        {pages ? (
+          <span className="slices__count">
+            {found.length}{" "}
+            <span>
+              of {pages.length} found by everyone
+              {account ? `, ${yours} brewed by you` : ""}
+            </span>
+          </span>
+        ) : null}
+      </div>
+
+      {book === undefined ? <p className="hint">Opening the book…</p> : null}
+      {book === null ? (
+        <p className="hint">The recipe book cannot be reached right now.</p>
+      ) : null}
+      {pages ? (
+        <ul className="book">
+          {pages.map((page, i) => (
+            // Pages keep their place in the book, found or not.
+            // oxlint-disable-next-line no-array-index-key
+            <BookPage key={i} page={page} />
+          ))}
+        </ul>
+      ) : null}
+      <p className="hint">
+        One book for everyone: the first to brew a potion puts their name on it.
+        Every potion is a real wellness shot, tea or tonic, for fun and not as
+        medical advice.
+      </p>
+    </section>
   );
 };
 
 const BoosterPotion = ({ name }: GameProps) => {
   const [selection, setSelection] = useState<Selection>(EMPTY);
-  const [found, setFound] = useState(loadFound);
-  const [brewed, setBrewed] = useState<Brewed | null>(null);
-  const confirm = useConfirm();
+  // undefined until the server answers, or when it cannot be reached.
+  const [account, setAccount] = useState<Account | null | undefined>();
+  // undefined while loading, null when the book cannot be had.
+  const [book, setBook] = useState<Book | null | undefined>();
+  const [now, setNow] = useState(Date.now);
+
+  // The book picked last, so a reload comes back to it.
+  const [mode, setMode] = useState<Mode>(() =>
+    readStored(MODE_KEY, modeSchema, () => "shared")
+  );
+
+  // The player's own book: undefined while loading, null when it cannot be had.
+  const [soloPages, setSoloPages] = useState<SoloPage[] | null | undefined>();
+  const [view, setView] = useState<DialogView | null>(null);
+  const [brewing, setBrewing] = useState(false);
+  const [trouble, setTrouble] = useState<string | null>(null);
 
   const ready = isReady(selection);
 
-  useEffect(() => saveFound(found), [found]);
+  useEffect(() => writeStored(MODE_KEY, mode), [mode]);
 
-  const brewIt = () => {
-    if (!ready) {
-      return;
+  useEffect(() => {
+    let current = true;
+
+    const load = async () => {
+      const [who, first] = await Promise.all([currentAccount(), fetchBook()]);
+
+      if (current) {
+        setAccount(who);
+        setBook(first);
+        setNow(Date.now());
+      }
+
+      // Only someone signed in has a book of their own.
+      if (who) {
+        const own = await fetchSoloBook();
+
+        if (current) {
+          setSoloPages(own);
+        }
+      }
+    };
+
+    // Others brew too: the book is fetched again now and then, while the
+    // page is in view, so their finds and the last brew show up.
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      const fresh = await fetchBook();
+
+      if (current && fresh) {
+        setBook(fresh);
+        setNow(Date.now());
+      }
+    };
+
+    void load();
+    const timer = window.setInterval(refresh, REFRESH_MS);
+
+    return () => {
+      current = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const brewShared = async () => {
+    const result = await postBrew(selection);
+
+    if (!result.ok) {
+      return result.message;
     }
 
-    const result = brew(selection, found);
-
-    if (result.type === "potion") {
+    if (result.answer.type === "potion") {
       // A potion is done with; a mystery stays in to be changed one by one.
       setSelection(EMPTY);
+      // Others may have found potions too: the whole book comes back fresh.
+      const fresh = await fetchBook();
 
-      if (result.isNew) {
-        setFound([...found, result.recipe.name]);
+      if (fresh) {
+        setBook(fresh);
+        setNow(Date.now());
       }
     }
 
-    setBrewed(result);
+    setView(sharedView(result.answer));
+
+    return null;
+  };
+
+  const brewSolo = async () => {
+    const result = await postSoloBrew(selection);
+
+    if (!result.ok) {
+      return result.message;
+    }
+
+    if (result.answer.type === "potion") {
+      setSelection(EMPTY);
+      setSoloPages((await fetchSoloBook()) ?? soloPages);
+    }
+
+    setView(soloView(result.answer));
+
+    return null;
+  };
+
+  const brewIt = async () => {
+    if (!ready || brewing) {
+      return;
+    }
+
+    setBrewing(true);
+    setTrouble(null);
+    const problem = mode === "solo" ? await brewSolo() : await brewShared();
+
+    setBrewing(false);
+    setTrouble(problem);
+  };
+
+  const startOver = async () => {
+    if (await resetSoloBook()) {
+      setSoloPages(await fetchSoloBook());
+    } else {
+      setTrouble("Your book could not be started over. Try again.");
+    }
   };
 
   const status = () => {
@@ -233,6 +601,22 @@ const BoosterPotion = ({ name }: GameProps) => {
     ][selection.length - MIN_INGREDIENTS];
   };
 
+  const notice = () => {
+    if (trouble) {
+      return trouble;
+    }
+
+    if (account === null) {
+      return mode === "solo"
+        ? "Your own book is kept on your irmahs.dev account."
+        : "Brews go in the shared book under your irmahs.dev name.";
+    }
+
+    return account === undefined && book !== undefined
+      ? "The cauldron can't be reached right now."
+      : "";
+  };
+
   const chosen = selection.map((part) => part.name);
 
   return (
@@ -245,8 +629,25 @@ const BoosterPotion = ({ name }: GameProps) => {
       </Header>
       <main className="page">
         <p className="page__sub">
-          mix real wellness shots and teas, find all {RECIPES.length} potions
+          brew real wellness shots and teas, and put your name in the book
         </p>
+
+        <nav aria-label="Which book" className="picker">
+          {modeSchema.options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className="picker__option"
+              aria-pressed={option === mode}
+              onClick={() => {
+                setMode(option);
+                setTrouble(null);
+              }}
+            >
+              {MODES[option]}
+            </button>
+          ))}
+        </nav>
 
         <div className="layout">
           <section aria-label="Ingredients" className="panel panel--pantry">
@@ -254,7 +655,7 @@ const BoosterPotion = ({ name }: GameProps) => {
 
             <div className="stack">
               <h2 className="display turn">Bases</h2>
-              <p className="hint">Juices, fruit and vegetables.</p>
+              <p className="hint">Juices, fruit, vegetables and teas.</p>
             </div>
             {BASE_KINDS.map((kind) => (
               <Shelf
@@ -302,14 +703,20 @@ const BoosterPotion = ({ name }: GameProps) => {
             </p>
 
             <div className="result__actions">
-              <button
-                type="button"
-                className="btn btn--primary btn--spin"
-                disabled={!ready}
-                onClick={brewIt}
-              >
-                🧪 Brew
-              </button>
+              {account === null ? (
+                <a href={signInUrl()} className="btn btn--primary btn--spin">
+                  Sign in to brew
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--primary btn--spin"
+                  disabled={!ready || brewing || account === undefined}
+                  onClick={brewIt}
+                >
+                  {brewing ? "Brewing…" : "🔮 Brew"}
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn--quiet"
@@ -319,6 +726,9 @@ const BoosterPotion = ({ name }: GameProps) => {
                 Empty it
               </button>
             </div>
+            <p className="hint" aria-live="polite">
+              {notice()}
+            </p>
 
             <div className="stack">
               <h3 className="field-label">How to play</h3>
@@ -333,58 +743,31 @@ const BoosterPotion = ({ name }: GameProps) => {
                   dried.
                 </li>
                 <li>
-                  Brew. The right ones make one of {RECIPES.length} potions,
-                  each a real wellness shot, tea or tonic.
+                  Brew. The right ones make a potion, each a real wellness shot,
+                  tea or tonic.
                 </li>
                 <li>
-                  Anything else is a Mystery Potion, with a hint at the potion
-                  it nearly was.
+                  {mode === "solo"
+                    ? "Each one goes in your own book, kept on your account."
+                    : "The first to brew a potion puts their name on its page, for everyone."}{" "}
+                  Anything else is a Mystery Potion, with a hint.
                 </li>
               </ol>
             </div>
           </section>
         </div>
 
-        <section aria-labelledby="book-title" className="panel panel--board">
-          <span className="legend">recipe.book</span>
-          <div className="slices__head">
-            <div className="stack">
-              <h2 id="book-title" className="display turn">
-                Recipe book
-              </h2>
-              <span className="slices__count">
-                {found.length} <span>of {RECIPES.length} found</span>
-              </span>
-            </div>
-            <button
-              type="button"
-              className="btn btn--quiet"
-              disabled={found.length === 0}
-              onClick={() => confirm.press("forget", () => setFound([]))}
-            >
-              {confirm.armed === "forget" ? "Sure? Start over" : "Start over"}
-            </button>
-          </div>
-          <ul className="book">
-            {RECIPES.map((recipe) => (
-              <Page
-                key={recipe.name}
-                recipe={recipe}
-                found={found.includes(recipe.name)}
-              />
-            ))}
-          </ul>
-          <p className="hint">
-            Every potion is a real wellness shot, tea or tonic, for fun and not
-            as medical advice. The recipe book is saved in this browser only.
-          </p>
-        </section>
+        {mode === "solo" ? (
+          <SoloBook
+            account={account}
+            pages={soloPages}
+            onStartOver={startOver}
+          />
+        ) : (
+          <SharedBook account={account} book={book} now={now} />
+        )}
 
-        <BrewDialog
-          brewed={brewed}
-          found={found.length}
-          onClose={() => setBrewed(null)}
-        />
+        <BrewDialog view={view} onClose={() => setView(null)} />
       </main>
     </>
   );

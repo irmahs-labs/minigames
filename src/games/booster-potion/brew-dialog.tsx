@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { RECIPES } from "./pantry";
-import { labelOf, partsOf } from "./rules";
-import type { Brewed } from "./rules";
+import type { BrewAnswer, Mystery, SoloBrewAnswer } from "./api";
 
 /** "Apple, Lime, Fresh ginger and Cayenne"; "Garlic and Honey". */
 export const listed = (names: readonly string[]) =>
@@ -10,30 +8,40 @@ export const listed = (names: readonly string[]) =>
     ? (names[0] ?? "")
     : `${names.slice(0, -1).join(", ")} and ${names.at(-1) ?? ""}`;
 
+/** Ends text with a full stop, unless it ends with one: "Irma H.". */
+const sentence = (text: string) => (text.endsWith(".") ? text : `${text}.`);
+
 const WORDS = ["none", "one", "two", "three", "four"] as const;
 
-const hintFor = ({
-  closest,
-  size,
-  wrongForm,
-}: Extract<Brewed, { type: "mystery" }>) => {
-  if (wrongForm) {
-    const wanted = listed(
-      wrongForm.wanted.map((part) => labelOf(part).toLowerCase())
-    );
+/** What the popup says about a brew. */
+export interface DialogView {
+  kicker: string;
+  title: string;
+  lines: string[];
+  /** The main button's label. */
+  again: string;
+}
 
-    return `All the right ingredients for ${wrongForm.recipe.name}, but it wants ${wanted}.`;
+/**
+ * The hint at the potion a mystery nearly was. `unfound` says whose finding
+ * counts: "nobody has found yet" for the shared book, "you have still to
+ * find" for the player's own.
+ */
+const hintFor = ({ closest, size, wrongForm }: Mystery, unfound: string) => {
+  if (wrongForm) {
+    const wanted = listed(wrongForm.wanted.map((part) => part.toLowerCase()));
+
+    return `All the right ingredients for ${wrongForm.name}, but it wants ${wanted}.`;
   }
 
   if (!closest) {
-    return `None of these ${WORDS[size] ?? size} is in a potion you have still to find.`;
+    return `None of these ${WORDS[size] ?? size} is in a potion ${unfound}.`;
   }
 
-  const { recipe, shared } = closest;
-  const needs = recipe.ingredients.length;
+  const { name, needs, shared } = closest;
 
   if (shared === needs) {
-    return `Everything in ${recipe.name} is in there, and more besides.`;
+    return `Everything in ${name} is in there, and more besides.`;
   }
 
   const count =
@@ -41,18 +49,69 @@ const hintFor = ({
 
   const takes = needs === size ? "" : `, which takes ${WORDS[needs] ?? needs}`;
 
-  return `${shared === needs - 1 ? "So close! " : ""}${count} in ${recipe.name}${takes}.`;
+  return `${shared === needs - 1 ? "So close! " : ""}${count} in ${name}${takes}.`;
+};
+
+const mysteryView = (answer: Mystery, unfound: string): DialogView => ({
+  again: "Try again",
+  kicker: "The cauldron bubbles",
+  lines: [hintFor(answer, unfound)],
+  title: "Mystery Potion",
+});
+
+/** A brew for the shared book: who was first, and whether it was you. */
+export const sharedView = (answer: BrewAnswer): DialogView => {
+  if (answer.type === "mystery") {
+    return mysteryView(answer, "nobody has found yet");
+  }
+
+  const { first, isNew, page } = answer;
+
+  let kicker = "You brewed";
+
+  if (first) {
+    kicker = "First in the world to brew it!";
+  } else if (isNew) {
+    kicker = "New to you";
+  }
+
+  return {
+    again: "Brew another",
+    kicker,
+    lines: [
+      `${listed(page.ingredients)}. ${page.note}`,
+      first
+        ? "Your name is on its page in the recipe book, for everyone to see."
+        : sentence(`First brewed by ${page.by}`),
+    ],
+    title: `🔮 ${page.name}`,
+  };
+};
+
+/** A brew for the player's own book. */
+export const soloView = (answer: SoloBrewAnswer): DialogView => {
+  if (answer.type === "mystery") {
+    return mysteryView(answer, "you have still to find");
+  }
+
+  const { isNew, page } = answer;
+
+  return {
+    again: "Brew another",
+    kicker: isNew ? "New potion for your book!" : "You brewed",
+    lines: [`${listed(page.ingredients)}. ${page.note}`],
+    title: `🔮 ${page.name}`,
+  };
 };
 
 interface BrewDialogProps {
-  /** What came out of the cauldron; the dialog is open while it is set. */
-  brewed: Brewed | null;
-  found: number;
+  /** What to say about the brew; the dialog is open while it is set. */
+  view: DialogView | null;
   onClose: () => void;
 }
 
-/** The popup that names the potion, or hints at the one nearly made. */
-export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
+/** The popup that names the potion, or hints at the one it nearly was. */
+export const BrewDialog = ({ view, onClose }: BrewDialogProps) => {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -62,22 +121,12 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
       return;
     }
 
-    if (brewed && !dialog.open) {
+    if (view && !dialog.open) {
       dialog.showModal();
-    } else if (!brewed && dialog.open) {
+    } else if (!view && dialog.open) {
       dialog.close();
     }
-  }, [brewed]);
-
-  const potion = brewed?.type === "potion" ? brewed : null;
-  const mystery = brewed?.type === "mystery" ? brewed : null;
-
-  const kicker = potion?.isNew ? "New potion found!" : "You brewed";
-
-  const progress =
-    found === RECIPES.length
-      ? `That's all ${RECIPES.length}: the recipe book is full! 🎉`
-      : `${found} of ${RECIPES.length} found.`;
+  }, [view]);
 
   // The browser centres and layers the bare dialog; the panel look sits inside.
   return (
@@ -89,25 +138,18 @@ export const BrewDialog = ({ brewed, found, onClose }: BrewDialogProps) => {
     >
       <div className="panel result__panel">
         <span className="legend">potion.log</span>
-        <p className="kicker">{mystery ? "The cauldron bubbles" : kicker}</p>
+        <p className="kicker">{view?.kicker}</p>
         <h2 id="brew-title" className="result__winner display">
-          {potion ? `🧪 ${potion.recipe.name}` : "Mystery Potion"}
+          {view?.title}
         </h2>
-        <p className="result__note">
-          {potion
-            ? [
-                `${listed(partsOf(potion.recipe).map(labelOf))}.`,
-                potion.recipe.note,
-                potion.isNew ? progress : "",
-              ]
-                .filter(Boolean)
-                .join(" ")
-            : null}
-          {mystery ? hintFor(mystery) : null}
-        </p>
+        {view?.lines.map((line) => (
+          <p key={line} className="result__note">
+            {line}
+          </p>
+        ))}
         <div className="result__actions">
           <button type="button" className="btn btn--primary" onClick={onClose}>
-            {potion ? "Brew another" : "Try again"}
+            {view?.again}
           </button>
         </div>
       </div>
