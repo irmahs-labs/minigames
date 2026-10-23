@@ -253,7 +253,7 @@ export const StickyBoard = ({ sides }: StickyBoardProps) => {
             The sticky board
           </h2>
           <p className="page__sub">
-            Leave a note for whoever comes by: no names, gone in a day.
+            Leave an anonymous note for whoever comes by!
           </p>
         </div>
 
