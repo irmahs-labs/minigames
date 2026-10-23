@@ -1158,8 +1158,8 @@ a:hover {
 .panel--stickies {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 32px 24px 24px;
+  gap: 12px;
+  padding: 28px 22px 18px;
 }
 .stickies__head {
   display: flex;
@@ -1193,18 +1193,19 @@ a:hover {
 .sticky--white {
   background: var(--note-white);
 }
+/* Writing a note: two lines of paper, and one row under it. */
 .composer {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 520px;
+  max-width: 640px;
 }
 .composer__body {
-  min-height: 96px;
-  padding: 10px 12px;
+  min-height: 0;
+  padding: 8px 12px;
   color: var(--ink);
   font: 400 16px/1.45 var(--body);
-  resize: vertical;
+  resize: none;
 }
 .composer__body::placeholder {
   color: var(--ink);
@@ -1214,10 +1215,11 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
+  gap: 8px 16px;
 }
+/* The count and notes left take the room between the colours and the button. */
 .composer__count {
+  flex: 1;
   font-size: 13px;
   color: var(--text-muted);
 }

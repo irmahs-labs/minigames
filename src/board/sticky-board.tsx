@@ -74,15 +74,13 @@ const Composer = ({ left, onStuck }: ComposerProps) => {
 
   return (
     <form className="composer" onSubmit={submit}>
-      <label className="field-label" htmlFor="sticky-body">
-        Your note
-      </label>
       <textarea
         id="sticky-body"
+        aria-label="Your note"
         className={`field composer__body sticky--${colour}`}
         value={body}
         maxLength={MAX_LENGTH * 2}
-        rows={3}
+        rows={2}
         placeholder="Say something nice to whoever comes by"
         onChange={(event) => setBody(event.target.value)}
       />
@@ -103,18 +101,13 @@ const Composer = ({ left, onStuck }: ComposerProps) => {
         <span
           className={`composer__count${count > MAX_LENGTH ? " composer__count--over" : ""}`}
         >
-          {count}/{MAX_LENGTH}
+          {count}/{MAX_LENGTH} · {left > 0 ? leftToday : "no notes left today"}
         </span>
-      </div>
-      <div className="composer__row">
         <button type="submit" className="btn btn--primary" disabled={!ready}>
           {sending ? "Sticking…" : "Stick it up"}
         </button>
-        <span className="hint">
-          {left > 0 ? leftToday : "That's your notes for today."}
-        </span>
       </div>
-      <output className="hint">{problem}</output>
+      {problem ? <output className="hint">{problem}</output> : null}
     </form>
   );
 };
@@ -260,9 +253,7 @@ export const StickyBoard = ({ sides }: StickyBoardProps) => {
             The sticky board
           </h2>
           <p className="page__sub">
-            Leave a note for whoever comes by. No names, and every note comes
-            down after a day. Drag the notes wherever you like: only you see
-            where you put them.
+            Leave a note for whoever comes by: no names, gone in a day.
           </p>
         </div>
 
