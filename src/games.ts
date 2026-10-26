@@ -44,4 +44,12 @@ export const GAMES: readonly Game[] = [
     name: "Booster Potion",
     slug: "booster-potion",
   },
+  {
+    Screen: lazy(() => import("./games/book-of-shadows/book-of-shadows")),
+    blurb:
+      "Your witch profile: the moon tonight, the Wheel of the Year, retrogrades, your birth chart and your numbers.",
+    legend: "book-of-shadows.exe",
+    name: "Book of Shadows",
+    slug: "book-of-shadows",
+  },
 ];

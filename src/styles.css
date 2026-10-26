@@ -44,6 +44,10 @@
   --note-taro: #dccbff;
   --note-blue: #c9dcff;
   --note-white: #ffffff;
+  /* The Magic 8 Ball: its black shell, its blue liquid and its die. */
+  --ball: #141a17;
+  --ball-liquid: #1b2a57;
+  --ball-die: #3657b0;
   /* The strip of tape a note hangs by, see-through over the paper. */
   --note-tape: #fffdf0b3;
 
@@ -1154,6 +1158,620 @@ a:hover {
   color: var(--on-accent);
 }
 
+/* ── book of shadows ── */
+/* Read by screen readers, not seen: a moon's phase on a calendar day. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Six pages: on a narrow screen the tabs scroll sideways instead of wrapping. */
+.picker--scroll {
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.panel--book {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 22px 22px;
+}
+.panel--wide {
+  flex: 999 1 520px;
+}
+.panel--narrow {
+  flex: 1 1 320px;
+}
+.book__title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+.glyph {
+  font-family:
+    "Segoe UI Symbol", "Noto Sans Symbols", "Apple Symbols", var(--body);
+}
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 10px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 12px/1.4 var(--body);
+  vertical-align: middle;
+}
+.badge--retro {
+  background: var(--strong);
+  color: var(--on-strong);
+}
+/* A narrow panel's table: a planet's name stays on one line. */
+.board--compact tbody th {
+  white-space: nowrap;
+}
+.board--compact .badge {
+  margin-left: 6px;
+}
+.month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+.month-nav .icon-btn {
+  font: 700 26px/1 var(--display);
+}
+.month-nav .btn {
+  margin-left: auto;
+}
+.moon-glyph {
+  flex: none;
+}
+
+/* Birth details */
+.details__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+.details__more {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.details__more summary {
+  cursor: pointer;
+}
+.details__more[open] summary {
+  margin-bottom: 12px;
+}
+.details__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* The witch card */
+.witch-card__about {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.lights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.light {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.light__label {
+  font: 700 12px/1.3 var(--body);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.light__sign {
+  font-size: 20px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px 20px;
+}
+.facts--wide {
+  grid-template-columns: 1fr;
+}
+.facts dt {
+  font: 700 13px/1.3 var(--body);
+  color: var(--text-muted);
+}
+.facts dd {
+  margin: 2px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.facts__big {
+  font-size: 22px;
+}
+.facts__aside {
+  color: var(--text-muted);
+}
+.elements {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.element {
+  display: grid;
+  grid-template-columns: 56px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.element__track {
+  height: 14px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--raised);
+  overflow: hidden;
+}
+.element__fill {
+  display: block;
+  height: 100%;
+  background: var(--selected);
+}
+.element__count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* The Moon tonight, and a month of moons */
+.tonight {
+  align-items: center;
+  text-align: center;
+}
+.tonight .facts {
+  align-self: stretch;
+  text-align: left;
+}
+.tonight__stats {
+  margin: -6px 0 0;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.tonight__lore {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.moon-cal {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.moon-cal__weekday {
+  text-align: center;
+  font: 700 12px/1.3 var(--body);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.moon-cal__day {
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 2px;
+  border: var(--stroke-base) solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+  text-align: center;
+}
+.moon-cal__day--exact {
+  border-color: var(--outline);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.moon-cal__day--today {
+  border: var(--line);
+  box-shadow: var(--shadow-soft);
+}
+.moon-cal__num {
+  font-size: 13px;
+  font-weight: 700;
+}
+.moon-cal__phase {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.phase-list,
+.eclipses {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+}
+.phase-list li,
+.eclipses li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The Wheel of the Year */
+.year-wheel {
+  width: min(100%, 320px);
+  align-self: center;
+}
+.year-wheel__name {
+  fill: var(--text);
+  font: 600 12px var(--display);
+}
+.year-wheel__date {
+  fill: var(--text-muted);
+  font: 700 9.5px var(--body);
+}
+.sabbats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.sabbat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.sabbat p {
+  margin: 0;
+}
+.sabbat--next {
+  border-width: var(--stroke-panel);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-soft);
+}
+.sabbat__when {
+  font-weight: 700;
+}
+.sabbat__name {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+.sabbat__say {
+  font: 400 14px var(--body);
+}
+.sabbat__also {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* The sky: retrogrades and eclipses */
+.retrogrades {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+.retrograde {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+}
+.retrograde--now {
+  border-width: var(--stroke-panel);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-soft);
+}
+.retrograde__name {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.retrograde__dates {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.retrograde__lore {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* The birth chart */
+.chart-wheel {
+  width: min(100%, 440px);
+  align-self: center;
+}
+.chart-wheel__sign {
+  fill: var(--text);
+  font-size: 19px;
+}
+.chart-wheel__planet {
+  fill: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+}
+.chart-wheel__house {
+  fill: var(--text-muted);
+  font: 700 11px var(--body);
+}
+.chart-wheel__angle {
+  fill: var(--text);
+  font: 700 11px var(--body);
+}
+.tally {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Numerology */
+.numbers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+.number-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+}
+.number-card p {
+  margin: 0;
+}
+.number-card--master {
+  border-width: var(--stroke-panel);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.number-card__value {
+  font-size: 44px;
+  line-height: 1;
+}
+.number-card__title {
+  margin: 0;
+  font-size: 18px;
+}
+.number-card__keywords {
+  font-size: 13px;
+  font-weight: 700;
+}
+.number-card__about {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.number-card__from {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 12.5px;
+  opacity: 0.8;
+}
+.personal-year p {
+  margin: 0;
+}
+.personal-year p + p {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+}
+
+/* Tarot */
+.tarot-face {
+  flex: none;
+}
+.tarot-face__label {
+  fill: var(--text);
+  font: 600 9px var(--display);
+}
+.tarot-face__name {
+  fill: var(--text);
+  font: 600 5.5px var(--display);
+}
+.tarot-reading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+.tarot-reading__text {
+  flex: 1 1 300px;
+  min-width: 0;
+  gap: 12px;
+}
+.tarot-reading__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tarot-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: var(--stroke-base) dashed var(--outline);
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.tarot-side p {
+  margin: 0;
+}
+/* The way up the card was drawn, or turned: solid, and lit. */
+.tarot-side--shown {
+  border-style: solid;
+  border-width: var(--stroke-panel);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.tarot-side--shown .field-label {
+  color: var(--on-accent);
+}
+.tarot-side__keywords {
+  font-weight: 700;
+}
+/* Choosing a card, a step at a time. */
+.tarot-step {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tarot-step .picker {
+  align-self: stretch;
+}
+.tarot-step .picker__option {
+  flex: 1;
+  padding: 0 12px;
+}
+.tarot-step__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tarot-step__grid .chip {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.chip__numeral {
+  font-family: var(--display);
+  opacity: 0.7;
+}
+.tarot-or {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: var(--stroke-base) dashed var(--outline);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.tarot-reading__way {
+  margin: -4px 0 0;
+  font: 700 18px/1.2 var(--display);
+}
+
+/* The Magic 8 Ball */
+.eight-ball {
+  align-items: stretch;
+}
+/* The ball takes the drag itself: swiping it never scrolls the page. */
+.eight-ball__stage {
+  align-self: center;
+  width: min(100%, 340px);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.eight-ball__stage:active {
+  cursor: grabbing;
+}
+.eight-ball__ball {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* The 8 and the answer are set on a disc 200 across, then scaled onto the ball. */
+.eight-ball__eight {
+  font: 700 125px var(--display);
+}
+.eight-ball__answer {
+  font: 800 15px var(--body);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.eight-ball__die {
+  transition: opacity 0.6s ease-in;
+}
+.eight-ball__caption {
+  min-height: 1.3em;
+  margin: 0;
+  text-align: center;
+  font-size: 26px;
+  line-height: 1.2;
+}
+.eight-ball__caption--waiting {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.eight-ball__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.eight-ball .hint {
+  text-align: center;
+}
+
 /* ── sticky board (hub) ── */
 .panel--stickies {
   display: flex;
@@ -1447,7 +2065,8 @@ a:hover {
     padding: 28px 12px 16px;
   }
   .panel--pantry,
-  .panel--stickies {
+  .panel--stickies,
+  .panel--book {
     padding: 28px 16px 18px;
   }
   /* Too narrow for the corner: the last brew sits in full above the title. */
@@ -1461,6 +2080,28 @@ a:hover {
   .board td {
     padding: 8px 6px;
   }
+  .picker--scroll .picker__option {
+    flex: none;
+  }
+  .lights {
+    grid-template-columns: 1fr;
+  }
+  .moon-cal {
+    gap: 3px;
+  }
+  .moon-cal__day {
+    min-height: 58px;
+    padding: 4px 0;
+  }
+  /* No room to write the phase: it stays for screen readers only. */
+  .moon-cal__phase {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1471,7 +2112,8 @@ a:hover {
   .game-card,
   .planet,
   .switch__track,
-  .switch__thumb {
+  .switch__thumb,
+  .eight-ball__die {
     transition: none;
   }
 }

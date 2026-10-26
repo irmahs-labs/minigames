@@ -36,6 +36,17 @@ There is one grimoire, the recipe book, shared by everyone. Brewing takes an irm
 
 Booster Potion can also be played solo: **My own grimoire** keeps a grimoire of your own on your irmahs.dev account, on every device. Its pages unlock only when you brew them, its hints point at the potions you have still to find, each page shows the day you found it, and **Start over** empties it. Solo brews never go in the shared grimoire.
 
+**Book of Shadows.** A witch's profile, worked out in the browser from [Astronomy Engine](https://github.com/cosinekitty/astronomy)'s ephemeris. Eight pages:
+
+- **Profile**: your birth name, date, time and place (a city from the list fills in its coordinates and time zone, or type them in), and the witch card drawn from them: your Sun, Moon and rising signs, your craft (Candle, Green, Storm or Sea Witch, from the element your chart leans on), your life path, the moon you were born under, the sabbat season of your birthday, and your elements.
+- **Moon**: tonight's moon (its phase, how much is lit, its sign, and the next full and new moons) and a month of moons, with the exact phases on their days and each full moon's traditional name (Harvest, Hunter's, Blue…), in your own time zone.
+- **Sabbats**: the Wheel of the Year, turned to today, and the eight sabbats of any year with their dates, what each is, how to keep it, its colours and symbols. The solstices and equinoxes are the days they fall on where you are; the fire festivals keep their traditional days, with the day the Sun is really halfway alongside. A switch turns the wheel round for the southern hemisphere.
+- **Sky**: where every planet is today and which are retrograde, then a year's retrogrades, from the day each planet stations to the day it turns direct, and its eclipses.
+- **Birth chart**: the chart as a wheel and a table, every planet's sign, degree and whole-sign house, and what your Sun, Moon and rising say. Without a birth time there is no rising sign or houses, and the card says when the Moon changed signs that day.
+- **Numerology**: Pythagorean life path, expression, soul urge, personality, birthday and maturity numbers, master numbers kept, and your personal year.
+- **Tarot**: all 78 cards of a Rider–Waite–Smith deck, each read upright and reversed. Choose a card a step at a time (major or minor arcana; for a minor card the suit; the card; then upright or reversed), or draw one at random, and read it. A guide explains how to read them: the arcana, the suits and their elements, the numbers, the court cards.
+- **Magic 8 Ball**: ask a yes-or-no question and shake. On a phone, shake the phone itself (an iPhone asks once for motion access); anywhere, flick the ball with a finger or the mouse, or press **Shake the ball**. The ball is drawn in 3D: drag it to turn it and look at it from any side. Shaken, it tumbles, rolls its window up to you, and the die floats up with one of the classic twenty answers.
+
 ## The sticky board
 
 Under the games, the hub has a **sticky board**: anyone signed in to their irmahs.dev account can stick a note on it, in lemon, matcha, strawberry, taro, blue or white, for everyone to read. Notes are up to 200 characters and never show who wrote them. Each comes down a day after it went up, and the server deletes it, with who wrote it, within the hour after. Everyone can have 5 notes up at a time.
@@ -46,7 +57,7 @@ Mini Games admins can take a note down before then. An admin is anyone the accou
 
 ## Where things are kept
 
-The Wheel of Fortune and the same-screen game keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
+The Wheel of Fortune, the same-screen game and the Book of Shadows (birth details included) keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
 
 ## Develop
 
