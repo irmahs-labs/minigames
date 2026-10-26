@@ -20,6 +20,7 @@ import type { BookState, Tab } from "./profile";
 import { BirthDetails, WitchCard } from "./profile-tab";
 import { SabbatsTab } from "./sabbats-tab";
 import { SkyTab } from "./sky-tab";
+import { TarotTab } from "./tarot-tab";
 import { localTimeZone, wallTimeAt } from "./time";
 
 const TAB_NAMES: Record<Tab, string> = {
@@ -29,6 +30,7 @@ const TAB_NAMES: Record<Tab, string> = {
   profile: "Profile",
   sabbats: "Sabbats",
   sky: "Sky",
+  tarot: "Tarot",
 };
 
 /** How often "now" moves on. */
@@ -96,6 +98,10 @@ const BookOfShadows = ({ name }: GameProps) => {
         return <SkyTab now={now} timeZone={timeZone} />;
       }
 
+      case "tarot": {
+        return <TarotTab />;
+      }
+
       case "chart": {
         return chart ? (
           <ChartTab chart={chart} />
@@ -152,7 +158,7 @@ const BookOfShadows = ({ name }: GameProps) => {
       </Header>
       <main className="page">
         <p className="page__sub">
-          your moons, sabbats, stars and numbers, in one book
+          your moons, sabbats, stars, numbers and cards, in one book
         </p>
 
         <nav aria-label="Pages of the book" className="picker picker--scroll">

@@ -30,6 +30,7 @@ export const TABS = [
   "sky",
   "chart",
   "numbers",
+  "tarot",
 ] as const;
 
 export type Tab = (typeof TABS)[number];

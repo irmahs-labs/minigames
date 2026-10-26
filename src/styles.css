@@ -1613,6 +1613,116 @@ a:hover {
   font-size: 15px;
 }
 
+/* Tarot */
+.tarot-face {
+  flex: none;
+}
+.tarot-face__label {
+  fill: var(--text);
+  font: 600 9px var(--display);
+}
+.tarot-face__name {
+  fill: var(--text);
+  font: 600 5.5px var(--display);
+}
+.tarot-reading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+.tarot-reading__text {
+  flex: 1 1 300px;
+  min-width: 0;
+  gap: 12px;
+}
+.tarot-reading__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tarot-sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+}
+.tarot-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: var(--stroke-base) dashed var(--outline);
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.tarot-side p {
+  margin: 0;
+}
+/* The way up the card was drawn, or turned: solid, and lit. */
+.tarot-side--shown {
+  border-style: solid;
+  border-width: var(--stroke-panel);
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.tarot-side--shown .field-label {
+  color: var(--on-accent);
+}
+.tarot-side__keywords {
+  font-weight: 700;
+}
+.deck__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.deck__search {
+  flex: 1 1 220px;
+  width: auto;
+}
+.deck {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+}
+.deck__card {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: 12px;
+  row-gap: 2px;
+  padding: 10px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+  text-align: left;
+}
+.deck__card .tarot-face {
+  grid-row: span 2;
+}
+.deck__card:hover {
+  background: var(--panel);
+}
+.deck__card[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--on-selected);
+}
+.deck__name {
+  font: 600 16px/1.2 var(--display);
+}
+.deck__keywords {
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
 /* ── sticky board (hub) ── */
 .panel--stickies {
   display: flex;
