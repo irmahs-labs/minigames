@@ -49,7 +49,18 @@ export const PLANETS: readonly Planet[] = [
 ];
 
 /** The planets that can turn retrograde: all but the lights. */
-export const WANDERERS: readonly Planet[] = PLANETS.slice(2);
+export type Wanderer = Exclude<Planet, "Sun" | "Moon">;
+
+export const WANDERERS: readonly Wanderer[] = [
+  "Mercury",
+  "Venus",
+  "Mars",
+  "Jupiter",
+  "Saturn",
+  "Uranus",
+  "Neptune",
+  "Pluto",
+];
 
 export const PLANET_GLYPHS: Record<Planet, string> = {
   Jupiter: "♃",
@@ -77,26 +88,7 @@ export const PLANET_MEANINGS: Record<Planet, string> = {
   Venus: "love, beauty and money",
 };
 
-/** What each planet's retrograde is said to stir up, and how to ride it. */
-export const RETROGRADE_LORE: Partial<Record<Planet, string>> = {
-  Jupiter:
-    "Growth turns inward. Count the blessings you already have before chasing more.",
-  Mars: "Energy stalls and old fights flare. Finish what you started instead of picking new battles.",
-  Mercury:
-    "Mixed messages, late trains, lost files. Back up, double-check, and reread before you send.",
-  Neptune:
-    "The fog lifts and illusions show. A good time to see someone, or something, clearly.",
-  Pluto:
-    "Buried things surface. Let go of what you have outgrown, quietly, at the roots.",
-  Saturn:
-    "Rules and duties come back for review. Shore up the foundations you skipped.",
-  Uranus:
-    "Change works under the surface. Free yourself in small ways before the big ones.",
-  Venus:
-    "Exes and old tastes return. Hold off on big purchases, makeovers and new romance.",
-};
-
-const BODIES: Record<Exclude<Planet, "Sun" | "Moon">, Body> = {
+const BODIES: Record<Wanderer, Body> = {
   Jupiter: Body.Jupiter,
   Mars: Body.Mars,
   Mercury: Body.Mercury,
@@ -192,7 +184,7 @@ export interface Station {
 }
 
 export interface Retrograde {
-  planet: Planet;
+  planet: Wanderer;
   /** When it stations retrograde, and where. */
   start: Station;
   /** When it stations direct again. */

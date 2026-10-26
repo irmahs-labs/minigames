@@ -2,10 +2,10 @@ import { EclipseKind } from "astronomy-engine";
 import { useMemo, useState } from "react";
 
 import { formatDay } from "./format";
+import { loreFor } from "./retrograde-lore";
 import {
   PLANET_GLYPHS,
   PLANET_MEANINGS,
-  RETROGRADE_LORE,
   eclipsesBetween,
   positionsAt,
   retrogradesBetween,
@@ -167,7 +167,8 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
       </div>
 
       <ol className="retrogrades">
-        {retrogrades.map(({ planet, start, end }) => {
+        {retrogrades.map((retrograde) => {
+          const { planet, start, end } = retrograde;
           const current = start.time <= now && now < end.time;
 
           return (
@@ -186,7 +187,11 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
                 <StationAt station={start} timeZone={timeZone} year={year} /> →{" "}
                 <StationAt station={end} timeZone={timeZone} year={year} />
               </p>
-              <p className="retrograde__lore">{RETROGRADE_LORE[planet]}</p>
+              {loreFor(retrograde).map((line) => (
+                <p key={line} className="retrograde__lore">
+                  {line}
+                </p>
+              ))}
             </li>
           );
         })}
