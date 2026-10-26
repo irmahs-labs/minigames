@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { DECK, SUITS, cardsMatching, drawCard } from "./tarot";
+import {
+  DECK,
+  FIRST_CHOICE,
+  MAJOR_ARCANA,
+  SUITS,
+  cardOf,
+  choiceOf,
+  drawCard,
+} from "./tarot";
 
 describe("DECK", () => {
   it("holds 78 cards: 22 major arcana and four suits of 14", () => {
@@ -36,25 +44,49 @@ describe("DECK", () => {
   });
 });
 
-describe("cardsMatching", () => {
-  it("filters by arcana and suit", () => {
-    expect(cardsMatching("major", "")).toHaveLength(22);
-    expect(
-      cardsMatching("cups", "").every((card) => card.suit === "cups")
-    ).toBe(true);
+describe("cardOf", () => {
+  it("finds a major card by its number", () => {
+    expect(cardOf({ ...FIRST_CHOICE, major: 13 }).name).toBe("Death");
+    expect(MAJOR_ARCANA).toHaveLength(22);
   });
 
-  it("searches names and keywords, either way up", () => {
-    expect(cardsMatching("all", "tower").map((card) => card.name)).toEqual([
-      "The Tower",
-    ]);
-    expect(cardsMatching("all", "HEARTBREAK").map((card) => card.name)).toEqual(
-      ["Three of Swords"]
-    );
-    // "breaking free" is the Devil's reversed keyword.
+  it("finds a minor card by its suit and rank", () => {
     expect(
-      cardsMatching("major", "breaking free").map((card) => card.name)
-    ).toEqual(["The Devil"]);
+      cardOf({ ...FIRST_CHOICE, arcana: "minor", rank: 2, suit: "swords" }).name
+    ).toBe("Three of Swords");
+    expect(
+      cardOf({ ...FIRST_CHOICE, arcana: "minor", rank: 13, suit: "cups" }).name
+    ).toBe("King of Cups");
+  });
+});
+
+describe("choiceOf", () => {
+  it("lands on a drawn card, keeping the other arcana's pick", () => {
+    const before = { ...FIRST_CHOICE, major: 7 };
+    const queen = DECK.find((card) => card.name === "Queen of Pentacles");
+
+    if (!queen) {
+      throw new Error("No Queen of Pentacles");
+    }
+
+    const choice = choiceOf({ card: queen, reversed: true }, before);
+
+    expect(choice).toEqual({
+      arcana: "minor",
+      major: 7,
+      rank: 12,
+      reversed: true,
+      suit: "pentacles",
+    });
+    expect(cardOf(choice)).toBe(queen);
+  });
+
+  it("goes back to every card it came from", () => {
+    for (const card of DECK) {
+      expect(cardOf(choiceOf({ card, reversed: false }, FIRST_CHOICE))).toBe(
+        card
+      );
+    }
   });
 });
 

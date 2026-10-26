@@ -44,7 +44,7 @@ Booster Potion can also be played solo: **My own grimoire** keeps a grimoire of 
 - **Sky**: where every planet is today and which are retrograde, then a year's retrogrades, from the day each planet stations to the day it turns direct, and its eclipses.
 - **Birth chart**: the chart as a wheel and a table, every planet's sign, degree and whole-sign house, and what your Sun, Moon and rising say. Without a birth time there is no rising sign or houses, and the card says when the Moon changed signs that day.
 - **Numerology**: Pythagorean life path, expression, soul urge, personality, birthday and maturity numbers, master numbers kept, and your personal year.
-- **Tarot**: all 78 cards of a Rider–Waite–Smith deck, each read upright and reversed, with a guide to reading them (the arcana, the suits and their elements, the numbers, the court cards). Pick a card from the deck, filter it by suit, search it by name or meaning, or draw one at random, upright or reversed.
+- **Tarot**: all 78 cards of a Rider–Waite–Smith deck, each read upright and reversed. Choose a card a step at a time (major or minor arcana; for a minor card the suit; the card; then upright or reversed), or draw one at random, and read it. A guide explains how to read them: the arcana, the suits and their elements, the numbers, the court cards.
 
 ## The sticky board
 

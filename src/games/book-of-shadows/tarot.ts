@@ -615,7 +615,7 @@ const NUMERALS = [
   "XXI",
 ];
 
-const RANKS = [
+export const RANKS = [
   "Ace",
   "Two",
   "Three",
@@ -683,25 +683,72 @@ export const DECK: readonly TarotCard[] = [
   ),
 ];
 
-export type DeckFilter = "all" | "major" | Suit;
+export type Arcana = "major" | "minor";
 
-/** The cards a filter and a search keep: by name or by keyword, either way up. */
-export const cardsMatching = (
-  filter: DeckFilter,
-  search: string
-): TarotCard[] => {
-  const wanted = search.trim().toLowerCase();
+/** The 22 major arcana, The Fool (0) to The World (XXI). */
+export const MAJOR_ARCANA: readonly TarotCard[] = DECK.filter(
+  (card) => card.suit === null
+);
 
-  return DECK.filter((card) => {
-    const inFilter =
-      filter === "all" ||
-      (filter === "major" ? card.suit === null : card.suit === filter);
+/** A suit's fourteen cards, Ace to King. */
+export const suitOf = (suit: Suit): readonly TarotCard[] =>
+  DECK.filter((card) => card.suit === suit);
 
-    const text =
-      `${card.name} ${card.upright.keywords} ${card.reversed.keywords}`.toLowerCase();
+/**
+ * A card chosen step by step: major or minor, then the number (and the suit
+ * first, for a minor card), then which way up. Each arcana keeps its own
+ * pick, so going back and forth between them loses nothing.
+ */
+export interface Choice {
+  arcana: Arcana;
+  /** 0 (The Fool) to 21 (The World). */
+  major: number;
+  suit: Suit;
+  /** 0 (Ace) to 13 (King). */
+  rank: number;
+  reversed: boolean;
+}
 
-    return inFilter && (wanted === "" || text.includes(wanted));
-  });
+export const FIRST_CHOICE: Choice = {
+  arcana: "major",
+  major: 0,
+  rank: 0,
+  reversed: false,
+  suit: "wands",
+};
+
+/** The card a choice lands on. */
+export const cardOf = (choice: Choice): TarotCard => {
+  const card =
+    choice.arcana === "major"
+      ? MAJOR_ARCANA[choice.major]
+      : suitOf(choice.suit)[choice.rank];
+
+  if (!card) {
+    throw new Error(`No such card: ${JSON.stringify(choice)}`);
+  }
+
+  return card;
+};
+
+/** The choice that lands on a drawn card, keeping the other arcana's pick. */
+export const choiceOf = (draw: Draw, previous: Choice): Choice => {
+  const { card, reversed } = draw;
+
+  return card.suit
+    ? {
+        ...previous,
+        arcana: "minor",
+        rank: suitOf(card.suit).indexOf(card),
+        reversed,
+        suit: card.suit,
+      }
+    : {
+        ...previous,
+        arcana: "major",
+        major: MAJOR_ARCANA.indexOf(card),
+        reversed,
+      };
 };
 
 export interface Draw {

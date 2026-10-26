@@ -1,26 +1,19 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 
 import {
-  DECK,
+  FIRST_CHOICE,
+  MAJOR_ARCANA,
+  RANKS,
   SUITS,
   SUIT_INFO,
-  cardsMatching,
+  cardOf,
+  choiceOf,
   cryptoRandom,
   drawCard,
 } from "./tarot";
-import type { DeckFilter, TarotCard } from "./tarot";
+import type { Choice, TarotCard } from "./tarot";
 import { TarotFace } from "./tarot-face";
-
-const FILTER_NAMES: Record<DeckFilter, string> = {
-  all: "All 78",
-  cups: "Cups",
-  major: "Major arcana",
-  pentacles: "Pentacles",
-  swords: "Swords",
-  wands: "Wands",
-};
-
-const FILTERS: readonly DeckFilter[] = ["all", "major", ...SUITS];
 
 /** "Major arcana · Leo" or "Cups · Water: feelings, love…". */
 const kindOf = (card: TarotCard) =>
@@ -28,19 +21,56 @@ const kindOf = (card: TarotCard) =>
     ? `${SUIT_INFO[card.suit].name} · ${SUIT_INFO[card.suit].element}: ${SUIT_INFO[card.suit].about}`
     : `Major arcana · ${card.ruler}`;
 
-interface Shown {
-  card: TarotCard;
-  reversed: boolean;
-  /** Whether it came from the deck by chance, rather than picked. */
-  drawn: boolean;
-}
+/** One step of the choice: a legend and its options, the chosen one pressed. */
+const Step = <T extends string | number>({
+  legend,
+  options,
+  chosen,
+  labelOf,
+  onChoose,
+  wide = false,
+}: {
+  legend: string;
+  options: readonly T[];
+  chosen: T;
+  labelOf: (option: T) => ReactNode;
+  onChoose: (option: T) => void;
+  /** Many options: a grid of chips, not one joined row. */
+  wide?: boolean;
+}) => (
+  <fieldset className="tarot-step">
+    <legend className="field-label">{legend}</legend>
+    <div className={wide ? "tarot-step__grid" : "picker"}>
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={wide ? "chip" : "picker__option"}
+          aria-pressed={option === chosen}
+          onClick={() => onChoose(option)}
+        >
+          {labelOf(option)}
+        </button>
+      ))}
+    </div>
+  </fieldset>
+);
+
+const MAJOR_NUMBERS = MAJOR_ARCANA.map((_, i) => i);
+
+/** "XIII Death": a major arcana card's numeral and name, on its chip. */
+const majorLabel = (major: number) => (
+  <>
+    <span className="chip__numeral">{MAJOR_ARCANA[major]?.label}</span>{" "}
+    {MAJOR_ARCANA[major]?.name}
+  </>
+);
+
+const RANK_NUMBERS = RANKS.map((_, i) => i);
 
 /** How to read a card, and the deck's grammar: arcana, suits, courts, numbers. */
 const HowToRead = () => (
-  <section
-    aria-labelledby="how-title"
-    className="panel panel--book panel--narrow"
-  >
+  <section aria-labelledby="how-title" className="panel panel--book">
     <span className="legend">how-to-read.txt</span>
     <h2 id="how-title" className="display book__title">
       How to read the cards
@@ -60,7 +90,7 @@ const HowToRead = () => (
         not its opposite.
       </li>
     </ol>
-    <dl className="facts facts--wide">
+    <dl className="facts">
       <div>
         <dt>Major arcana</dt>
         <dd>
@@ -98,144 +128,120 @@ const HowToRead = () => (
 );
 
 export const TarotTab = () => {
-  const [shown, setShown] = useState<Shown>(() => ({
-    card: DECK[0] ?? drawCard(cryptoRandom).card,
-    drawn: false,
-    reversed: false,
-  }));
+  const [choice, setChoice] = useState<Choice>(FIRST_CHOICE);
+  // Whether the card on show came from a draw, until the next pick.
+  const [drawn, setDrawn] = useState(false);
+  const card = cardOf(choice);
+  const reading = choice.reversed ? card.reversed : card.upright;
 
-  const [filter, setFilter] = useState<DeckFilter>("all");
-  const [search, setSearch] = useState("");
-  const reading = useRef<HTMLElement>(null);
-  const cards = cardsMatching(filter, search);
-  const { card, reversed, drawn } = shown;
+  const choose = (change: Partial<Choice>) => {
+    setChoice((current) => ({ ...current, ...change }));
+    setDrawn(false);
+  };
 
-  const draw = () => setShown({ ...drawCard(cryptoRandom), drawn: true });
-
-  const pick = (picked: TarotCard) => {
-    setShown({ card: picked, drawn: false, reversed: false });
-    reading.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const draw = () => {
+    setChoice((current) => choiceOf(drawCard(cryptoRandom), current));
+    setDrawn(true);
   };
 
   return (
     <>
       <div className="layout">
         <section
-          ref={reading}
+          aria-labelledby="choose-title"
+          className="panel panel--book panel--narrow"
+        >
+          <span className="legend">choose-a-card.txt</span>
+          <h2 id="choose-title" className="display book__title">
+            Choose a card
+          </h2>
+
+          <Step
+            legend="1. Arcana"
+            options={["major", "minor"] as const}
+            chosen={choice.arcana}
+            labelOf={(arcana) => (arcana === "major" ? "Major" : "Minor")}
+            onChoose={(arcana) => choose({ arcana })}
+          />
+
+          {choice.arcana === "minor" ? (
+            <>
+              <Step
+                legend="2. Suit"
+                options={SUITS}
+                chosen={choice.suit}
+                labelOf={(suit) => SUIT_INFO[suit].name}
+                onChoose={(suit) => choose({ suit })}
+                wide
+              />
+              <Step
+                legend="3. Card"
+                options={RANK_NUMBERS}
+                chosen={choice.rank}
+                labelOf={(rank) => RANKS[rank]}
+                onChoose={(rank) => choose({ rank })}
+                wide
+              />
+            </>
+          ) : (
+            <Step
+              legend="2. Card"
+              options={MAJOR_NUMBERS}
+              chosen={choice.major}
+              labelOf={majorLabel}
+              onChoose={(major) => choose({ major })}
+              wide
+            />
+          )}
+
+          <Step
+            legend={`${choice.arcana === "minor" ? 4 : 3}. Which way up`}
+            options={["upright", "reversed"] as const}
+            chosen={choice.reversed ? "reversed" : "upright"}
+            labelOf={(way) => (way === "upright" ? "Upright" : "Reversed")}
+            onChoose={(way) => choose({ reversed: way === "reversed" })}
+          />
+
+          <div className="tarot-or">
+            <span>or let the deck choose</span>
+            <button type="button" className="btn btn--primary" onClick={draw}>
+              Draw a card
+            </button>
+          </div>
+        </section>
+
+        <section
           aria-labelledby="card-name"
           aria-live="polite"
           className="panel panel--book panel--wide"
         >
           <span className="legend">card-reading.txt</span>
           <div className="tarot-reading">
-            <TarotFace card={card} reversed={reversed} width={150} named />
+            <TarotFace
+              card={card}
+              reversed={choice.reversed}
+              width={150}
+              named
+            />
             <div className="stack tarot-reading__text">
               <p className="kicker">{kindOf(card)}</p>
               <h2 id="card-name" className="display page__title">
                 {card.name}
-                {drawn ? (
-                  <span className="badge">
-                    drawn {reversed ? "reversed" : "upright"}
-                  </span>
-                ) : null}
               </h2>
-              <div className="tarot-sides">
-                <section
-                  className={
-                    reversed ? "tarot-side" : "tarot-side tarot-side--shown"
-                  }
-                >
-                  <h3 className="field-label">Upright</h3>
-                  <p className="tarot-side__keywords">
-                    {card.upright.keywords}
-                  </p>
-                  <p>{card.upright.meaning}</p>
-                </section>
-                <section
-                  className={
-                    reversed ? "tarot-side tarot-side--shown" : "tarot-side"
-                  }
-                >
-                  <h3 className="field-label">Reversed</h3>
-                  <p className="tarot-side__keywords">
-                    {card.reversed.keywords}
-                  </p>
-                  <p>{card.reversed.meaning}</p>
-                </section>
-              </div>
-              <div className="tarot-reading__actions">
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={draw}
-                >
-                  Draw a card
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => setShown({ ...shown, reversed: !reversed })}
-                >
-                  Turn it {reversed ? "upright" : "upside down"}
-                </button>
+              <p className="tarot-reading__way">
+                {choice.reversed ? "Reversed" : "Upright"}
+                {drawn ? <span className="badge">drawn</span> : null}
+              </p>
+              <div className="tarot-side tarot-side--shown">
+                <p className="tarot-side__keywords">{reading.keywords}</p>
+                <p>{reading.meaning}</p>
               </div>
             </div>
           </div>
         </section>
-        <HowToRead />
       </div>
 
-      <section aria-labelledby="deck-title" className="panel panel--book">
-        <span className="legend">deck.csv</span>
-        <h2 id="deck-title" className="display book__title">
-          The deck
-        </h2>
-        <div className="deck__tools">
-          <nav aria-label="Part of the deck" className="picker picker--scroll">
-            {FILTERS.map((entry) => (
-              <button
-                key={entry}
-                type="button"
-                className="picker__option"
-                aria-pressed={entry === filter}
-                onClick={() => setFilter(entry)}
-              >
-                {FILTER_NAMES[entry]}
-              </button>
-            ))}
-          </nav>
-          <input
-            type="search"
-            aria-label="Search the cards"
-            className="field deck__search"
-            placeholder="Search a name or a meaning"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
-        {cards.length === 0 ? (
-          <p className="hint">No card matches “{search.trim()}”.</p>
-        ) : (
-          <ul className="deck">
-            {cards.map((entry) => (
-              <li key={entry.id}>
-                <button
-                  type="button"
-                  className="deck__card"
-                  aria-pressed={entry.id === card.id}
-                  onClick={() => pick(entry)}
-                >
-                  <TarotFace card={entry} width={48} />
-                  <span className="deck__name">{entry.name}</span>
-                  <span className="deck__keywords">
-                    {entry.upright.keywords}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <HowToRead />
     </>
   );
 };

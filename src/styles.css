@@ -1641,11 +1641,6 @@ a:hover {
   flex-wrap: wrap;
   gap: 10px;
 }
-.tarot-sides {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-  gap: 10px;
-}
 .tarot-side {
   display: flex;
   flex-direction: column;
@@ -1672,55 +1667,51 @@ a:hover {
 .tarot-side__keywords {
   font-weight: 700;
 }
-.deck__tools {
+/* Choosing a card, a step at a time. */
+.tarot-step {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tarot-step .picker {
+  align-self: stretch;
+}
+.tarot-step .picker__option {
+  flex: 1;
+  padding: 0 12px;
+}
+.tarot-step__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tarot-step__grid .chip {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.chip__numeral {
+  font-family: var(--display);
+  opacity: 0.7;
+}
+.tarot-or {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-}
-.deck__search {
-  flex: 1 1 220px;
-  width: auto;
-}
-.deck {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  justify-content: space-between;
   gap: 10px;
+  padding-top: 14px;
+  border-top: var(--stroke-base) dashed var(--outline);
+  font-size: 14px;
+  color: var(--text-muted);
 }
-.deck__card {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto 1fr;
-  column-gap: 12px;
-  row-gap: 2px;
-  padding: 10px;
-  border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
-  background: var(--raised);
-  text-align: left;
-}
-.deck__card .tarot-face {
-  grid-row: span 2;
-}
-.deck__card:hover {
-  background: var(--panel);
-}
-.deck__card[aria-pressed="true"] {
-  background: var(--selected);
-  color: var(--on-selected);
-}
-.deck__name {
-  font: 600 16px/1.2 var(--display);
-}
-.deck__keywords {
-  font-size: 13px;
-  line-height: 1.35;
-  opacity: 0.85;
+.tarot-reading__way {
+  margin: -4px 0 0;
+  font: 700 18px/1.2 var(--display);
 }
 
 /* ── sticky board (hub) ── */
