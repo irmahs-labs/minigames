@@ -31,6 +31,7 @@ export const TABS = [
   "chart",
   "numbers",
   "tarot",
+  "eight-ball",
 ] as const;
 
 export type Tab = (typeof TABS)[number];

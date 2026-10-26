@@ -6,6 +6,7 @@ import type { GameProps } from "../../games";
 import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
 import { ChartTab } from "./chart-tab";
+import { EightBallTab } from "./eight-ball-tab";
 import { MoonTab } from "./moon-tab";
 import { NumbersTab } from "./numbers-tab";
 import {
@@ -25,6 +26,7 @@ import { localTimeZone, wallTimeAt } from "./time";
 
 const TAB_NAMES: Record<Tab, string> = {
   chart: "Birth chart",
+  "eight-ball": "Magic 8 Ball",
   moon: "Moon",
   numbers: "Numerology",
   profile: "Profile",
@@ -100,6 +102,10 @@ const BookOfShadows = ({ name }: GameProps) => {
 
       case "tarot": {
         return <TarotTab />;
+      }
+
+      case "eight-ball": {
+        return <EightBallTab />;
       }
 
       case "chart": {
