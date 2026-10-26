@@ -1,3 +1,5 @@
+import { dayKey } from "./time";
+
 /**
  * The 78 cards of a Rider–Waite–Smith tarot deck, and how to read each one,
  * upright and reversed. The 22 major arcana are life's big lessons; the 56
@@ -773,3 +775,42 @@ export const drawCard = (random: () => number): Draw => {
 /** A fair 0 ≤ n < 1 from the browser's crypto, for drawing. */
 export const cryptoRandom = (): number =>
   (crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) / 2 ** 32;
+
+/** Cards of the day turn over at midnight in Paris, wherever you are. */
+export const DAILY_ZONE = "Europe/Paris";
+
+/** The card pulled for a day, kept so the day keeps its card. */
+export interface DailyPull {
+  /** The day it was pulled for, in Paris: "2026-10-26". */
+  day: string;
+  id: string;
+  reversed: boolean;
+}
+
+/** Today's card, if it has been pulled; null until it is, or once the day turns. */
+export const todaysCard = (pull: DailyPull | null, now: Date): Draw | null => {
+  if (!pull || pull.day !== dayKey(now, DAILY_ZONE)) {
+    return null;
+  }
+
+  const card = DECK.find((entry) => entry.id === pull.id);
+
+  return card ? { card, reversed: pull.reversed } : null;
+};
+
+/** Pulls today's card: once a day, so a pull already made stands. */
+export const pullDailyCard = (
+  pull: DailyPull | null,
+  now: Date,
+  random: () => number
+): DailyPull => {
+  const today = dayKey(now, DAILY_ZONE);
+
+  if (pull?.day === today && todaysCard(pull, now)) {
+    return pull;
+  }
+
+  const { card, reversed } = drawCard(random);
+
+  return { day: today, id: card.id, reversed };
+};

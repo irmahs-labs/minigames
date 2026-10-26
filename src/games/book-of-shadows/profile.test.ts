@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PLACES, findPlace } from "./places";
+import { PLACES, localMatches } from "./places";
 import {
   EMPTY_PROFILE,
   STORAGE_KEY,
@@ -143,7 +143,7 @@ describe("places", () => {
       expect(isTimeZone(place.timeZone), place.name).toBe(true);
     }
 
-    expect(findPlace("  paris, france ")?.timeZone).toBe("Europe/Paris");
+    expect(localMatches("  paris, france ")[0]?.timeZone).toBe("Europe/Paris");
   });
 });
 
@@ -152,6 +152,8 @@ describe("loadState", () => {
     window.localStorage.setItem(STORAGE_KEY, '{"tab":"nowhere","profile":4}');
 
     expect(loadState()).toEqual({
+      dailyCard: null,
+      partner: EMPTY_PROFILE,
       profile: EMPTY_PROFILE,
       southern: false,
       tab: "profile",

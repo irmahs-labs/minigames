@@ -1,0 +1,255 @@
+import { formatDay, inDays } from "./format";
+import { lunarYearOf, yearName } from "./lunar-zodiac";
+import { PHASE_LORE, moonNow, phaseOn } from "./moon";
+import { MoonGlyph } from "./moon-glyph";
+import { RETROGRADE_LORE } from "./retrograde-lore";
+import { nextSabbat } from "./sabbats";
+import {
+  PLANET_GLYPHS,
+  eclipsesBetween,
+  longitudeOf,
+  retrogradesBetween,
+} from "./sky";
+import { cryptoRandom, pullDailyCard, todaysCard } from "./tarot";
+import type { DailyPull } from "./tarot";
+import { TarotBack, TarotFace } from "./tarot-face";
+import { dayKey, daysBetween } from "./time";
+import { placementOf } from "./zodiac";
+
+const DAY = 86_400_000;
+
+/** "Scorpio ♏". */
+const signName = (longitude: number) => {
+  const { sign } = placementOf(longitude);
+
+  return `${sign.name} ${sign.glyph}`;
+};
+
+type Sky = ReturnType<typeof workOutSky>;
+
+const workOutSky = (today: string) => {
+  const moment = new Date(`${today}T12:00:00Z`);
+
+  const periods = retrogradesBetween(
+    moment,
+    new Date(moment.getTime() + 60 * DAY)
+  );
+
+  return {
+    coming: periods.find((period) => period.start.time > moment) ?? null,
+    eclipse:
+      eclipsesBetween(moment, new Date(moment.getTime() + 90 * DAY))[0] ?? null,
+    now: periods.filter(
+      (period) => period.start.time <= moment && moment < period.end.time
+    ),
+  };
+};
+
+const skies = new Map<string, Sky>();
+
+/**
+ * The sky on a day, at noon UTC: the retrogrades under way, the next one
+ * to start within two months, and the next eclipse within three. Worked
+ * out once a day, since it takes a moment.
+ */
+const skyOn = (today: string): Sky => {
+  const known = skies.get(today);
+
+  if (known) {
+    return known;
+  }
+
+  const sky = workOutSky(today);
+
+  skies.set(today, sky);
+
+  return sky;
+};
+
+interface TodayProps {
+  now: Date;
+  timeZone: string;
+  southern: boolean;
+}
+
+/**
+ * Today, at a glance: the Moon, the next sabbat, and the sky (where the
+ * lights are, what is retrograde, what is coming).
+ */
+export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
+  const today = dayKey(now, timeZone);
+  const day = phaseOn(now, timeZone);
+  const moon = moonNow(now);
+  const sabbat = nextSabbat(today, southern, timeZone);
+  const lunar = lunarYearOf(today);
+
+  const sky = skyOn(today);
+
+  return (
+    <section
+      aria-labelledby="today-title"
+      className="panel panel--book panel--wide today"
+    >
+      <span className="legend">today.log</span>
+      <h2 id="today-title" className="display book__title">
+        Today,{" "}
+        {formatDay(today, { day: "numeric", month: "long", weekday: "long" })}
+      </h2>
+      <div className="today__grid">
+        <div className="today__item">
+          <MoonGlyph angle={moon.angle} size={54} southern={southern} />
+          <div className="stack">
+            <h3 className="field-label">The Moon</h3>
+            <p className="display today__big">{day.phase}</p>
+            <p>
+              {Math.round(moon.illumination * 100)}% lit, in{" "}
+              {signName(moon.longitude)}.
+            </p>
+            <p className="today__lore">{PHASE_LORE[day.phase]}</p>
+          </div>
+        </div>
+        {sabbat ? (
+          <div className="today__item">
+            <span aria-hidden="true" className="today__icon">
+              🕯️
+            </span>
+            <div className="stack">
+              <h3 className="field-label">Next sabbat</h3>
+              <p className="display today__big">{sabbat.sabbat.name}</p>
+              <p>
+                {formatDay(sabbat.key, { day: "numeric", month: "long" })},{" "}
+                {inDays(daysBetween(today, sabbat.key))}.
+              </p>
+              <p className="today__lore">{sabbat.sabbat.also}</p>
+            </div>
+          </div>
+        ) : null}
+        <div className="today__item today__item--sky">
+          <span aria-hidden="true" className="today__icon glyph">
+            {PLANET_GLYPHS.Sun}
+          </span>
+          <div className="stack">
+            <h3 className="field-label">The sky</h3>
+            <p>
+              The Sun is in {signName(longitudeOf("Sun", now))}, the Moon in{" "}
+              {signName(moon.longitude)}. Year of the {yearName(lunar)}{" "}
+              {lunar.animal.emoji}.
+            </p>
+            {sky.now.length === 0 ? (
+              <p>No planet is retrograde.</p>
+            ) : (
+              <ul className="today__list">
+                {sky.now.map((period) => (
+                  <li key={period.planet}>
+                    <strong>
+                      <span aria-hidden="true" className="glyph">
+                        {PLANET_GLYPHS[period.planet]}
+                      </span>{" "}
+                      {period.planet} retrograde
+                    </strong>{" "}
+                    in {placementOf(period.start.longitude).sign.name}, until{" "}
+                    {formatDay(dayKey(period.end.time, timeZone))}.{" "}
+                    <span className="today__lore">
+                      {
+                        RETROGRADE_LORE[period.planet][
+                          placementOf(period.start.longitude).index
+                        ]
+                      }
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {sky.coming ? (
+              <p>
+                Coming: {sky.coming.planet} turns retrograde on{" "}
+                {formatDay(dayKey(sky.coming.start.time, timeZone))} in{" "}
+                {placementOf(sky.coming.start.longitude).sign.name}.
+              </p>
+            ) : null}
+            {sky.eclipse ? (
+              <p>
+                Next eclipse: {sky.eclipse.body === "Sun" ? "solar" : "lunar"},{" "}
+                {formatDay(dayKey(sky.eclipse.peak, timeZone))}, in{" "}
+                {placementOf(sky.eclipse.longitude).sign.name}.
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/**
+ * The card of the day: face down until it is pulled, then the same card
+ * all day. The day turns at midnight in Paris, wherever you are.
+ */
+export const DailyCard = ({
+  now,
+  pull,
+  onPull,
+}: {
+  now: Date;
+  pull: DailyPull | null;
+  onPull: (pull: DailyPull) => void;
+}) => {
+  const drawn = todaysCard(pull, now);
+
+  return (
+    <section
+      aria-labelledby="daily-title"
+      aria-live="polite"
+      className="panel panel--book panel--narrow daily"
+    >
+      <span className="legend">card-of-the-day.png</span>
+      <h2 id="daily-title" className="display book__title">
+        Card of the day
+      </h2>
+      <div className="daily__card">
+        {drawn ? (
+          <TarotFace
+            card={drawn.card}
+            reversed={drawn.reversed}
+            width={110}
+            named
+          />
+        ) : (
+          <TarotBack width={110} />
+        )}
+      </div>
+      {drawn ? (
+        <div className="stack daily__reading">
+          <p className="display today__big">
+            {drawn.card.name}
+            {drawn.reversed ? ", reversed" : ""}
+          </p>
+          <p className="tarot-side__keywords">
+            {drawn.reversed
+              ? drawn.card.reversed.keywords
+              : drawn.card.upright.keywords}
+          </p>
+          <p>
+            {drawn.reversed
+              ? drawn.card.reversed.meaning
+              : drawn.card.upright.meaning}
+          </p>
+          <p className="hint">Your next card comes at midnight, Paris time.</p>
+        </div>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => onPull(pullDailyCard(pull, now, cryptoRandom))}
+          >
+            Pull today’s card
+          </button>
+          <p className="hint">
+            One card a day: no pulling again until tomorrow.
+          </p>
+        </>
+      )}
+    </section>
+  );
+};

@@ -23,13 +23,15 @@ import type { Element, Placement } from "./zodiac";
 
 export const STORAGE_KEY = "minigames:book-of-shadows:v1";
 
+/** The book's pages, in order: yours first, then the sky's and the cards'. */
 export const TABS = [
   "profile",
+  "chart",
+  "numbers",
+  "lunar-zodiac",
   "moon",
   "sabbats",
   "sky",
-  "chart",
-  "numbers",
   "tarot",
   "eight-ball",
 ] as const;
@@ -71,12 +73,22 @@ export const EMPTY_PROFILE: Profile = {
   timeZone: "",
 };
 
+/** The day's tarot card, pulled once a day (see tarot.ts). */
+const dailyPullSchema = z.object({
+  day: z.string(),
+  id: z.string(),
+  reversed: z.boolean(),
+});
+
 /**
  * Everything the Book of Shadows remembers, in this browser's localStorage:
- * the open tab, which way the Wheel of the Year turns, and the birth details.
- * Nothing leaves the browser.
+ * the open tab, which way the Wheel of the Year turns, your birth details
+ * and those of someone to match them with, and today's card. Nothing leaves
+ * the browser.
  */
 export const bookStateSchema = z.object({
+  dailyCard: withFallback(z.nullable(dailyPullSchema), null),
+  partner: withFallback(profileSchema, () => ({ ...EMPTY_PROFILE })),
   profile: withFallback(profileSchema, () => ({ ...EMPTY_PROFILE })),
   southern: withFallback(z.boolean(), false),
   tab: withFallback(z.enum(TABS), "profile"),
@@ -85,6 +97,8 @@ export const bookStateSchema = z.object({
 export type BookState = z.infer<typeof bookStateSchema>;
 
 export const defaultState = (): BookState => ({
+  dailyCard: null,
+  partner: { ...EMPTY_PROFILE },
   profile: { ...EMPTY_PROFILE },
   southern: false,
   tab: "profile",

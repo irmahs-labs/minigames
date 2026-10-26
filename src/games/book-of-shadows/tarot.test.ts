@@ -8,6 +8,8 @@ import {
   cardOf,
   choiceOf,
   drawCard,
+  pullDailyCard,
+  todaysCard,
 } from "./tarot";
 
 describe("DECK", () => {
@@ -104,5 +106,36 @@ describe("drawCard", () => {
       card: { name: "King of Pentacles" },
       reversed: true,
     });
+  });
+});
+
+describe("the card of the day", () => {
+  // 23:30 UTC on 26 October 2026 is already the 27th in Paris (UTC+1).
+  const evening = new Date("2026-10-26T21:30:00Z");
+  const lateNight = new Date("2026-10-26T23:30:00Z");
+
+  it("pulls one card for the day in Paris", () => {
+    const pull = pullDailyCard(null, evening, () => 0);
+
+    expect(pull).toEqual({
+      day: "2026-10-26",
+      id: "the-fool",
+      // A roll under a half turns it upside down.
+      reversed: true,
+    });
+    expect(todaysCard(pull, evening)?.card.name).toBe("The Fool");
+  });
+
+  it("will not pull again the same day", () => {
+    const pull = pullDailyCard(null, evening, () => 0);
+
+    expect(pullDailyCard(pull, evening, () => 0.99)).toBe(pull);
+  });
+
+  it("turns the day over at midnight in Paris, not where you are", () => {
+    const pull = pullDailyCard(null, evening, () => 0);
+
+    expect(todaysCard(pull, lateNight)).toBeNull();
+    expect(pullDailyCard(pull, lateNight, () => 0.99).day).toBe("2026-10-27");
   });
 });

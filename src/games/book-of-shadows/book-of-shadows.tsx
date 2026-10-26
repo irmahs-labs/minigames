@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 import { BookOfShadowsIcon } from "../../components/app-icons";
 import { Header } from "../../components/header";
@@ -6,27 +7,34 @@ import type { GameProps } from "../../games";
 import { Icon } from "../../lib/icon";
 import { Link } from "../../lib/router";
 import { ChartTab } from "./chart-tab";
+import { chartMatch, lunarMatch, numbersMatch } from "./compat";
+import { MatchPanel, MatchSummary, NoMatch, firstNameOf } from "./compat-panel";
 import { EightBallTab } from "./eight-ball-tab";
+import { lunarYearOf } from "./lunar-zodiac";
+import { LunarZodiacTab } from "./lunar-zodiac-tab";
 import { MoonTab } from "./moon-tab";
 import { NumbersTab } from "./numbers-tab";
 import {
   EMPTY_PROFILE,
   TABS,
+  birthNumbers,
   chartFor,
   loadState,
   readBirth,
   saveState,
 } from "./profile";
-import type { BookState, Tab } from "./profile";
+import type { BookState, Profile, Tab } from "./profile";
 import { BirthDetails, WitchCard } from "./profile-tab";
 import { SabbatsTab } from "./sabbats-tab";
 import { SkyTab } from "./sky-tab";
 import { TarotTab } from "./tarot-tab";
 import { localTimeZone, wallTimeAt } from "./time";
+import { DailyCard, TodayPanel } from "./today-panel";
 
 const TAB_NAMES: Record<Tab, string> = {
   chart: "Birth chart",
   "eight-ball": "Magic 8 Ball",
+  "lunar-zodiac": "Lunar Zodiac",
   moon: "Moon",
   numbers: "Numerology",
   profile: "Profile",
@@ -57,7 +65,7 @@ const BookOfShadows = ({ name }: GameProps) => {
   const [now, setNow] = useState(() => new Date());
   const timeZone = localTimeZone();
   const thisYear = wallTimeAt(now, timeZone).year;
-  const { profile, southern, tab } = state;
+  const { profile, partner, southern, tab } = state;
 
   useEffect(() => saveState(state), [state]);
 
@@ -72,10 +80,39 @@ const BookOfShadows = ({ name }: GameProps) => {
     [profile, timeZone]
   );
 
+  const theirBirth = useMemo(
+    () => readBirth(partner, timeZone),
+    [partner, timeZone]
+  );
+
   const chart = useMemo(() => (birth ? chartFor(birth) : null), [birth]);
+
+  const theirChart = useMemo(
+    () => (theirBirth ? chartFor(theirBirth) : null),
+    [theirBirth]
+  );
+
+  const theirName = firstNameOf(partner.name);
 
   const open = (next: Tab) =>
     setState((current) => ({ ...current, tab: next }));
+
+  const editor = (key: "profile" | "partner") => (fields: Partial<Profile>) =>
+    setState((current) => ({
+      ...current,
+      [key]: { ...current[key], ...fields },
+    }));
+
+  const clearer = (key: "profile" | "partner") => () =>
+    setState((current) => ({ ...current, [key]: { ...EMPTY_PROFILE } }));
+
+  /** A page of yours, and how you match the other person on it. */
+  const withMatch = (page: ReactNode, match: ReactNode) => (
+    <>
+      {page}
+      {theirBirth ? match : <NoMatch onOpen={() => open("profile")} />}
+    </>
+  );
 
   const panel = () => {
     switch (tab) {
@@ -110,7 +147,17 @@ const BookOfShadows = ({ name }: GameProps) => {
 
       case "chart": {
         return chart ? (
-          <ChartTab chart={chart} />
+          withMatch(
+            <ChartTab chart={chart} />,
+            theirChart ? (
+              <MatchPanel
+                legend="chart-match.csv"
+                title="Your charts, side by side"
+                match={chartMatch(chart, theirChart, theirName)}
+                name={theirName}
+              />
+            ) : null
+          )
         ) : (
           <NeedsBirth onOpen={() => open("profile")} />
         );
@@ -118,37 +165,129 @@ const BookOfShadows = ({ name }: GameProps) => {
 
       case "numbers": {
         return birth ? (
-          <NumbersTab birth={birth} name={profile.name} thisYear={thisYear} />
+          withMatch(
+            <NumbersTab
+              birth={birth}
+              name={profile.name}
+              thisYear={thisYear}
+            />,
+            theirBirth ? (
+              <MatchPanel
+                legend="numbers-match.csv"
+                title="Your numbers together"
+                match={numbersMatch(
+                  birthNumbers(birth, profile.name, thisYear),
+                  birthNumbers(theirBirth, partner.name, thisYear),
+                  theirName
+                )}
+                name={theirName}
+              />
+            ) : null
+          )
         ) : (
           <NeedsBirth onOpen={() => open("profile")} />
         );
       }
 
+      case "lunar-zodiac": {
+        const page = (
+          <LunarZodiacTab
+            birth={birth}
+            birthTime={profile.birthTime}
+            now={now}
+            timeZone={timeZone}
+            onOpenProfile={() => open("profile")}
+          />
+        );
+
+        return birth
+          ? withMatch(
+              page,
+              theirBirth ? (
+                <MatchPanel
+                  legend="animals-match.csv"
+                  title="Your animals together"
+                  match={lunarMatch(
+                    lunarYearOf(birth.day),
+                    lunarYearOf(theirBirth.day)
+                  )}
+                  name={theirName}
+                />
+              ) : null
+            )
+          : page;
+      }
+
       default: {
         return (
-          <div className="layout">
-            <WitchCard
-              profile={profile}
-              birth={birth}
-              chart={chart}
-              thisYear={thisYear}
-            />
-            <BirthDetails
-              profile={profile}
-              onChange={(fields) =>
-                setState((current) => ({
-                  ...current,
-                  profile: { ...current.profile, ...fields },
-                }))
-              }
-              onClear={() =>
-                setState((current) => ({
-                  ...current,
-                  profile: { ...EMPTY_PROFILE },
-                }))
-              }
-            />
-          </div>
+          <>
+            <div className="layout">
+              <TodayPanel now={now} timeZone={timeZone} southern={southern} />
+              <DailyCard
+                now={now}
+                pull={state.dailyCard}
+                onPull={(pull) =>
+                  setState((current) => ({ ...current, dailyCard: pull }))
+                }
+              />
+            </div>
+            <div className="layout">
+              <WitchCard
+                profile={profile}
+                birth={birth}
+                chart={chart}
+                thisYear={thisYear}
+              />
+              <BirthDetails
+                who="you"
+                profile={profile}
+                onChange={editor("profile")}
+                onClear={clearer("profile")}
+              />
+            </div>
+            <div className="layout">
+              <MatchSummary
+                name={theirName}
+                rows={
+                  birth && theirBirth
+                    ? [
+                        {
+                          label: "Birth chart",
+                          match:
+                            chart && theirChart
+                              ? chartMatch(chart, theirChart, theirName)
+                              : null,
+                          onOpen: () => open("chart"),
+                        },
+                        {
+                          label: "Numerology",
+                          match: numbersMatch(
+                            birthNumbers(birth, profile.name, thisYear),
+                            birthNumbers(theirBirth, partner.name, thisYear),
+                            theirName
+                          ),
+                          onOpen: () => open("numbers"),
+                        },
+                        {
+                          label: "Lunar Zodiac",
+                          match: lunarMatch(
+                            lunarYearOf(birth.day),
+                            lunarYearOf(theirBirth.day)
+                          ),
+                          onOpen: () => open("lunar-zodiac"),
+                        },
+                      ]
+                    : null
+                }
+              />
+              <BirthDetails
+                who="partner"
+                profile={partner}
+                onChange={editor("partner")}
+                onClear={clearer("partner")}
+              />
+            </div>
+          </>
         );
       }
     }

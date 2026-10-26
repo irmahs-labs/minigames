@@ -38,7 +38,7 @@ const Step = <T extends string | number>({
   /** Many options: a grid of chips, not one joined row. */
   wide?: boolean;
 }) => (
-  <fieldset className="tarot-step">
+  <fieldset className={wide ? "tarot-step tarot-step--wide" : "tarot-step"}>
     <legend className="field-label">{legend}</legend>
     <div className={wide ? "tarot-step__grid" : "picker"}>
       {options.map((option) => (
@@ -146,16 +146,19 @@ export const TarotTab = () => {
 
   return (
     <>
-      <div className="layout">
-        <section
-          aria-labelledby="choose-title"
-          className="panel panel--book panel--narrow"
-        >
-          <span className="legend">choose-a-card.txt</span>
-          <h2 id="choose-title" className="display book__title">
-            Choose a card
-          </h2>
+      <div className="tarot-top">
+        <button type="button" className="btn btn--primary" onClick={draw}>
+          Draw a card
+        </button>
+        <span className="hint">or choose one, a step at a time</span>
+      </div>
 
+      <section aria-labelledby="choose-title" className="panel panel--book">
+        <span className="legend">choose-a-card.txt</span>
+        <h2 id="choose-title" className="display book__title">
+          Choose a card
+        </h2>
+        <div className="tarot-steps">
           <Step
             legend="1. Arcana"
             options={["major", "minor"] as const}
@@ -172,7 +175,6 @@ export const TarotTab = () => {
                 chosen={choice.suit}
                 labelOf={(suit) => SUIT_INFO[suit].name}
                 onChoose={(suit) => choose({ suit })}
-                wide
               />
               <Step
                 legend="3. Card"
@@ -201,45 +203,33 @@ export const TarotTab = () => {
             labelOf={(way) => (way === "upright" ? "Upright" : "Reversed")}
             onChoose={(way) => choose({ reversed: way === "reversed" })}
           />
+        </div>
+      </section>
 
-          <div className="tarot-or">
-            <span>or let the deck choose</span>
-            <button type="button" className="btn btn--primary" onClick={draw}>
-              Draw a card
-            </button>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="card-name"
-          aria-live="polite"
-          className="panel panel--book panel--wide"
-        >
-          <span className="legend">card-reading.txt</span>
-          <div className="tarot-reading">
-            <TarotFace
-              card={card}
-              reversed={choice.reversed}
-              width={150}
-              named
-            />
-            <div className="stack tarot-reading__text">
-              <p className="kicker">{kindOf(card)}</p>
-              <h2 id="card-name" className="display page__title">
-                {card.name}
-              </h2>
-              <p className="tarot-reading__way">
-                {choice.reversed ? "Reversed" : "Upright"}
-                {drawn ? <span className="badge">drawn</span> : null}
-              </p>
-              <div className="tarot-side tarot-side--shown">
-                <p className="tarot-side__keywords">{reading.keywords}</p>
-                <p>{reading.meaning}</p>
-              </div>
+      <section
+        aria-labelledby="card-name"
+        aria-live="polite"
+        className="panel panel--book"
+      >
+        <span className="legend">card-reading.txt</span>
+        <div className="tarot-reading">
+          <TarotFace card={card} reversed={choice.reversed} width={150} named />
+          <div className="stack tarot-reading__text">
+            <p className="kicker">{kindOf(card)}</p>
+            <h2 id="card-name" className="display page__title">
+              {card.name}
+            </h2>
+            <p className="tarot-reading__way">
+              {choice.reversed ? "Reversed" : "Upright"}
+              {drawn ? <span className="badge">drawn</span> : null}
+            </p>
+            <div className="tarot-side tarot-side--shown">
+              <p className="tarot-side__keywords">{reading.keywords}</p>
+              <p>{reading.meaning}</p>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <HowToRead />
     </>
