@@ -109,3 +109,26 @@ export const BoosterPotionIcon = () => (
     <circle cx="22.5" cy="27.5" r="1" fill="#fff3cf" />
   </svg>
 );
+
+/** A spellbook, shut, with a crescent moon and a star on its cover. */
+export const BookOfShadowsIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <rect x="11" y="8" width="19" height="24" rx="2.5" fill="#2f3b34" />
+    <path d="M14.5 8v24" stroke="#afc584" strokeWidth="1.5" />
+    <path d="M23.5 13.5a5 5 0 1 0 0 9a4 4 0 1 1 0-9z" fill="#fff3cf" />
+    <path
+      d="M26.5 22.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"
+      fill="#fff3cf"
+    />
+  </svg>
+);
