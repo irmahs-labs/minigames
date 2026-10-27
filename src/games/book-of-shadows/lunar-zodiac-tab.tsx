@@ -5,8 +5,10 @@ import {
   ANIMALS,
   ELEMENT_LORE,
   allies,
+  STEMS,
   clash,
   cycleName,
+  dayPillarOf,
   hourAnimal,
   hoursOf,
   lunarNewYear,
@@ -16,10 +18,10 @@ import {
   yearName,
   yearsOf,
 } from "./lunar-zodiac";
-import type { Animal, LunarYear } from "./lunar-zodiac";
+import type { Animal, DayPillar, LunarYear } from "./lunar-zodiac";
 import { NeedsBirth } from "./needs-birth";
 import type { Birth } from "./profile";
-import { dayKey, parseClock } from "./time";
+import { dayKey, mod, parseClock } from "./time";
 
 /** The animals one gets on with, as a sentence: "Dragon 🐉, Monkey 🐒". */
 const listed = (animals: readonly Animal[]) =>
@@ -240,54 +242,95 @@ const CycleRow = ({ label, year }: { label: string; year: LunarYear }) => (
   </div>
 );
 
-/** Where the animals come from: the cycle, the legend, and the road. */
-const Roots = ({
+/**
+ * The ten Heavenly Stems, the roots of the calendar: this year's and yours
+ * picked out, with the stem of the day you were born, your day master.
+ */
+const HeavenlyStems = ({
   current,
   yours,
+  day,
 }: {
   current: LunarYear;
   yours: LunarYear | null;
+  day: DayPillar | null;
 }) => (
   <section
-    aria-labelledby="roots-title"
-    className="panel panel--book panel--narrow roots"
+    aria-labelledby="stems-title"
+    className="panel panel--book panel--narrow stems-panel"
   >
-    <span className="legend">roots.txt</span>
-    <h2 id="roots-title" className="display book__title">
-      The roots
+    <span className="legend">heavenly-stems.csv</span>
+    <p className="kicker">天干 tiāngān</p>
+    <h2 id="stems-title" className="display book__title">
+      The Heavenly Stems
     </h2>
-    <h3 className="field-label">Stems and branches</h3>
     <p>
-      Every year has a two-character name: one of the ten Heavenly Stems (天干),
-      which gives its element, yang or yin, and one of the twelve Earthly
-      Branches (地支), which gives its animal. Together they go round in sixty
-      years, and China has counted its years with them for over two thousand.
+      The roots of the calendar. Every year, month, day and hour takes one of
+      the ten stems, which gives its element, yang or yin, paired with one of
+      the twelve Earthly Branches, which gives its animal. Together they go
+      round in sixty.
     </p>
     <dl className="facts">
       <CycleRow label="This year" year={current} />
       {yours ? <CycleRow label="Your year" year={yours} /> : null}
+      {day ? (
+        <div>
+          <dt>
+            Your day master, {day.stem.hanzi}
+            {day.animal.branch.hanzi}
+          </dt>
+          <dd>
+            {day.stem.hanzi} {day.stem.polarity} {day.stem.element},{" "}
+            {day.stem.image}: the stem of the day you were born, who you are in
+            Four Pillars (八字) astrology
+          </dd>
+        </div>
+      ) : null}
     </dl>
+    <ol className="stems">
+      {STEMS.map((stem, i) => {
+        const badges = (
+          [
+            [current.stem, "this year"],
+            [yours?.stem, "your year"],
+            [day?.stem, "your day"],
+          ] as const
+        ).flatMap(([marked, label]) => (marked === stem ? [label] : []));
+
+        return (
+          <li
+            key={stem.hanzi}
+            className={badges.length > 0 ? "stem stem--marked" : "stem"}
+          >
+            <span className="display stem__hanzi">{stem.hanzi}</span>
+            <div className="stack">
+              <h3 className="stem__name">
+                {stem.pinyin} · {stem.polarity} {stem.element}
+              </h3>
+              <p>
+                {stem.image}: {stem.keywords}
+              </p>
+              <p className="stem__years">years ending in {mod(i + 4, 10)}</p>
+              {badges.length > 0 ? (
+                <p className="stem__badges">
+                  {badges.map((badge) => (
+                    <span key={badge} className="badge">
+                      {badge}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
     {yours ? (
       <p className="hint">
         Your own pair comes back in {yours.year + 60}, your sixtieth year: a
         whole cycle, and a big birthday across East Asia.
       </p>
     ) : null}
-    <h3 className="field-label">The Great Race</h3>
-    <p>
-      The Jade Emperor called the animals to race across a river and named the
-      years for them in the order they arrived. The Rat rode over on the Ox’s
-      back and jumped off first. The Cat, pushed in by the Rat, never made it,
-      and has chased rats ever since.
-    </p>
-    <h3 className="field-label">The road it took</h3>
-    <p>
-      The twelve are first listed on bamboo slips from the third century BCE.
-      With the calendar they went to Korea, Japan, Vietnam, Mongolia and Tibet,
-      and across Southeast Asia: Cambodia names its years Chhut, Chlov, Khal…
-      (Rat, Ox, Tiger…) and starts them at Khmer New Year, as Thailand and Laos
-      did too.
-    </p>
   </section>
 );
 
@@ -320,7 +363,11 @@ export const LunarZodiacTab = ({
       </div>
       <div className="layout">
         <FestivalsPanel today={today} />
-        <Roots current={current} yours={yours} />
+        <HeavenlyStems
+          current={current}
+          yours={yours}
+          day={birth ? dayPillarOf(birth.day) : null}
+        />
       </div>
       <TwelveAnimals yours={yours?.animal ?? null} current={current} />
     </>

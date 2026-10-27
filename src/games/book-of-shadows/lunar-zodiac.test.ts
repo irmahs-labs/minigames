@@ -10,6 +10,7 @@ import {
   lunarYear,
   lunarYearOf,
   cycleName,
+  dayPillarOf,
   secretFriend,
   yearsOf,
 } from "./lunar-zodiac";
@@ -102,6 +103,25 @@ describe("cycleName", () => {
     expect(lunarYear(2026).cycle).toBe(43);
     expect(lunarYear(2043).cycle).toBe(60);
     expect(lunarYear(2044).cycle).toBe(1);
+  });
+});
+
+const pillarName = (day: string) => {
+  const { stem, animal } = dayPillarOf(day);
+
+  return `${stem.hanzi}${animal.branch.hanzi}`;
+};
+
+describe("dayPillarOf", () => {
+  it("counts the days round the sixty", () => {
+    expect(pillarName("2000-01-01")).toBe("戊午");
+    expect(pillarName("2000-01-02")).toBe("己未");
+    expect(pillarName("2024-02-10")).toBe("甲辰");
+    expect(pillarName("2000-03-01")).toBe(pillarName("2000-01-01"));
+    expect(dayPillarOf("1990-01-26").stem).toMatchObject({
+      element: expect.any(String),
+      polarity: expect.any(String),
+    });
   });
 });
 

@@ -217,35 +217,100 @@ export const ELEMENT_LORE: Readonly<Record<ZodiacElement, string>> = {
   Wood: "generous, growing and cooperative",
 };
 
-/** Years ending in 4 and 5 are Wood, 6 and 7 Fire, then Earth, Metal, Water. */
-const ELEMENTS: readonly ZodiacElement[] = [
-  "Metal",
-  "Metal",
-  "Water",
-  "Water",
-  "Wood",
-  "Wood",
-  "Fire",
-  "Fire",
-  "Earth",
-  "Earth",
-];
+export interface Stem extends Hanzi {
+  element: ZodiacElement;
+  polarity: "Yang" | "Yin";
+  /** What it is in nature: the tall tree. */
+  image: string;
+  keywords: string;
+}
 
 /**
- * The ten Heavenly Stems, from 甲 (4 CE, 1984): each gives a year its
- * element, two years each, yang then yin.
+ * The ten Heavenly Stems (天干 tiāngān), the roots of the calendar, from 甲
+ * (4 CE, 1984): the five elements, each yang then yin. Years ending in 4
+ * take 甲, in 5 乙, and so on round.
  */
-export const STEMS: readonly Hanzi[] = [
-  { hanzi: "甲", pinyin: "jiǎ" },
-  { hanzi: "乙", pinyin: "yǐ" },
-  { hanzi: "丙", pinyin: "bǐng" },
-  { hanzi: "丁", pinyin: "dīng" },
-  { hanzi: "戊", pinyin: "wù" },
-  { hanzi: "己", pinyin: "jǐ" },
-  { hanzi: "庚", pinyin: "gēng" },
-  { hanzi: "辛", pinyin: "xīn" },
-  { hanzi: "壬", pinyin: "rén" },
-  { hanzi: "癸", pinyin: "guǐ" },
+export const STEMS: readonly Stem[] = [
+  {
+    element: "Wood",
+    hanzi: "甲",
+    image: "the tall tree",
+    keywords: "upright, principled, a natural leader",
+    pinyin: "jiǎ",
+    polarity: "Yang",
+  },
+  {
+    element: "Wood",
+    hanzi: "乙",
+    image: "the vine and the flower",
+    keywords: "supple, graceful, always finds a way round",
+    pinyin: "yǐ",
+    polarity: "Yin",
+  },
+  {
+    element: "Fire",
+    hanzi: "丙",
+    image: "the Sun",
+    keywords: "warm, generous, open to everyone",
+    pinyin: "bǐng",
+    polarity: "Yang",
+  },
+  {
+    element: "Fire",
+    hanzi: "丁",
+    image: "the candle",
+    keywords: "gentle, attentive, a quiet light for others",
+    pinyin: "dīng",
+    polarity: "Yin",
+  },
+  {
+    element: "Earth",
+    hanzi: "戊",
+    image: "the mountain",
+    keywords: "steady, reliable, protective",
+    pinyin: "wù",
+    polarity: "Yang",
+  },
+  {
+    element: "Earth",
+    hanzi: "己",
+    image: "the garden soil",
+    keywords: "nurturing, practical, patient",
+    pinyin: "jǐ",
+    polarity: "Yin",
+  },
+  {
+    element: "Metal",
+    hanzi: "庚",
+    image: "the axe and raw ore",
+    keywords: "decisive, tough, fair",
+    pinyin: "gēng",
+    polarity: "Yang",
+  },
+  {
+    element: "Metal",
+    hanzi: "辛",
+    image: "the jewel",
+    keywords: "refined, precise, sensitive",
+    pinyin: "xīn",
+    polarity: "Yin",
+  },
+  {
+    element: "Water",
+    hanzi: "壬",
+    image: "the ocean",
+    keywords: "bold, free, far-reaching",
+    pinyin: "rén",
+    polarity: "Yang",
+  },
+  {
+    element: "Water",
+    hanzi: "癸",
+    image: "the rain and the dew",
+    keywords: "intuitive, gentle, quietly persistent",
+    pinyin: "guǐ",
+    polarity: "Yin",
+  },
 ];
 
 export interface LunarYear {
@@ -254,8 +319,8 @@ export interface LunarYear {
   element: ZodiacElement;
   /** Even years are yang, odd ones yin. */
   polarity: "Yang" | "Yin";
-  /** Its Heavenly Stem, the other half of its name. */
-  stem: Hanzi;
+  /** Its Heavenly Stem, the other half of its name: its element. */
+  stem: Stem;
   /** Where it falls in the sixty-year cycle, 1 for 甲子 (1984) to 60. */
   cycle: number;
 }
@@ -271,8 +336,8 @@ export const lunarYear = (year: number): LunarYear => {
   return {
     animal,
     cycle: mod(year - 4, 60) + 1,
-    element: ELEMENTS[mod(year, 10)] ?? "Wood",
-    polarity: mod(year, 2) === 0 ? "Yang" : "Yin",
+    element: stem.element,
+    polarity: stem.polarity,
     stem,
     year,
   };
@@ -398,6 +463,30 @@ export const lunarNewYear = (year: number): string => {
 /** The animal year a day falls in: kept simple, its calendar year. */
 export const lunarYearOf = (day: string): LunarYear =>
   lunarYear(Number(day.slice(0, 4)));
+
+/** A day's stem and branch, as the calendar counts days in sixties too. */
+export interface DayPillar {
+  stem: Stem;
+  animal: Animal;
+}
+
+/**
+ * The stem and branch of a calendar day: the days have gone round the
+ * sixty without a break since at least 720 BCE. 1 January 2000 was 戊午;
+ * the Julian day number plus 49 counts from a 甲子 day.
+ */
+export const dayPillarOf = (day: string): DayPillar => {
+  const julian = Math.round(Date.parse(`${day}T00:00:00Z`) / DAY) + 2_440_588;
+
+  const stem = STEMS[mod(julian + 49, 10)];
+  const animal = ANIMALS[mod(julian + 49, 12)];
+
+  if (!stem || !animal) {
+    throw new Error("No stems");
+  }
+
+  return { animal, stem };
+};
 
 /** The double-hours of the day: the Rat from 23:00, the Ox from 01:00… */
 export const hourAnimal = (hour: number): Animal => {
