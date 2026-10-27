@@ -1,10 +1,13 @@
 import { parseDay } from "./time";
 
 /**
- * Dates as the visitor's browser writes them. A day key is a calendar day,
- * so it is written as UTC to stay that day everywhere; a moment is written
- * on the clocks of the zone it is shown in.
+ * Dates in English, whatever language the browser is set to: the book is
+ * written in English, so "12 Dec", never "12 déc.". A day key is a calendar
+ * day, so it is written as UTC to stay that day everywhere; a moment is
+ * written on the clocks of the zone it is shown in.
  */
+const LOCALE = "en-GB";
+
 /** "31 October 2026". */
 export const LONG_DAY = {
   day: "numeric",
@@ -12,7 +15,7 @@ export const LONG_DAY = {
   year: "numeric",
 } as const;
 
-/** "Saturday, 31 October". */
+/** "Saturday 31 October". */
 export const FULL_DAY = {
   day: "numeric",
   month: "long",
@@ -29,14 +32,14 @@ export const formatDay = (key: string, options = SHORT_DAY): string => {
 
   return day
     ? new Date(Date.UTC(day.year, day.month - 1, day.day)).toLocaleDateString(
-        undefined,
+        LOCALE,
         { ...options, timeZone: "UTC" }
       )
     : key;
 };
 
 export const formatMoment = (date: Date, timeZone: string): string =>
-  date.toLocaleString(undefined, {
+  date.toLocaleString(LOCALE, {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
@@ -45,14 +48,14 @@ export const formatMoment = (date: Date, timeZone: string): string =>
   });
 
 export const formatClock = (date: Date, timeZone: string): string =>
-  date.toLocaleTimeString(undefined, {
+  date.toLocaleTimeString(LOCALE, {
     hour: "2-digit",
     minute: "2-digit",
     timeZone,
   });
 
 export const formatMonth = (year: number, month: number): string =>
-  new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
+  new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(LOCALE, {
     month: "long",
     timeZone: "UTC",
     year: "numeric",
