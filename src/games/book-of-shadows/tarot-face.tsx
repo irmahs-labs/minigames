@@ -50,8 +50,6 @@ interface TarotFaceProps {
   reversed?: boolean;
   /** Its width in pixels; a card is 60 × 100. */
   width?: number;
-  /** Whether to write the name at its foot: too small to read on a thumbnail. */
-  named?: boolean;
 }
 
 /**
@@ -63,7 +61,6 @@ export const TarotFace = ({
   card,
   reversed = false,
   width = 60,
-  named = false,
 }: TarotFaceProps) => (
   <svg
     aria-hidden="true"
@@ -105,11 +102,9 @@ export const TarotFace = ({
       >
         {card.suit ? SUIT_MARKS[card.suit] : MAJOR_MARK}
       </g>
-      {named ? (
-        <text x="30" y="87" textAnchor="middle" className="tarot-face__name">
-          {card.name.replace(/^The /u, "")}
-        </text>
-      ) : null}
+      <text x="30" y="87" textAnchor="middle" className="tarot-face__name">
+        {card.name.replace(/^The /u, "")}
+      </text>
     </g>
   </svg>
 );

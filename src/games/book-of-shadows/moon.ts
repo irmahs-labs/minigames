@@ -1,7 +1,14 @@
 import { NextMoonQuarter, Seasons, SearchMoonQuarter } from "astronomy-engine";
 
 import { illuminationOf, longitudeOf, moonAngle } from "./sky";
-import { dayKey, daysInMonth, keyOf, wallTimeAt, zonedToUtc } from "./time";
+import {
+  dayKey,
+  daysInMonth,
+  keyOf,
+  wallTimeAt,
+  zonedToUtc,
+  DAY,
+} from "./time";
 
 /**
  * The Moon's month as a witch keeps it: the four exact phases (new, first
@@ -96,8 +103,6 @@ const MONTH_MOONS = [
   "Cold Moon",
 ];
 
-const DAY = 86_400_000;
-
 /**
  * A full moon's name: the Harvest Moon is the one nearest the September
  * equinox, and the Hunter's Moon the one after; a second full moon in one
@@ -143,6 +148,29 @@ export interface MoonDay {
   exact: Date | null;
 }
 
+/**
+ * A day and its moon: the exact phase, when one falls on it, or else the
+ * crescent or gibbous of the Moon's angle at the day's noon.
+ */
+const moonDayOf = (
+  year: number,
+  month: number,
+  day: number,
+  quarter: Quarter | undefined,
+  timeZone: string
+): MoonDay => {
+  const noon = zonedToUtc({ day, hour: 12, minute: 0, month, year }, timeZone);
+  const angle = moonAngle(quarter?.time ?? noon);
+
+  return {
+    angle,
+    day,
+    exact: quarter?.time ?? null,
+    key: keyOf(year, month, day),
+    phase: quarter?.phase ?? inBetweenPhase(angle),
+  };
+};
+
 /** Every day of a month, with its moon, in the visitor's time zone. */
 export const moonMonth = (
   year: number,
@@ -168,49 +196,28 @@ export const moonMonth = (
     ])
   );
 
-  return Array.from({ length: daysInMonth(year, month) }, (_, i) => {
-    const day = i + 1;
-    const key = keyOf(year, month, day);
-    const quarter = exact.get(key);
-
-    const noon = zonedToUtc(
-      { day, hour: 12, minute: 0, month, year },
+  return Array.from({ length: daysInMonth(year, month) }, (_, i) =>
+    moonDayOf(
+      year,
+      month,
+      i + 1,
+      exact.get(keyOf(year, month, i + 1)),
       timeZone
-    );
-
-    const angle = moonAngle(quarter?.time ?? noon);
-
-    return {
-      angle,
-      day,
-      exact: quarter?.time ?? null,
-      key,
-      phase: quarter?.phase ?? inBetweenPhase(angle),
-    };
-  });
+    )
+  );
 };
 
 /** The phase of the Moon on the day `date` falls on, in `timeZone`. */
 export const phaseOn = (date: Date, timeZone: string): MoonDay => {
   const { year, month, day } = wallTimeAt(date, timeZone);
   const start = zonedToUtc({ day, hour: 0, minute: 0, month, year }, timeZone);
-  const noon = zonedToUtc({ day, hour: 12, minute: 0, month, year }, timeZone);
-  const end = new Date(start.getTime() + DAY);
   const key = keyOf(year, month, day);
 
-  const quarter = quartersBetween(start, end).find(
+  const quarter = quartersBetween(start, new Date(start.getTime() + DAY)).find(
     (found) => dayKey(found.time, timeZone) === key
   );
 
-  const angle = moonAngle(quarter?.time ?? noon);
-
-  return {
-    angle,
-    day,
-    exact: quarter?.time ?? null,
-    key,
-    phase: quarter?.phase ?? inBetweenPhase(angle),
-  };
+  return moonDayOf(year, month, day, quarter, timeZone);
 };
 
 export interface MoonNow {

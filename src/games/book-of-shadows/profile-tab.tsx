@@ -1,7 +1,8 @@
 import { useConfirm } from "../../lib/use-confirm";
 import { BirthplaceField } from "./birthplace-field";
-import { formatDay } from "./format";
+import { LONG_DAY, formatDay } from "./format";
 import { lunarYearOf, yearName } from "./lunar-zodiac";
+import { Meter } from "./meter";
 import { MoonGlyph } from "./moon-glyph";
 import { meaningOf } from "./numerology";
 import {
@@ -11,14 +12,23 @@ import {
   birthSeasonOf,
   craftOf,
   elementBalance,
+  longitudeIn,
   planetaryDayOf,
 } from "./profile";
 import type { Birth, Chart, Profile } from "./profile";
+import { SignName } from "./sign-name";
 import { PLANET_GLYPHS, moonAngle } from "./sky";
-import { ELEMENTS, ELEMENT_NAMES, placementOf } from "./zodiac";
+import { ELEMENTS, ELEMENT_NAMES } from "./zodiac";
 
 /** Every time zone the browser knows, for a birthplace not on the list. */
 const TIME_ZONES = Intl.supportedValuesOf("timeZone");
+
+/** Their options, built once: the forms re-render on every keystroke. */
+const ZONE_OPTIONS = TIME_ZONES.map((zone) => (
+  <option key={zone} value={zone}>
+    {zone}
+  </option>
+));
 
 interface DetailsProps {
   /** Your own details, or the person you are matching yours with. */
@@ -162,13 +172,7 @@ export const BirthDetails = ({
             placeholder="Europe/Brussels"
             onChange={(event) => onChange({ timeZone: event.target.value })}
           />
-          <datalist id={`${prefix}-zones`}>
-            {TIME_ZONES.map((zone) => (
-              <option key={zone} value={zone}>
-                {zone}
-              </option>
-            ))}
-          </datalist>
+          <datalist id={`${prefix}-zones`}>{ZONE_OPTIONS}</datalist>
         </div>
       </details>
 
@@ -207,28 +211,17 @@ const Light = ({
   label: string;
   glyph: string;
   longitude: number | null;
-}) => {
-  const sign = longitude === null ? null : placementOf(longitude).sign;
-
-  return (
-    <div className="light">
-      <span className="light__label">
-        <span aria-hidden="true">{glyph} </span>
-        {label}
-      </span>
-      <span className="display light__sign">
-        {sign ? (
-          <>
-            <span aria-hidden="true">{sign.glyph} </span>
-            {sign.name}
-          </>
-        ) : (
-          "?"
-        )}
-      </span>
-    </div>
-  );
-};
+}) => (
+  <div className="light">
+    <span className="light__label">
+      <span aria-hidden="true">{glyph} </span>
+      {label}
+    </span>
+    <span className="display light__sign">
+      {longitude === null ? "?" : <SignName longitude={longitude} />}
+    </span>
+  </div>
+);
 
 /** The witch card: the profile at a glance, drawn from everything else. */
 export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
@@ -250,10 +243,6 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
     );
   }
 
-  const longitudeOf = (planet: "Sun" | "Moon") =>
-    chart.positions.find((position) => position.planet === planet)?.longitude ??
-    0;
-
   const craft = craftOf(chart);
   const balance = elementBalance(chart);
   const total = ELEMENTS.reduce((sum, element) => sum + balance[element], 0);
@@ -274,11 +263,7 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
       <span className="legend">witch-card.png</span>
       <p className="kicker">
         {profile.name.trim() || "A witch"}, born{" "}
-        {formatDay(birth.day, {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
+        {formatDay(birth.day, LONG_DAY)}
       </p>
       <h2 id="card-title" className="display page__title">
         {craft.name}
@@ -289,12 +274,12 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
         <Light
           label="Sun"
           glyph={PLANET_GLYPHS.Sun}
-          longitude={longitudeOf("Sun")}
+          longitude={longitudeIn(chart, "Sun")}
         />
         <Light
           label="Moon"
           glyph={PLANET_GLYPHS.Moon}
-          longitude={longitudeOf("Moon")}
+          longitude={longitudeIn(chart, "Moon")}
         />
         <Light
           label="Rising"
@@ -353,12 +338,7 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
           {ELEMENTS.map((element) => (
             <li key={element} className="element">
               <span className="element__name">{ELEMENT_NAMES[element]}</span>
-              <span className="element__track" aria-hidden="true">
-                <span
-                  className="element__fill"
-                  style={{ width: `${(balance[element] / total) * 100}%` }}
-                />
-              </span>
+              <Meter percent={(balance[element] / total) * 100} />
               <span className="element__count">
                 {Math.round((balance[element] / total) * 100)}%
               </span>

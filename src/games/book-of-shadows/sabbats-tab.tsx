@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
-import { formatDay, inDays } from "./format";
+import { FULL_DAY, formatDay, inDays } from "./format";
+import { PeriodNav } from "./period-nav";
 import { nextSabbat, sabbatsIn, sunPointOf } from "./sabbats";
 import type { SabbatDate } from "./sabbats";
 import { longitudeOf } from "./sky";
@@ -12,12 +13,6 @@ interface SabbatsTabProps {
   southern: boolean;
   onSouthern: (southern: boolean) => void;
 }
-
-const FULL_DAY = {
-  day: "numeric",
-  month: "long",
-  weekday: "long",
-} as const;
 
 /** On the wheel, clockwise from the top: Yule at the top, Litha at the foot. */
 const pointAt = (longitude: number, southern: boolean, radius: number) => {
@@ -195,40 +190,14 @@ export const SabbatsTab = ({
         className="panel panel--book panel--wide"
       >
         <span className="legend">sabbats.txt</span>
-        <div className="month-nav">
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Previous year"
-            onClick={() => setYear(year - 1)}
-          >
-            ‹
-          </button>
-          <h2
-            id="sabbats-title"
-            className="display book__title"
-            aria-live="polite"
-          >
-            The sabbats of {year}
-          </h2>
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Next year"
-            onClick={() => setYear(year + 1)}
-          >
-            ›
-          </button>
-          {year === thisYear ? null : (
-            <button
-              type="button"
-              className="btn btn--quiet"
-              onClick={() => setYear(thisYear)}
-            >
-              This year
-            </button>
-          )}
-        </div>
+        <PeriodNav
+          id="sabbats-title"
+          unit="year"
+          title={`The sabbats of ${year}`}
+          atCurrent={year === thisYear}
+          onStep={(by) => setYear(year + by)}
+          onCurrent={() => setYear(thisYear)}
+        />
 
         <ol className="sabbats">
           {dates.map(({ sabbat, key, astronomical }) => (

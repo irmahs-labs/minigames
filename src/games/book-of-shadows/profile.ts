@@ -11,7 +11,7 @@ import { seasonOf } from "./sabbats";
 import { anglesAt, longitudeOf, positionsAt } from "./sky";
 import type { Angles, Planet, Position } from "./sky";
 import {
-  dayKey,
+  DAY,
   isTimeZone,
   parseClock,
   parseDay,
@@ -63,15 +63,8 @@ const profileSchema = z.object({
 
 export type Profile = z.infer<typeof profileSchema>;
 
-export const EMPTY_PROFILE: Profile = {
-  birthDate: "",
-  birthTime: "",
-  lat: "",
-  lon: "",
-  name: "",
-  place: "",
-  timeZone: "",
-};
+/** A profile with nothing typed in: every field's fallback. */
+export const EMPTY_PROFILE: Profile = profileSchema.parse({});
 
 /** The day's tarot card, pulled once a day (see tarot.ts). */
 const dailyPullSchema = z.object({
@@ -96,13 +89,8 @@ export const bookStateSchema = z.object({
 
 export type BookState = z.infer<typeof bookStateSchema>;
 
-export const defaultState = (): BookState => ({
-  dailyCard: null,
-  partner: { ...EMPTY_PROFILE },
-  profile: { ...EMPTY_PROFILE },
-  southern: false,
-  tab: "profile",
-});
+/** A first visit: every field's fallback. */
+export const defaultState = (): BookState => bookStateSchema.parse({});
 
 export const loadState = (): BookState =>
   readStored(STORAGE_KEY, bookStateSchema, defaultState);
@@ -183,6 +171,11 @@ export interface Chart {
   moonSpan: [Placement, Placement] | null;
 }
 
+/** Where a planet stands in a chart; every chart holds all ten. */
+export const longitudeIn = (chart: Chart, planet: Planet): number =>
+  chart.positions.find((position) => position.planet === planet)?.longitude ??
+  0;
+
 export const chartFor = (birth: Birth): Chart => {
   const positions = positionsAt(birth.moment);
 
@@ -198,7 +191,7 @@ export const chartFor = (birth: Birth): Chart => {
       birth.timeZone
     );
 
-    const end = new Date(start.getTime() + 86_400_000 - 60_000);
+    const end = new Date(start.getTime() + DAY - 60_000);
 
     return {
       angles: null,
@@ -305,8 +298,7 @@ const CRAFTS: Record<Element, Omit<Craft, "element">> = {
 /** The craft of the element the chart leans on most; the Sun's breaks a tie. */
 export const craftOf = (chart: Chart): Craft => {
   const balance = elementBalance(chart);
-  const sun = chart.positions.find((position) => position.planet === "Sun");
-  const sunElement = placementOf(sun?.longitude ?? 0).sign.element;
+  const sunElement = placementOf(longitudeIn(chart, "Sun")).sign.element;
   const most = Math.max(...ELEMENTS.map((element) => balance[element]));
 
   const element =
@@ -347,17 +339,6 @@ export const planetaryDayOf = (birth: Birth) =>
 /** The Moon's phase on the birth day, where it happened. */
 export const birthMoonOf = (birth: Birth): PhaseName =>
   phaseOn(birth.moment, birth.timeZone).phase;
-
-/** Birthdays are kept on the birth day's calendar, wherever you are now. */
-export const birthdayKey = (birth: Birth, year: number): string =>
-  `${year}${birth.day.slice(4)}`;
-
-/** Whether the visitor's today is their birthday. */
-export const isBirthday = (
-  birth: Birth,
-  now: Date,
-  timeZone: string
-): boolean => dayKey(now, timeZone).slice(5) === birth.day.slice(5);
 
 export const birthNumbers = (birth: Birth, name: string, thisYear: number) =>
   numbersFor(

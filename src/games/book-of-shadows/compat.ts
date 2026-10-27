@@ -2,8 +2,10 @@ import { ANIMALS, allies, clash, secretFriend } from "./lunar-zodiac";
 import type { LunarYear, ZodiacElement } from "./lunar-zodiac";
 import { reduce } from "./numerology";
 import type { Numbers } from "./numerology";
+import { longitudeIn } from "./profile";
 import type { Chart } from "./profile";
 import type { Planet } from "./sky";
+import { mod } from "./time";
 import { normalize, placementOf } from "./zodiac";
 
 /**
@@ -168,22 +170,16 @@ const elementPair = (a: number, b: number): ElementPair => {
     : "different";
 };
 
-const longitudeIn = (chart: Chart, planet: Planet): number =>
-  chart.positions.find((position) => position.planet === planet)?.longitude ??
-  0;
-
 /** Two birth charts, side by side: the aspects between them and their Suns' elements. */
 export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
   const reasons: Reason[] = [];
   let score = 50;
 
-  const suns = elementPair(
-    longitudeIn(mine, "Sun"),
-    longitudeIn(theirs, "Sun")
-  );
-
-  const sunSign = placementOf(longitudeIn(mine, "Sun")).sign;
-  const theirSun = placementOf(longitudeIn(theirs, "Sun")).sign;
+  const mySun = longitudeIn(mine, "Sun");
+  const theirSunAt = longitudeIn(theirs, "Sun");
+  const suns = elementPair(mySun, theirSunAt);
+  const sunSign = placementOf(mySun).sign;
+  const theirSun = placementOf(theirSunAt).sign;
 
   score += { complementary: 6, different: -4, kindred: 8 }[suns];
   reasons.push({
@@ -329,8 +325,6 @@ const CHECKS: Readonly<Record<ZodiacElement, ZodiacElement>> = {
   Water: "Fire",
   Wood: "Earth",
 };
-
-const mod = (n: number, m: number) => ((n % m) + m) % m;
 
 /** Two Lunar zodiac years: the animals first, then their elements. */
 export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {

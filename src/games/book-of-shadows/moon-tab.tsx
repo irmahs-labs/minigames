@@ -16,7 +16,9 @@ import {
   quartersBetween,
 } from "./moon";
 import { MoonGlyph } from "./moon-glyph";
-import { dayKey, daysBetween, keyOf, wallTimeAt, weekdayOf } from "./time";
+import { PeriodNav } from "./period-nav";
+import { SignName } from "./sign-name";
+import { DAY, dayKey, daysBetween, keyOf, wallTimeAt, weekdayOf } from "./time";
 import { placementOf } from "./zodiac";
 
 interface MoonTabProps {
@@ -26,8 +28,6 @@ interface MoonTabProps {
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-const DAY = 86_400_000;
 
 /** Tonight's Moon: its phase, its sign, and the next new and full moons. */
 const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
@@ -52,8 +52,7 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
       <p className="tonight__stats">
         {Math.round(moon.illumination * 100)}% lit · day{" "}
         {Math.floor(moon.age) + 1} of 29.5 · in{" "}
-        <span aria-hidden="true">{sign.glyph} </span>
-        {sign.name}
+        <SignName longitude={moon.longitude} />
       </p>
       <p className="tonight__lore">{PHASE_LORE[day.phase]}</p>
 
@@ -119,42 +118,14 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
       className="panel panel--book panel--wide"
     >
       <span className="legend">moon-calendar.ics</span>
-      <div className="month-nav">
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Previous month"
-          onClick={() => step(-1)}
-        >
-          ‹
-        </button>
-        <h2
-          id="calendar-title"
-          className="display book__title"
-          aria-live="polite"
-        >
-          {formatMonth(shown.year, shown.month)}
-        </h2>
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Next month"
-          onClick={() => step(1)}
-        >
-          ›
-        </button>
-        {shown.year === current.year && shown.month === current.month ? null : (
-          <button
-            type="button"
-            className="btn btn--quiet"
-            onClick={() =>
-              setShown({ month: current.month, year: current.year })
-            }
-          >
-            This month
-          </button>
-        )}
-      </div>
+      <PeriodNav
+        id="calendar-title"
+        unit="month"
+        title={formatMonth(shown.year, shown.month)}
+        atCurrent={shown.year === current.year && shown.month === current.month}
+        onStep={step}
+        onCurrent={() => setShown({ month: current.month, year: current.year })}
+      />
 
       <ol className="moon-cal">
         {WEEKDAYS.map((weekday) => (

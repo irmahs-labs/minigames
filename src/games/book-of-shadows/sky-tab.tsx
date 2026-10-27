@@ -2,7 +2,9 @@ import { EclipseKind } from "astronomy-engine";
 import { useMemo, useState } from "react";
 
 import { formatDay } from "./format";
+import { PeriodNav } from "./period-nav";
 import { loreFor } from "./retrograde-lore";
+import { SignName } from "./sign-name";
 import {
   PLANET_GLYPHS,
   PLANET_MEANINGS,
@@ -10,7 +12,7 @@ import {
   positionsAt,
   retrogradesBetween,
 } from "./sky";
-import type { Station } from "./sky";
+import type { Eclipse, Retrograde, Station } from "./sky";
 import { dayKey, startOfYear, wallTimeAt } from "./time";
 import { formatDegree, placementOf } from "./zodiac";
 
@@ -24,18 +26,6 @@ const ECLIPSE_KINDS: Record<EclipseKind, string> = {
   [EclipseKind.Partial]: "Partial",
   [EclipseKind.Penumbral]: "Penumbral",
   [EclipseKind.Total]: "Total",
-};
-
-/** "Sagittarius ♐". */
-const SignName = ({ longitude }: { longitude: number }) => {
-  const { sign } = placementOf(longitude);
-
-  return (
-    <>
-      <span aria-hidden="true">{sign.glyph} </span>
-      {sign.name}
-    </>
-  );
 };
 
 /** "24 Oct in Scorpio", with the year when it is not the one shown. */
@@ -114,20 +104,42 @@ const SkyToday = ({ now }: SkyTabProps) => {
   );
 };
 
+const skyYears = new Map<
+  string,
+  { retrogrades: Retrograde[]; eclipses: Eclipse[] }
+>();
+
+/**
+ * A year's retrogrades and eclipses, worked out once per year and time
+ * zone: going back to a year already seen costs nothing.
+ */
+const yearInTheSky = (year: number, timeZone: string) => {
+  const key = `${year}|${timeZone}`;
+  const known = skyYears.get(key);
+
+  if (known) {
+    return known;
+  }
+
+  const from = startOfYear(year, timeZone);
+  const to = startOfYear(year + 1, timeZone);
+
+  const sky = {
+    eclipses: eclipsesBetween(from, to),
+    retrogrades: retrogradesBetween(from, to),
+  };
+
+  skyYears.set(key, sky);
+
+  return sky;
+};
+
 /** A year's retrogrades and eclipses, with what each is said to bring. */
 const SkyYear = ({ now, timeZone }: SkyTabProps) => {
   const thisYear = wallTimeAt(now, timeZone).year;
   const [year, setYear] = useState(thisYear);
 
-  const { retrogrades, eclipses } = useMemo(() => {
-    const from = startOfYear(year, timeZone);
-    const to = startOfYear(year + 1, timeZone);
-
-    return {
-      eclipses: eclipsesBetween(from, to),
-      retrogrades: retrogradesBetween(from, to),
-    };
-  }, [year, timeZone]);
+  const { retrogrades, eclipses } = yearInTheSky(year, timeZone);
 
   return (
     <section
@@ -135,36 +147,14 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
       className="panel panel--book panel--wide"
     >
       <span className="legend">retrogrades.csv</span>
-      <div className="month-nav">
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Previous year"
-          onClick={() => setYear(year - 1)}
-        >
-          ‹
-        </button>
-        <h2 id="year-title" className="display book__title" aria-live="polite">
-          Retrogrades of {year}
-        </h2>
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Next year"
-          onClick={() => setYear(year + 1)}
-        >
-          ›
-        </button>
-        {year === thisYear ? null : (
-          <button
-            type="button"
-            className="btn btn--quiet"
-            onClick={() => setYear(thisYear)}
-          >
-            This year
-          </button>
-        )}
-      </div>
+      <PeriodNav
+        id="year-title"
+        unit="year"
+        title={`Retrogrades of ${year}`}
+        atCurrent={year === thisYear}
+        onStep={(by) => setYear(year + by)}
+        onCurrent={() => setYear(thisYear)}
+      />
 
       <ol className="retrogrades">
         {retrogrades.map((retrograde) => {

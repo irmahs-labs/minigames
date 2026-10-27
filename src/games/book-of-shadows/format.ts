@@ -5,6 +5,20 @@ import { parseDay } from "./time";
  * so it is written as UTC to stay that day everywhere; a moment is written
  * on the clocks of the zone it is shown in.
  */
+/** "31 October 2026". */
+export const LONG_DAY = {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+} as const;
+
+/** "Saturday, 31 October". */
+export const FULL_DAY = {
+  day: "numeric",
+  month: "long",
+  weekday: "long",
+} as const;
+
 const SHORT_DAY: Intl.DateTimeFormatOptions = {
   day: "numeric",
   month: "short",

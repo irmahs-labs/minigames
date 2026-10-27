@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { formatDay } from "./format";
+import { LONG_DAY, formatDay } from "./format";
 import {
   ANIMALS,
   ELEMENT_LORE,
@@ -9,16 +9,16 @@ import {
   hourAnimal,
   hoursOf,
   lunarNewYear,
+  lunarYear,
   lunarYearOf,
   secretFriend,
   yearName,
   yearsOf,
 } from "./lunar-zodiac";
 import type { Animal, LunarYear } from "./lunar-zodiac";
+import { NeedsBirth } from "./needs-birth";
 import type { Birth } from "./profile";
 import { dayKey, parseClock } from "./time";
-
-const LONG_DAY = { day: "numeric", month: "long", year: "numeric" } as const;
 
 /** The animals one gets on with, as a sentence: "Dragon 🐉, Monkey 🐒". */
 const listed = (animals: readonly Animal[]) =>
@@ -36,20 +36,13 @@ const YourAnimal = ({
 }) => {
   if (!birth) {
     return (
-      <section className="panel panel--book panel--wide empty">
-        <span className="legend">your-animal.txt</span>
-        <h2 className="display page__title">Your animal</h2>
-        <p className="page__sub">
-          Your birth date on your profile tells which of the twelve is yours.
-        </p>
-        <button
-          type="button"
-          className="btn btn--primary"
-          onClick={onOpenProfile}
-        >
-          Fill in your profile
-        </button>
-      </section>
+      <NeedsBirth
+        onOpen={onOpenProfile}
+        legend="your-animal.txt"
+        title="Your animal"
+        text="Your birth date on your profile tells which of the twelve is yours."
+        className="panel--wide"
+      />
     );
   }
 
@@ -129,12 +122,10 @@ const YourAnimal = ({
 };
 
 /** The year we are in, and when the next one starts. */
-const ThisYear = ({ now, timeZone }: { now: Date; timeZone: string }) => {
-  const today = dayKey(now, timeZone);
-  const year = lunarYearOf(today);
-  const next = lunarYearOf(lunarNewYear(year.year + 1));
+const ThisYear = ({ year }: { year: LunarYear }) => {
+  const next = lunarYear(year.year + 1);
   const started = lunarNewYear(year.year);
-  const nextStart = lunarNewYear(year.year + 1);
+  const nextStart = lunarNewYear(next.year);
 
   return (
     <section
@@ -236,7 +227,7 @@ export const LunarZodiacTab = ({
           birthTime={birthTime}
           onOpenProfile={onOpenProfile}
         />
-        <ThisYear now={now} timeZone={timeZone} />
+        <ThisYear year={current} />
       </div>
       <TwelveAnimals yours={yours} current={current} />
     </>

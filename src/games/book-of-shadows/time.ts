@@ -12,7 +12,11 @@ export interface WallTime {
   minute: number;
 }
 
-const DAY = 86_400_000;
+/** A day, in milliseconds. */
+export const DAY = 86_400_000;
+
+/** n modulo m, never negative: mod(-1, 12) is 11. */
+export const mod = (n: number, m: number): number => ((n % m) + m) % m;
 
 const formats = new Map<string, Intl.DateTimeFormat>();
 
@@ -128,7 +132,7 @@ export const zonedToUtc = (wall: WallTime, timeZone: string): Date => {
 export const startOfYear = (year: number, timeZone: string): Date =>
   zonedToUtc({ day: 1, hour: 0, minute: 0, month: 1, year }, timeZone);
 
-const pad = (n: number) => String(n).padStart(2, "0");
+export const pad = (n: number): string => String(n).padStart(2, "0");
 
 export const keyOf = (year: number, month: number, day: number): string =>
   `${String(year).padStart(4, "0")}-${pad(month)}-${pad(day)}`;
@@ -188,7 +192,7 @@ export const daysBetween = (from: string, to: string): number => {
   return Math.round(
     (Date.UTC(b.year, b.month - 1, b.day) -
       Date.UTC(a.year, a.month - 1, a.day)) /
-      86_400_000
+      DAY
   );
 };
 

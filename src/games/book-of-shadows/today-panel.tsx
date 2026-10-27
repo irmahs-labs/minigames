@@ -1,29 +1,24 @@
-import { formatDay, inDays } from "./format";
+import { memo } from "react";
+
+import { cryptoRandom } from "../../lib/random";
+import { FULL_DAY, formatDay, inDays } from "./format";
 import { lunarYearOf, yearName } from "./lunar-zodiac";
 import { PHASE_LORE, moonNow, phaseOn } from "./moon";
 import { MoonGlyph } from "./moon-glyph";
-import { RETROGRADE_LORE } from "./retrograde-lore";
+import { loreFor } from "./retrograde-lore";
 import { nextSabbat } from "./sabbats";
+import { SignName } from "./sign-name";
 import {
   PLANET_GLYPHS,
   eclipsesBetween,
   longitudeOf,
   retrogradesBetween,
 } from "./sky";
-import { cryptoRandom, pullDailyCard, todaysCard } from "./tarot";
+import { pullDailyCard, todaysCard } from "./tarot";
 import type { DailyPull } from "./tarot";
 import { TarotBack, TarotFace } from "./tarot-face";
-import { dayKey, daysBetween } from "./time";
+import { DAY, dayKey, daysBetween } from "./time";
 import { placementOf } from "./zodiac";
-
-const DAY = 86_400_000;
-
-/** "Scorpio ♏". */
-const signName = (longitude: number) => {
-  const { sign } = placementOf(longitude);
-
-  return `${sign.name} ${sign.glyph}`;
-};
 
 type Sky = ReturnType<typeof workOutSky>;
 
@@ -76,7 +71,7 @@ interface TodayProps {
  * Today, at a glance: the Moon, the next sabbat, and the sky (where the
  * lights are, what is retrograde, what is coming).
  */
-export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
+const Today = ({ now, timeZone, southern }: TodayProps) => {
   const today = dayKey(now, timeZone);
   const day = phaseOn(now, timeZone);
   const moon = moonNow(now);
@@ -92,8 +87,7 @@ export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
     >
       <span className="legend">today.log</span>
       <h2 id="today-title" className="display book__title">
-        Today,{" "}
-        {formatDay(today, { day: "numeric", month: "long", weekday: "long" })}
+        Today, {formatDay(today, FULL_DAY)}
       </h2>
       <div className="today__grid">
         <div className="today__item">
@@ -103,7 +97,7 @@ export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
             <p className="display today__big">{day.phase}</p>
             <p>
               {Math.round(moon.illumination * 100)}% lit, in{" "}
-              {signName(moon.longitude)}.
+              <SignName longitude={moon.longitude} />.
             </p>
             <p className="today__lore">{PHASE_LORE[day.phase]}</p>
           </div>
@@ -131,9 +125,9 @@ export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
           <div className="stack">
             <h3 className="field-label">The sky</h3>
             <p>
-              The Sun is in {signName(longitudeOf("Sun", now))}, the Moon in{" "}
-              {signName(moon.longitude)}. Year of the {yearName(lunar)}{" "}
-              {lunar.animal.emoji}.
+              The Sun is in <SignName longitude={longitudeOf("Sun", now)} />,
+              the Moon in <SignName longitude={moon.longitude} />. Year of the{" "}
+              {yearName(lunar)} {lunar.animal.emoji}.
             </p>
             {sky.now.length === 0 ? (
               <p>No planet is retrograde.</p>
@@ -150,11 +144,7 @@ export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
                     in {placementOf(period.start.longitude).sign.name}, until{" "}
                     {formatDay(dayKey(period.end.time, timeZone))}.{" "}
                     <span className="today__lore">
-                      {
-                        RETROGRADE_LORE[period.planet][
-                          placementOf(period.start.longitude).index
-                        ]
-                      }
+                      {loreFor(period).join(" ")}
                     </span>
                   </li>
                 ))}
@@ -181,6 +171,9 @@ export const TodayPanel = ({ now, timeZone, southern }: TodayProps) => {
   );
 };
 
+// Memoized: typing in the birth details re-renders the profile, never today.
+export const TodayPanel = memo(Today);
+
 /**
  * The card of the day: face down until it is pulled, then the same card
  * all day. The day turns at midnight in Paris, wherever you are.
@@ -195,6 +188,7 @@ export const DailyCard = ({
   onPull: (pull: DailyPull) => void;
 }) => {
   const drawn = todaysCard(pull, now);
+  const reading = drawn?.reversed ? drawn.card.reversed : drawn?.card.upright;
 
   return (
     <section
@@ -208,12 +202,7 @@ export const DailyCard = ({
       </h2>
       <div className="daily__card">
         {drawn ? (
-          <TarotFace
-            card={drawn.card}
-            reversed={drawn.reversed}
-            width={110}
-            named
-          />
+          <TarotFace card={drawn.card} reversed={drawn.reversed} width={110} />
         ) : (
           <TarotBack width={110} />
         )}
@@ -224,16 +213,8 @@ export const DailyCard = ({
             {drawn.card.name}
             {drawn.reversed ? ", reversed" : ""}
           </p>
-          <p className="tarot-side__keywords">
-            {drawn.reversed
-              ? drawn.card.reversed.keywords
-              : drawn.card.upright.keywords}
-          </p>
-          <p>
-            {drawn.reversed
-              ? drawn.card.reversed.meaning
-              : drawn.card.upright.meaning}
-          </p>
+          <p className="tarot-side__keywords">{reading?.keywords}</p>
+          <p>{reading?.meaning}</p>
           <p className="hint">Your next card comes at midnight, Paris time.</p>
         </div>
       ) : (

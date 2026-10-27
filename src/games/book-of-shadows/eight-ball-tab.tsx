@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 
+import { cryptoRandom } from "../../lib/random";
 import {
   EIGHT,
   IDENTITY,
@@ -20,7 +21,6 @@ import {
   ZERO,
 } from "./eight-ball";
 import type { Answer, Quat, ShakeState, Vec } from "./eight-ball";
-import { cryptoRandom } from "./tarot";
 
 /** The ball's radius, in the drawing's units (it is 300 across, with room). */
 const RADIUS = 130;
@@ -450,7 +450,11 @@ export const EightBallTab = () => {
           <Ball turn={turn} answer={answer} showing={phase === "answered"} />
         </div>
         <p
-          className={`display eight-ball__caption eight-ball__caption--${phase === "answered" ? (answer?.mood ?? "maybe") : "waiting"}`}
+          className={
+            phase === "answered"
+              ? "display eight-ball__caption"
+              : "display eight-ball__caption eight-ball__caption--waiting"
+          }
           aria-live="polite"
         >
           {caption ??

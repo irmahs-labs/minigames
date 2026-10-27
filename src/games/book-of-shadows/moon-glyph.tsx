@@ -6,20 +6,18 @@ interface MoonGlyphProps {
   size?: number;
   /** Below the equator the Moon is seen the other way round. */
   southern?: boolean;
-  /** What it shows, for a moon that stands alone; none for one with a caption. */
-  label?: string;
 }
 
 /**
  * The Moon as it looks: a dark disc with its lit part in cream, bounded by
  * the limb on one side and the terminator, an ellipse as wide as the cosine
- * of its angle, on the other. Fixed drawing colours, the same in both themes.
+ * of its angle, on the other. Fixed drawing colours, the same in both
+ * themes; always beside words that say what it shows.
  */
 export const MoonGlyph = ({
   angle,
   size = 24,
   southern = false,
-  label,
 }: MoonGlyphProps) => {
   const lit = illuminationOf(angle);
   const waxing = angle < 180;
@@ -30,9 +28,7 @@ export const MoonGlyph = ({
 
   return (
     <svg
-      role={label ? "img" : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
+      aria-hidden="true"
       width={size}
       height={size}
       viewBox="0 0 24 24"

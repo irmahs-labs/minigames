@@ -15,6 +15,7 @@ import {
   e_tilt,
 } from "astronomy-engine";
 
+import { DAY } from "./time";
 import { normalize } from "./zodiac";
 
 /**
@@ -98,8 +99,6 @@ const BODIES: Record<Wanderer, Body> = {
   Uranus: Body.Uranus,
   Venus: Body.Venus,
 };
-
-const DAY = 86_400_000;
 
 /** The planet's geocentric tropical longitude at `date`, in degrees. */
 export const longitudeOf = (planet: Planet, date: Date): number => {
@@ -210,30 +209,47 @@ const findStation = (planet: Planet, from: number, to: number): Date => {
   return new Date((low + high) / 2);
 };
 
-/** The longest any planet stays retrograde, with room to spare (Pluto's ~160 days). */
-const LONGEST_RETROGRADE = 170 * DAY;
+/**
+ * How each planet is walked: how far back to start, so a retrograde already
+ * under way is caught (a little longer than its longest), and the step, as
+ * long as can be without stepping over a whole retrograde. The slow outer
+ * planets turn rarely and take the longest to compute (Pluto most of all).
+ */
+const WALKS: Record<Wanderer, { lookBack: number; step: number }> = {
+  Jupiter: { lookBack: 130, step: 5 },
+  Mars: { lookBack: 90, step: 2 },
+  Mercury: { lookBack: 30, step: 1 },
+  Neptune: { lookBack: 170, step: 5 },
+  Pluto: { lookBack: 170, step: 5 },
+  Saturn: { lookBack: 150, step: 5 },
+  Uranus: { lookBack: 165, step: 5 },
+  Venus: { lookBack: 50, step: 1 },
+};
 
 /**
  * Every retrograde that overlaps the time from `from` to `to`, earliest
- * first: a day-by-day walk of each planet's motion, with the turns narrowed
- * down to the hour.
+ * first: a walk of each planet's motion, step by step, with the turns
+ * narrowed down to the hour.
  */
 export const retrogradesBetween = (from: Date, to: Date): Retrograde[] => {
-  const start = from.getTime() - LONGEST_RETROGRADE;
-  const end = to.getTime() + LONGEST_RETROGRADE;
   const found: Retrograde[] = [];
 
   for (const planet of WANDERERS) {
+    const step = WALKS[planet].step * DAY;
+    const reach = WALKS[planet].lookBack * DAY;
+    const start = from.getTime() - reach;
+    const end = to.getTime() + reach;
     let previous = longitudeOf(planet, new Date(start));
     let wasBack: boolean | null = null;
     let opened: Station | null = null;
 
-    for (let t = start + DAY; t <= end; t += DAY) {
+    for (let t = start + step; t <= end; t += step) {
       const longitude = longitudeOf(planet, new Date(t));
       const back = turn(previous, longitude) < 0;
 
       if (wasBack !== null && back !== wasBack) {
-        const time = findStation(planet, t - 2 * DAY, t);
+        // The turn lies somewhere in the last two steps; one more for margin.
+        const time = findStation(planet, t - 3 * step, t);
         const station = { longitude: longitudeOf(planet, time), time };
 
         if (back) {

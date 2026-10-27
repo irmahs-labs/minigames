@@ -1,6 +1,6 @@
 import { SearchMoonPhase, SearchSunLongitude, Seasons } from "astronomy-engine";
 
-import { dayKey } from "./time";
+import { DAY, dayKey, mod, pad } from "./time";
 
 /**
  * The Lunar zodiac, Shēngxiào (生肖), the Chinese zodiac: twelve animals in
@@ -196,8 +196,6 @@ const ELEMENTS: readonly ZodiacElement[] = [
   "Earth",
 ];
 
-const mod = (n: number, m: number) => ((n % m) + m) % m;
-
 export interface LunarYear {
   /** The Gregorian year it starts in. */
   year: number;
@@ -232,8 +230,6 @@ export const yearName = (year: LunarYear): string =>
  * (Etc/GMT-8 is UTC+8: the Etc signs run backwards.)
  */
 const BEIJING = "Etc/GMT-8";
-
-const DAY = 86_400_000;
 
 /** The days, in Beijing, of the new moons from `from` to `until`. */
 const newMoonDays = (from: Date, until: Date): string[] => {
@@ -290,12 +286,9 @@ const hasMajorTerm = (start: string, end: string): boolean => {
   return false;
 };
 
-/**
- * The Lunar New Year of a Gregorian year, as the day it falls on in
- * Beijing: the second new moon after the start of the eleventh month, or
- * the third when a leap month comes between (as in 2033–34).
- */
-export const lunarNewYear = (year: number): string => {
+const newYears = new Map<number, string>();
+
+const workOutNewYear = (year: number): string => {
   const from = eleventhMonth(year - 1);
   const to = eleventhMonth(year);
   const fromDate = new Date(`${from}T00:00:00+08:00`);
@@ -320,9 +313,36 @@ export const lunarNewYear = (year: number): string => {
   return months[first] ?? months[2] ?? from;
 };
 
-/** The lunar year a day falls in: the year before, until the New Year. */
+/**
+ * The Lunar New Year of a Gregorian year, as the day it falls on in
+ * Beijing: the second new moon after the start of the eleventh month, or
+ * the third when a leap month comes between (as in 2033–34).
+ * Worked out once a year: it takes a search of the new moons.
+ */
+export const lunarNewYear = (year: number): string => {
+  const known = newYears.get(year);
+
+  if (known) {
+    return known;
+  }
+
+  const day = workOutNewYear(year);
+
+  newYears.set(year, day);
+
+  return day;
+};
+
+/**
+ * The lunar year a day falls in: the year before, until the New Year. The
+ * New Year never comes after 20 February, so later days need no search.
+ */
 export const lunarYearOf = (day: string): LunarYear => {
   const year = Number(day.slice(0, 4));
+
+  if (day.slice(5) > "02-20") {
+    return lunarYear(year);
+  }
 
   return lunarYear(day < lunarNewYear(year) ? year - 1 : year);
 };
@@ -337,8 +357,6 @@ export const hourAnimal = (hour: number): Animal => {
 
   return animal;
 };
-
-const pad = (n: number) => String(n).padStart(2, "0");
 
 /** "23:00–00:59" for the Rat. */
 export const hoursOf = (animal: Animal): string => {
@@ -374,10 +392,6 @@ export const clash = (animal: Animal): Animal => {
 
   return opposite;
 };
-
-/** The lunar year `now` falls in, where the visitor is. */
-export const currentLunarYear = (now: Date, timeZone: string): LunarYear =>
-  lunarYearOf(dayKey(now, timeZone));
 
 /** An animal's recent years: the six up to and around `around`. */
 export const yearsOf = (animal: Animal, around: number): number[] => {

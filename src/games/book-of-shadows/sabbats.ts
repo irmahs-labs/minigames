@@ -1,6 +1,6 @@
 import { SearchSunLongitude, Seasons } from "astronomy-engine";
 
-import { dayKey, keyOf, zonedToUtc } from "./time";
+import { dayKey, keyOf, startOfYear } from "./time";
 
 /**
  * The Wheel of the Year: eight sabbats, the solstices and equinoxes and the
@@ -182,12 +182,7 @@ export interface SabbatDate {
   astronomical: string | null;
 }
 
-/**
- * Every sabbat in a calendar year, by date. The solstices and equinoxes are
- * the days they fall on in `timeZone`; the fire festivals keep their
- * traditional days, with the day the Sun really is halfway alongside.
- */
-export const sabbatsIn = (
+const workOutSabbats = (
   year: number,
   southern: boolean,
   timeZone: string
@@ -201,10 +196,7 @@ export const sabbatsIn = (
     yule: seasons.dec_solstice.date,
   };
 
-  const yearStart = zonedToUtc(
-    { day: 1, hour: 0, minute: 0, month: 1, year },
-    timeZone
-  );
+  const yearStart = startOfYear(year, timeZone);
 
   return SABBATS.map((sabbat) => {
     // In the south a sabbat falls where its opposite does in the north.
@@ -224,6 +216,33 @@ export const sabbatsIn = (
       sabbat,
     };
   }).toSorted((a, b) => a.key.localeCompare(b.key));
+};
+
+const years = new Map<string, readonly SabbatDate[]>();
+
+/**
+ * Every sabbat in a calendar year, by date. The solstices and equinoxes are
+ * the days they fall on in `timeZone`; the fire festivals keep their
+ * traditional days, with the day the Sun really is halfway alongside.
+ * Worked out once a year, hemisphere and time zone: it takes a few searches.
+ */
+export const sabbatsIn = (
+  year: number,
+  southern: boolean,
+  timeZone: string
+): readonly SabbatDate[] => {
+  const key = `${year}|${southern}|${timeZone}`;
+  const known = years.get(key);
+
+  if (known) {
+    return known;
+  }
+
+  const dates = workOutSabbats(year, southern, timeZone);
+
+  years.set(key, dates);
+
+  return dates;
 };
 
 /** The sabbats of `year` and the years either side, in order. */
