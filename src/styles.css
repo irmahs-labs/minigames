@@ -1234,11 +1234,25 @@ a:hover {
   flex: none;
 }
 
-/* Birth details */
+/* Birth details: one field after the other, never side by side, so the
+   date and time pickers (wider on iOS Safari) never push past the panel. */
 .details__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+}
+/* iOS Safari sizes date and time fields to their contents, and centres
+   their value, unless their native look is taken off. */
+.field[type="date"],
+.field[type="time"] {
+  display: block;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+}
+.field::-webkit-date-and-time-value {
+  text-align: left;
 }
 .details__more {
   display: flex;
