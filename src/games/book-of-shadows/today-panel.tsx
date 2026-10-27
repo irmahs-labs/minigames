@@ -1,8 +1,9 @@
 import { memo } from "react";
 
 import { cryptoRandom } from "../../lib/random";
+import { daysUntil, festivalsFrom } from "./festivals";
 import { FULL_DAY, formatDay, inDays } from "./format";
-import { lunarYearOf, yearName } from "./lunar-zodiac";
+import { ELEMENT_LORE, cycleName, lunarYearOf, yearName } from "./lunar-zodiac";
 import { PHASE_LORE, moonNow, phaseOn } from "./moon";
 import { MoonGlyph } from "./moon-glyph";
 import { loreFor } from "./retrograde-lore";
@@ -68,8 +69,9 @@ interface TodayProps {
 }
 
 /**
- * Today, at a glance: the Moon, the next sabbat, and the sky (where the
- * lights are, what is retrograde, what is coming).
+ * Today, at a glance: the Moon, the next sabbat, the lunar year and its
+ * next festival, and the sky (where the lights are, what is retrograde,
+ * what is coming).
  */
 const Today = ({ now, timeZone, southern }: TodayProps) => {
   const today = dayKey(now, timeZone);
@@ -77,6 +79,7 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
   const moon = moonNow(now);
   const sabbat = nextSabbat(today, southern, timeZone);
   const lunar = lunarYearOf(today);
+  const [festival] = festivalsFrom(today);
 
   const sky = skyOn(today);
 
@@ -118,6 +121,27 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             </div>
           </div>
         ) : null}
+        <div className="today__item">
+          <span aria-hidden="true" className="today__icon">
+            {lunar.animal.emoji}
+          </span>
+          <div className="stack">
+            <h3 className="field-label">Lunar year</h3>
+            <p className="display today__big">{yearName(lunar)}</p>
+            <p>
+              {cycleName(lunar)}: {lunar.polarity} {lunar.element},{" "}
+              {ELEMENT_LORE[lunar.element]}.
+            </p>
+            {festival ? (
+              <p className="today__lore">
+                Next festival: {festival.festival.name} (
+                {festival.festival.khmer}),{" "}
+                {formatDay(festival.start, { day: "numeric", month: "long" })},{" "}
+                {inDays(daysUntil(festival, today))}.
+              </p>
+            ) : null}
+          </div>
+        </div>
         <div className="today__item today__item--sky">
           <span aria-hidden="true" className="today__icon glyph">
             {PLANET_GLYPHS.Sun}
@@ -126,8 +150,7 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             <h3 className="field-label">The sky</h3>
             <p>
               The Sun is in <SignName longitude={longitudeOf("Sun", now)} />,
-              the Moon in <SignName longitude={moon.longitude} />. Year of the{" "}
-              {yearName(lunar)} {lunar.animal.emoji}.
+              the Moon in <SignName longitude={moon.longitude} />.
             </p>
             {sky.now.length === 0 ? (
               <p>No planet is retrograde.</p>

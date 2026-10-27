@@ -9,6 +9,7 @@ import {
   lunarNewYear,
   lunarYear,
   lunarYearOf,
+  cycleName,
   secretFriend,
   yearsOf,
 } from "./lunar-zodiac";
@@ -81,13 +82,26 @@ describe("lunarYear", () => {
     });
   });
 
-  it("puts a birthday before the New Year in the year before", () => {
-    expect(lunarYearOf("1990-01-26").animal.name).toBe("Snake");
-    expect(lunarYearOf("1990-01-27").animal.name).toBe("Horse");
+  it("changes animal on 1 January, kept simple", () => {
+    expect(lunarYearOf("2023-12-31").animal.name).toBe("Rabbit");
+    expect(lunarYearOf("2024-01-02").animal.name).toBe("Dragon");
+    expect(lunarYearOf("1990-01-26").animal.name).toBe("Horse");
     expect(lunarYearOf("1990-07-14")).toMatchObject({
       animal: { name: "Horse" },
       element: "Metal",
     });
+  });
+});
+
+describe("cycleName", () => {
+  it("names a year by its stem and branch, sixty years round", () => {
+    expect(cycleName(lunarYear(1984))).toBe("甲子 jiǎzǐ");
+    expect(cycleName(lunarYear(2026))).toBe("丙午 bǐngwǔ");
+    expect(cycleName(lunarYear(1990))).toBe("庚午 gēngwǔ");
+    expect(lunarYear(1984).cycle).toBe(1);
+    expect(lunarYear(2026).cycle).toBe(43);
+    expect(lunarYear(2043).cycle).toBe(60);
+    expect(lunarYear(2044).cycle).toBe(1);
   });
 });
 

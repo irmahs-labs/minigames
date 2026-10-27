@@ -4,10 +4,11 @@ import { DAY, dayKey, mod, pad } from "./time";
 
 /**
  * The Lunar zodiac, Shēngxiào (生肖), the Chinese zodiac: twelve animals in
- * turn, one for each lunar year, with the five elements going round every
- * two years. A year starts at the Lunar New Year, on the new moon that
- * opens the first month of the Chinese calendar, so a birthday in January
- * or early February belongs to the year before.
+ * turn, one for each year, with the five elements going round every two
+ * years. Kept simple here, a year's animal starts on 1 January; by
+ * tradition it starts at the Lunar New Year (in Cambodia, at Khmer New Year
+ * in April), so a birthday in January or early February belongs, strictly,
+ * to the year before.
  */
 export type AnimalId =
   | "rat"
@@ -23,11 +24,21 @@ export type AnimalId =
   | "dog"
   | "pig";
 
+/** A Chinese character and how it is said: 午, wǔ. */
+export interface Hanzi {
+  hanzi: string;
+  pinyin: string;
+}
+
 export interface Animal {
   id: AnimalId;
   name: string;
   /** Its character, traditional. */
   hanzi: string;
+  /** Its Earthly Branch, the half of a year's name it gives. */
+  branch: Hanzi;
+  /** Its name in Khmer, romanized. */
+  khmer: string;
   emoji: string;
   keywords: string;
   about: string;
@@ -40,132 +51,156 @@ export const ANIMALS: readonly Animal[] = [
   {
     about:
       "First to the Jade Emperor's race, by riding on the Ox. Quick, resourceful and charming, the Rat always finds a way and always has something put by.",
+    branch: { hanzi: "子", pinyin: "zǐ" },
     challenges: "restless, a little calculating, quick to worry",
     emoji: "🐀",
     hanzi: "鼠",
     id: "rat",
     keywords: "clever, resourceful, quick",
+    khmer: "Chhut",
     name: "Rat",
     strengths: "sharp wits, thrift, adaptability",
   },
   {
     about:
       "Strong, patient and dependable, the Ox carries what others cannot and finishes what it starts, one steady step at a time.",
+    branch: { hanzi: "丑", pinyin: "chǒu" },
     challenges: "stubborn, slow to change, keeps feelings in",
     emoji: "🐂",
     hanzi: "牛",
     id: "ox",
     keywords: "patient, diligent, dependable",
+    khmer: "Chlov",
     name: "Ox",
     strengths: "hard work, honesty, endurance",
   },
   {
     about:
       "Brave and magnetic, the Tiger leaps at life, protects the underdog and trusts its own instincts above any rule.",
+    branch: { hanzi: "寅", pinyin: "yín" },
     challenges: "impulsive, rebellious, quick-tempered",
     emoji: "🐅",
     hanzi: "虎",
     id: "tiger",
     keywords: "brave, confident, passionate",
+    khmer: "Khal",
     name: "Tiger",
     strengths: "courage, generosity, leadership",
   },
   {
     about:
       "Gentle, elegant and lucky, the Rabbit keeps the peace and makes a beautiful home. In Vietnam this year belongs to the Cat.",
+    branch: { hanzi: "卯", pinyin: "mǎo" },
     challenges: "avoids conflict, overly cautious, sensitive",
     emoji: "🐇",
     hanzi: "兔",
     id: "rabbit",
     keywords: "gentle, graceful, kind",
+    khmer: "Thos",
     name: "Rabbit",
     strengths: "tact, taste, compassion",
   },
   {
     about:
       "The only legendary animal of the twelve, the Dragon brings power, luck and ambition, and thinks big from the start.",
+    branch: { hanzi: "辰", pinyin: "chén" },
     challenges: "proud, demanding, impatient",
     emoji: "🐉",
     hanzi: "龍",
     id: "dragon",
     keywords: "powerful, ambitious, lucky",
+    khmer: "Rong",
     name: "Dragon",
     strengths: "vision, energy, charisma",
   },
   {
     about:
       "Wise and mysterious, the Snake thinks before it moves, reads people well and keeps its own counsel.",
+    branch: { hanzi: "巳", pinyin: "sì" },
     challenges: "secretive, suspicious, possessive",
     emoji: "🐍",
     hanzi: "蛇",
     id: "snake",
     keywords: "wise, intuitive, elegant",
+    khmer: "Masanh",
     name: "Snake",
     strengths: "insight, calm, determination",
   },
   {
     about:
       "Free-spirited and full of energy, the Horse loves to roam, to talk and to be among people, and hates to be tied down.",
+    branch: { hanzi: "午", pinyin: "wǔ" },
     challenges: "restless, impatient, scattered",
     emoji: "🐎",
     hanzi: "馬",
     id: "horse",
     keywords: "free, energetic, warm",
+    khmer: "Momee",
     name: "Horse",
     strengths: "enthusiasm, independence, cheer",
   },
   {
     about:
       "Gentle and artistic, the Goat (or Sheep) has a soft heart, a good eye and a need for peace and beautiful things.",
+    branch: { hanzi: "未", pinyin: "wèi" },
     challenges: "anxious, indecisive, too dependent",
     emoji: "🐐",
     hanzi: "羊",
     id: "goat",
     keywords: "creative, gentle, caring",
+    khmer: "Momae",
     name: "Goat",
     strengths: "kindness, artistry, empathy",
   },
   {
     about:
       "Clever, curious and mischievous, the Monkey solves any puzzle, tries everything once, and makes everyone laugh.",
+    branch: { hanzi: "申", pinyin: "shēn" },
     challenges: "restless, a trickster, easily bored",
     emoji: "🐒",
     hanzi: "猴",
     id: "monkey",
     keywords: "clever, playful, inventive",
+    khmer: "Vok",
     name: "Monkey",
     strengths: "wit, versatility, humour",
   },
   {
     about:
       "Proud, punctual and observant, the Rooster says what it thinks, works hard, and always looks its best.",
+    branch: { hanzi: "酉", pinyin: "yǒu" },
     challenges: "blunt, critical, a perfectionist",
     emoji: "🐓",
     hanzi: "雞",
     id: "rooster",
     keywords: "honest, hardworking, confident",
+    khmer: "Roka",
     name: "Rooster",
     strengths: "courage, precision, loyalty",
   },
   {
     about:
       "Loyal and honest to the bone, the Dog stands by its people, fights for what is fair and can smell a lie a mile off.",
+    branch: { hanzi: "戌", pinyin: "xū" },
     challenges: "anxious, stubborn, judgemental",
     emoji: "🐕",
     hanzi: "狗",
     id: "dog",
     keywords: "loyal, honest, just",
+    khmer: "Cho",
     name: "Dog",
     strengths: "faithfulness, a sense of justice, sincerity",
   },
   {
     about:
       "Generous and good-hearted, the Pig enjoys life's pleasures, trusts others and gives without counting.",
+    branch: { hanzi: "亥", pinyin: "hài" },
     challenges: "naive, indulgent, easily taken in",
     emoji: "🐖",
     hanzi: "豬",
     id: "pig",
     keywords: "generous, warm, easygoing",
+    khmer: "Kor",
     name: "Pig",
     strengths: "kindness, honesty, a big heart",
   },
@@ -196,26 +231,49 @@ const ELEMENTS: readonly ZodiacElement[] = [
   "Earth",
 ];
 
+/**
+ * The ten Heavenly Stems, from 甲 (4 CE, 1984): each gives a year its
+ * element, two years each, yang then yin.
+ */
+export const STEMS: readonly Hanzi[] = [
+  { hanzi: "甲", pinyin: "jiǎ" },
+  { hanzi: "乙", pinyin: "yǐ" },
+  { hanzi: "丙", pinyin: "bǐng" },
+  { hanzi: "丁", pinyin: "dīng" },
+  { hanzi: "戊", pinyin: "wù" },
+  { hanzi: "己", pinyin: "jǐ" },
+  { hanzi: "庚", pinyin: "gēng" },
+  { hanzi: "辛", pinyin: "xīn" },
+  { hanzi: "壬", pinyin: "rén" },
+  { hanzi: "癸", pinyin: "guǐ" },
+];
+
 export interface LunarYear {
-  /** The Gregorian year it starts in. */
   year: number;
   animal: Animal;
   element: ZodiacElement;
   /** Even years are yang, odd ones yin. */
   polarity: "Yang" | "Yin";
+  /** Its Heavenly Stem, the other half of its name. */
+  stem: Hanzi;
+  /** Where it falls in the sixty-year cycle, 1 for 甲子 (1984) to 60. */
+  cycle: number;
 }
 
 export const lunarYear = (year: number): LunarYear => {
   const animal = ANIMALS[mod(year - 4, 12)] ?? ANIMALS[0];
+  const stem = STEMS[mod(year - 4, 10)] ?? STEMS[0];
 
-  if (!animal) {
+  if (!animal || !stem) {
     throw new Error("No animals");
   }
 
   return {
     animal,
+    cycle: mod(year - 4, 60) + 1,
     element: ELEMENTS[mod(year, 10)] ?? "Wood",
     polarity: mod(year, 2) === 0 ? "Yang" : "Yin",
+    stem,
     year,
   };
 };
@@ -223,6 +281,10 @@ export const lunarYear = (year: number): LunarYear => {
 /** "Metal Horse": a year's element and animal together. */
 export const yearName = (year: LunarYear): string =>
   `${year.element} ${year.animal.name}`;
+
+/** "丙午 bǐngwǔ": a year's stem and branch, its name in the sixty-year cycle. */
+export const cycleName = ({ stem, animal }: LunarYear): string =>
+  `${stem.hanzi}${animal.branch.hanzi} ${stem.pinyin}${animal.branch.pinyin}`;
 
 /**
  * The Chinese calendar is kept at a steady UTC+8, never on summer time:
@@ -333,19 +395,9 @@ export const lunarNewYear = (year: number): string => {
   return day;
 };
 
-/**
- * The lunar year a day falls in: the year before, until the New Year. The
- * New Year never comes after 20 February, so later days need no search.
- */
-export const lunarYearOf = (day: string): LunarYear => {
-  const year = Number(day.slice(0, 4));
-
-  if (day.slice(5) > "02-20") {
-    return lunarYear(year);
-  }
-
-  return lunarYear(day < lunarNewYear(year) ? year - 1 : year);
-};
+/** The animal year a day falls in: kept simple, its calendar year. */
+export const lunarYearOf = (day: string): LunarYear =>
+  lunarYear(Number(day.slice(0, 4)));
 
 /** The double-hours of the day: the Rat from 23:00, the Ox from 01:00… */
 export const hourAnimal = (hour: number): Animal => {

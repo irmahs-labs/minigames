@@ -1903,6 +1903,11 @@ a:hover {
 .lunar-year p {
   margin: 0;
 }
+.roots p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
 .animals {
   margin: 0;
   padding: 0;
