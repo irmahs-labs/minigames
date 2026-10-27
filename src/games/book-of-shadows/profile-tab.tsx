@@ -1,11 +1,11 @@
 import { useConfirm } from "../../lib/use-confirm";
+import { BirthplaceField } from "./birthplace-field";
 import { formatDay } from "./format";
+import { lunarYearOf, yearName } from "./lunar-zodiac";
 import { MoonGlyph } from "./moon-glyph";
 import { meaningOf } from "./numerology";
-import { PLACES, findPlace } from "./places";
 import {
   MAX_NAME,
-  MAX_PLACE,
   birthMoonOf,
   birthNumbers,
   birthSeasonOf,
@@ -21,48 +21,68 @@ import { ELEMENTS, ELEMENT_NAMES, placementOf } from "./zodiac";
 const TIME_ZONES = Intl.supportedValuesOf("timeZone");
 
 interface DetailsProps {
+  /** Your own details, or the person you are matching yours with. */
+  who: "you" | "partner";
   profile: Profile;
   onChange: (fields: Partial<Profile>) => void;
   onClear: () => void;
 }
 
 /** The birth details: what every reading in the book is drawn from. */
-export const BirthDetails = ({ profile, onChange, onClear }: DetailsProps) => {
+export const BirthDetails = ({
+  who,
+  profile,
+  onChange,
+  onClear,
+}: DetailsProps) => {
   const confirm = useConfirm();
   const filled = Object.values(profile).some((value) => value !== "");
+  const prefix = who === "you" ? "bos" : "bos-partner";
 
   return (
     <section
-      aria-labelledby="details-title"
+      aria-labelledby={`${prefix}-title`}
       className="panel panel--book panel--narrow"
     >
-      <span className="legend">birth-details.txt</span>
-      <h2 id="details-title" className="display book__title">
-        Your details
+      <span className="legend">
+        {who === "you" ? "birth-details.txt" : "someone-else.txt"}
+      </span>
+      <h2 id={`${prefix}-title`} className="display book__title">
+        {who === "you" ? "Your details" : "Someone else"}
       </h2>
+      {who === "partner" ? (
+        <p className="hint">
+          A partner, a friend or a crush: the Birth chart, Numerology and Lunar
+          Zodiac pages then show how the two of you match.
+        </p>
+      ) : null}
 
       <div className="stack">
-        <label className="field-label" htmlFor="bos-name">
+        <label className="field-label" htmlFor={`${prefix}-name`}>
           Full birth name
         </label>
         <input
-          id="bos-name"
+          id={`${prefix}-name`}
           className="field"
           value={profile.name}
           maxLength={MAX_NAME}
-          autoComplete="name"
-          placeholder="As it is on your birth certificate"
+          autoComplete={who === "you" ? "name" : "off"}
+          placeholder={
+            who === "you"
+              ? "As it is on your birth certificate"
+              : "Their full birth name"
+          }
           onChange={(event) => onChange({ name: event.target.value })}
         />
       </div>
 
       <div className="details__row">
         <div className="stack">
-          <label className="field-label" htmlFor="bos-date">
+          <label className="field-label" htmlFor={`${prefix}-date`}>
             Birth date
           </label>
           <input
-            id="bos-date"
+            id={`${prefix}-date`}
             type="date"
             className="field"
             min="1800-01-01"
@@ -72,11 +92,11 @@ export const BirthDetails = ({ profile, onChange, onClear }: DetailsProps) => {
           />
         </div>
         <div className="stack">
-          <label className="field-label" htmlFor="bos-time">
+          <label className="field-label" htmlFor={`${prefix}-time`}>
             Birth time
           </label>
           <input
-            id="bos-time"
+            id={`${prefix}-time`}
             type="time"
             className="field"
             value={profile.birthTime}
@@ -89,52 +109,23 @@ export const BirthDetails = ({ profile, onChange, onClear }: DetailsProps) => {
         houses still works.
       </p>
 
-      <div className="stack">
-        <label className="field-label" htmlFor="bos-place">
-          Birthplace
-        </label>
-        <input
-          id="bos-place"
-          className="field"
-          list="bos-places"
-          value={profile.place}
-          maxLength={MAX_PLACE}
-          placeholder="Start typing a city"
-          onChange={(event) => {
-            const place = findPlace(event.target.value);
-
-            onChange(
-              place
-                ? {
-                    lat: String(place.lat),
-                    lon: String(place.lon),
-                    place: place.name,
-                    timeZone: place.timeZone,
-                  }
-                : { place: event.target.value }
-            );
-          }}
-        />
-        <datalist id="bos-places">
-          {PLACES.map((place) => (
-            <option key={place.name} value={place.name}>
-              {place.name}
-            </option>
-          ))}
-        </datalist>
-      </div>
+      <BirthplaceField
+        idPrefix={prefix}
+        profile={profile}
+        onChange={onChange}
+      />
 
       <details className="details__more">
         <summary className="field-label">
-          Not on the list? Coordinates and time zone
+          Coordinates and time zone, to check or type in
         </summary>
         <div className="details__row">
           <div className="stack">
-            <label className="field-label" htmlFor="bos-lat">
+            <label className="field-label" htmlFor={`${prefix}-lat`}>
               Latitude (N +, S −)
             </label>
             <input
-              id="bos-lat"
+              id={`${prefix}-lat`}
               className="field"
               inputMode="decimal"
               value={profile.lat}
@@ -144,11 +135,11 @@ export const BirthDetails = ({ profile, onChange, onClear }: DetailsProps) => {
             />
           </div>
           <div className="stack">
-            <label className="field-label" htmlFor="bos-lon">
+            <label className="field-label" htmlFor={`${prefix}-lon`}>
               Longitude (E +, W −)
             </label>
             <input
-              id="bos-lon"
+              id={`${prefix}-lon`}
               className="field"
               inputMode="decimal"
               value={profile.lon}
@@ -159,19 +150,19 @@ export const BirthDetails = ({ profile, onChange, onClear }: DetailsProps) => {
           </div>
         </div>
         <div className="stack">
-          <label className="field-label" htmlFor="bos-zone">
+          <label className="field-label" htmlFor={`${prefix}-zone`}>
             Time zone
           </label>
           <input
-            id="bos-zone"
+            id={`${prefix}-zone`}
             className="field"
-            list="bos-zones"
+            list={`${prefix}-zones`}
             value={profile.timeZone}
             maxLength={64}
             placeholder="Europe/Brussels"
             onChange={(event) => onChange({ timeZone: event.target.value })}
           />
-          <datalist id="bos-zones">
+          <datalist id={`${prefix}-zones`}>
             {TIME_ZONES.map((zone) => (
               <option key={zone} value={zone}>
                 {zone}
@@ -270,6 +261,7 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
   const path = meaningOf(lifePath);
   const moonPhase = birthMoonOf(birth);
   const season = birthSeasonOf(birth);
+  const lunar = lunarYearOf(birth.day);
   const weekday = planetaryDayOf(birth);
   const [moonFrom, moonTo] = chart.moonSpan ?? [];
   const moonUnsure = moonFrom && moonTo && moonFrom.sign !== moonTo.sign;
@@ -334,6 +326,12 @@ export const WitchCard = ({ profile, birth, chart, thisYear }: CardProps) => {
           <dd>
             <MoonGlyph angle={moonAngle(birth.moment)} size={20} /> a{" "}
             {moonPhase}
+          </dd>
+        </div>
+        <div>
+          <dt>Lunar zodiac</dt>
+          <dd>
+            {lunar.animal.emoji} {yearName(lunar)}
           </dd>
         </div>
         <div>

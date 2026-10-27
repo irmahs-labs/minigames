@@ -113,3 +113,49 @@ export const TarotFace = ({
     </g>
   </svg>
 );
+
+/** A card face down: the back of the deck, before it is turned over. */
+export const TarotBack = ({ width = 60 }: { width?: number }) => (
+  <svg
+    aria-hidden="true"
+    className="tarot-face"
+    width={width}
+    height={(width * 100) / 60}
+    viewBox="0 0 60 100"
+  >
+    <rect
+      x="1.5"
+      y="1.5"
+      width="57"
+      height="97"
+      rx="6"
+      fill="var(--strong)"
+      stroke="var(--outline)"
+      strokeWidth="2"
+    />
+    <rect
+      x="6"
+      y="6"
+      width="48"
+      height="88"
+      rx="3"
+      fill="none"
+      stroke="var(--on-strong)"
+      strokeWidth="0.75"
+      opacity="0.6"
+    />
+    <circle
+      cx="30"
+      cy="50"
+      r="12"
+      fill="none"
+      stroke="var(--on-strong)"
+      strokeWidth="1.2"
+    />
+    <path d="M33 41.5a9 9 0 1 0 0 17a7 7 0 1 1 0-17z" fill="var(--on-strong)" />
+    <path
+      d="M30 18l1 3 3 1-3 1-1 3-1-3-3-1 3-1zM30 74l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"
+      fill="var(--on-strong)"
+    />
+  </svg>
+);

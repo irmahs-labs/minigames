@@ -1,8 +1,8 @@
 /**
  * Birthplaces to pick from: where on the Earth (latitude north-positive,
  * longitude east-positive) and whose clocks (an IANA time zone, so summer
- * time and old offsets come from the browser). A place not on the list is
- * typed in by hand.
+ * time and old offsets come from the browser). They come up at once, with
+ * no network; any other town is found by place-search.ts.
  */
 export interface Place {
   name: string;
@@ -14,6 +14,15 @@ export interface Place {
 type Row = readonly [name: string, lat: number, lon: number, timeZone: string];
 
 const ROWS: readonly Row[] = [
+  ["Phnom Penh, Cambodia", 11.56, 104.92, "Asia/Phnom_Penh"],
+  ["Siem Reap, Cambodia", 13.36, 103.86, "Asia/Phnom_Penh"],
+  ["Battambang, Cambodia", 13.1, 103.2, "Asia/Phnom_Penh"],
+  ["Vientiane, Laos", 17.97, 102.63, "Asia/Vientiane"],
+  ["Yangon, Myanmar", 16.87, 96.2, "Asia/Yangon"],
+  ["Chiang Mai, Thailand", 18.79, 98.98, "Asia/Bangkok"],
+  ["Da Nang, Vietnam", 16.05, 108.2, "Asia/Ho_Chi_Minh"],
+  ["Bali (Denpasar), Indonesia", -8.65, 115.22, "Asia/Makassar"],
+  ["Colombo, Sri Lanka", 6.93, 79.86, "Asia/Colombo"],
   ["Abu Dhabi, United Arab Emirates", 24.45, 54.38, "Asia/Dubai"],
   ["Accra, Ghana", 5.6, -0.19, "Africa/Accra"],
   ["Addis Ababa, Ethiopia", 9.03, 38.74, "Africa/Addis_Ababa"],
@@ -168,11 +177,24 @@ const ROWS: readonly Row[] = [
 
 export const PLACES: readonly Place[] = ROWS.map(
   ([name, lat, lon, timeZone]) => ({ lat, lon, name, timeZone })
-);
+).toSorted((a, b) => a.name.localeCompare(b.name));
 
-/** The listed place with exactly this name, ignoring case and spaces. */
-export const findPlace = (name: string): Place | undefined => {
-  const wanted = name.trim().toLowerCase();
+/** "São Paulo" → "sao paulo": for matching what is typed, accents or not. */
+export const plain = (text: string): string =>
+  text.normalize("NFD").replaceAll(/\p{M}/gu, "").toLowerCase().trim();
 
-  return PLACES.find((place) => place.name.toLowerCase() === wanted);
+/** The listed places a search matches: names starting with it first. */
+export const localMatches = (query: string, limit = 6): Place[] => {
+  const wanted = plain(query);
+
+  if (wanted.length < 2) {
+    return [];
+  }
+
+  const hits = PLACES.filter((place) => plain(place.name).includes(wanted));
+
+  return [
+    ...hits.filter((place) => plain(place.name).startsWith(wanted)),
+    ...hits.filter((place) => !plain(place.name).startsWith(wanted)),
+  ].slice(0, limit);
 };
