@@ -1,5 +1,4 @@
-import { festivalsIn } from "./festivals";
-import { FestivalsPanel } from "./festivals-panel";
+import { festivalsIn } from "./buddhist-calendar";
 import { LONG_DAY, formatDay } from "./format";
 import {
   ANIMALS,
@@ -29,8 +28,8 @@ const listed = (animals: readonly Animal[]) =>
 
 /** Khmer New Year's first day, Moha Songkran, in a year. */
 const songkranOf = (year: number): string | null =>
-  festivalsIn(year).find((entry) => entry.festival.id === "songkran")?.start ??
-  null;
+  festivalsIn(year).find((entry) => entry.festival.id === "khmer-new-year")
+    ?.start ?? null;
 
 /**
  * Who you are by the old reckoning, when it differs: the animal changes at
@@ -257,7 +256,7 @@ const HeavenlyStems = ({
 }) => (
   <section
     aria-labelledby="stems-title"
-    className="panel panel--book panel--narrow stems-panel"
+    className="panel panel--book stems-panel"
   >
     <span className="legend">heavenly-stems.csv</span>
     <p className="kicker">天干 tiāngān</p>
@@ -361,15 +360,12 @@ export const LunarZodiacTab = ({
         />
         <ThisYear year={current} />
       </div>
-      <div className="layout">
-        <FestivalsPanel today={today} />
-        <HeavenlyStems
-          current={current}
-          yours={yours}
-          day={birth ? dayPillarOf(birth.day) : null}
-        />
-      </div>
       <TwelveAnimals yours={yours?.animal ?? null} current={current} />
+      <HeavenlyStems
+        current={current}
+        yours={yours}
+        day={birth ? dayPillarOf(birth.day) : null}
+      />
     </>
   );
 };

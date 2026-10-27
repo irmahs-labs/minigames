@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
 
 import {
+  LUNAR_MONTHS,
+  festivalOn,
+  festivalsIn,
+  lunarDateName,
+  lunarDateOf,
+} from "./buddhist-calendar";
+import type { LunarDate } from "./buddhist-calendar";
+import {
   formatClock,
   formatDay,
   formatMoment,
@@ -18,7 +26,15 @@ import {
 import { MoonGlyph } from "./moon-glyph";
 import { PeriodNav } from "./period-nav";
 import { SignName } from "./sign-name";
-import { DAY, dayKey, daysBetween, keyOf, wallTimeAt, weekdayOf } from "./time";
+import {
+  DAY,
+  dayKey,
+  daysBetween,
+  daysInMonth,
+  keyOf,
+  wallTimeAt,
+  weekdayOf,
+} from "./time";
 import { placementOf } from "./zodiac";
 
 interface MoonTabProps {
@@ -29,6 +45,22 @@ interface MoonTabProps {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+/** "Sat, 10 Oct". */
+const SHORT_WEEKDAY = {
+  day: "numeric",
+  month: "short",
+  weekday: "short",
+} as const;
+
+/** "Assoch to Kadeuk, Buddhist Era 2570": the lunar months a month spans. */
+const lunarMonthsOf = (all: readonly (LunarDate | null)[]): string => {
+  const dates = all.filter((date) => date !== null);
+  const months = [...new Set(dates.map((date) => LUNAR_MONTHS[date.month]))];
+  const eras = [...new Set(dates.map((date) => date.era))];
+
+  return `${months.join(" to ")}, Buddhist Era ${eras.join("–")}`;
+};
+
 /** Tonight's Moon: its phase, its sign, and the next new and full moons. */
 const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
   const today = dayKey(now, timeZone);
@@ -38,6 +70,7 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
   const ahead = quartersBetween(now, new Date(now.getTime() + 31 * DAY));
   const nextFull = ahead.find((quarter) => quarter.phase === "Full Moon");
   const nextNew = ahead.find((quarter) => quarter.phase === "New Moon");
+  const lunar = lunarDateOf(today);
 
   return (
     <section
@@ -76,6 +109,15 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
             </dd>
           </div>
         ) : null}
+        {lunar ? (
+          <div>
+            <dt>Buddhist lunar date</dt>
+            <dd>
+              {lunarDateName(lunar)}, Buddhist Era {lunar.era}
+              {lunar.holy ? ": a holy day, Thngai Sel" : ""}
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt>Moon in {sign.name}</dt>
           <dd>Feelings run {sign.keywords}.</dd>
@@ -99,6 +141,26 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
   const days = useMemo(
     () => moonMonth(shown.year, shown.month, timeZone),
     [shown, timeZone]
+  );
+
+  const lunar = useMemo(
+    () =>
+      Array.from({ length: daysInMonth(shown.year, shown.month) }, (_, i) =>
+        lunarDateOf(keyOf(shown.year, shown.month, i + 1))
+      ),
+    [shown]
+  );
+
+  const first = keyOf(shown.year, shown.month, 1);
+
+  const last = keyOf(
+    shown.year,
+    shown.month,
+    daysInMonth(shown.year, shown.month)
+  );
+
+  const festivals = festivalsIn(shown.year).filter(
+    ({ start, end }) => start <= last && end >= first
   );
 
   // Monday is 0: how many blank cells come before the 1st.
@@ -127,34 +189,68 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
         onCurrent={() => setShown({ month: current.month, year: current.year })}
       />
 
+      <p className="lunar-months">
+        In the Buddhist lunar calendar: {lunarMonthsOf(lunar)}
+      </p>
+
       <ol className="moon-cal">
         {WEEKDAYS.map((weekday) => (
           <li key={weekday} aria-hidden="true" className="moon-cal__weekday">
             {weekday}
           </li>
         ))}
-        {days.map((day, i) => (
-          <li
-            key={day.key}
-            className={[
-              "moon-cal__day",
-              day.exact ? "moon-cal__day--exact" : "",
-              day.key === today ? "moon-cal__day--today" : "",
-            ].join(" ")}
-            style={i === 0 ? { gridColumnStart: lead + 1 } : undefined}
-          >
-            <span className="moon-cal__num">
-              {day.day}
-              {day.key === today ? (
-                <span className="sr-only"> (today)</span>
+        {days.map((day, i) => {
+          const date = lunar[i];
+          const festival = festivalOn(day.key);
+
+          return (
+            <li
+              key={day.key}
+              className={[
+                "moon-cal__day",
+                day.exact ? "moon-cal__day--exact" : "",
+                day.key === today ? "moon-cal__day--today" : "",
+              ].join(" ")}
+              style={i === 0 ? { gridColumnStart: lead + 1 } : undefined}
+            >
+              <span className="moon-cal__num">
+                {day.day}
+                {day.key === today ? (
+                  <span className="sr-only"> (today)</span>
+                ) : null}
+              </span>
+              <MoonGlyph angle={day.angle} size={26} southern={southern} />
+              <span className={day.exact ? "moon-cal__phase" : "sr-only"}>
+                {day.phase}
+              </span>
+              {festival ? (
+                <span className="moon-cal__festival" title={festival.name}>
+                  <span aria-hidden="true">{festival.emoji}</span>
+                  <span className="sr-only">{festival.name}</span>
+                </span>
               ) : null}
-            </span>
-            <MoonGlyph angle={day.angle} size={26} southern={southern} />
-            <span className={day.exact ? "moon-cal__phase" : "sr-only"}>
-              {day.phase}
-            </span>
-          </li>
-        ))}
+              {date ? (
+                <span
+                  className={
+                    date.holy
+                      ? "moon-cal__lunar moon-cal__holy"
+                      : "moon-cal__lunar"
+                  }
+                  title={lunarDateName(date)}
+                >
+                  <span aria-hidden="true">
+                    {date.holy ? "☸" : ""}
+                    {date.day}
+                  </span>
+                  <span className="sr-only">
+                    {lunarDateName(date)}
+                    {date.holy ? ", a holy day" : ""}
+                  </span>
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
 
       <ul className="phase-list">
@@ -167,17 +263,34 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
                   ? fullMoonName(day.exact, timeZone)
                   : day.phase}
               </strong>{" "}
-              {formatDay(day.key, {
-                day: "numeric",
-                month: "short",
-                weekday: "short",
-              })}
+              {formatDay(day.key, SHORT_WEEKDAY)}
               {day.exact ? `, ${formatClock(day.exact, timeZone)}` : ""}
             </span>
           </li>
         ))}
       </ul>
-      <p className="hint">Times are in your time zone, {timeZone}.</p>
+      {festivals.length > 0 ? (
+        <ul className="phase-list">
+          {festivals.map(({ festival, start, end }) => (
+            <li key={festival.id}>
+              <span aria-hidden="true" className="moon-cal__festival">
+                {festival.emoji}
+              </span>
+              <span>
+                <strong>{festival.name}</strong>{" "}
+                {start === end
+                  ? formatDay(start, SHORT_WEEKDAY)
+                  : `${formatDay(start, SHORT_WEEKDAY)} to ${formatDay(end, SHORT_WEEKDAY)}`}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="hint">
+        Times are in your time zone, {timeZone}. The small numbers are the days
+        of the Buddhist lunar month, as Cambodia counts them: up from the new
+        moon, then down from the full. ☸ marks the holy days, Thngai Sel.
+      </p>
     </section>
   );
 };

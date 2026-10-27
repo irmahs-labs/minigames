@@ -1433,6 +1433,27 @@ a:hover {
   font-weight: 700;
   line-height: 1.15;
 }
+.moon-cal__lunar {
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+.moon-cal__day--exact .moon-cal__lunar {
+  color: inherit;
+}
+.moon-cal__holy {
+  font-weight: 800;
+  color: var(--strong);
+}
+.moon-cal__festival {
+  font-size: 15px;
+  line-height: 1;
+}
+.lunar-months {
+  margin: 0;
+  font-size: 14px;
+}
 .phase-list,
 .eclipses {
   margin: 0;
@@ -1913,6 +1934,7 @@ a:hover {
   padding: 0;
   list-style: none;
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 8px;
 }
 .stem {

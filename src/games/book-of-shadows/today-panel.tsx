@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import { cryptoRandom } from "../../lib/random";
-import { daysUntil, festivalsFrom } from "./festivals";
+import { daysUntil, nextFestival } from "./buddhist-calendar";
 import { FULL_DAY, formatDay, inDays } from "./format";
 import { ELEMENT_LORE, cycleName, lunarYearOf, yearName } from "./lunar-zodiac";
 import { PHASE_LORE, moonNow, phaseOn } from "./moon";
@@ -79,7 +79,7 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
   const moon = moonNow(now);
   const sabbat = nextSabbat(today, southern, timeZone);
   const lunar = lunarYearOf(today);
-  const [festival] = festivalsFrom(today);
+  const festival = nextFestival(today);
 
   const sky = skyOn(today);
 
@@ -134,8 +134,8 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             </p>
             {festival ? (
               <p className="today__lore">
-                Next festival: {festival.festival.name} (
-                {festival.festival.khmer}),{" "}
+                Next festival: {festival.festival.emoji}{" "}
+                {festival.festival.name},{" "}
                 {formatDay(festival.start, { day: "numeric", month: "long" })},{" "}
                 {inDays(daysUntil(festival, today))}.
               </p>
