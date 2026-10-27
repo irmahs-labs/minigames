@@ -45,7 +45,7 @@ interface MoonTabProps {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-/** "Sat, 10 Oct". */
+/** "Sat 10 Oct". */
 const SHORT_WEEKDAY = {
   day: "numeric",
   month: "short",
