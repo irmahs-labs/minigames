@@ -1,3 +1,5 @@
+import { mod } from "./time";
+
 /**
  * The tropical zodiac, as Western astrology reads it: twelve 30° signs along
  * the ecliptic from the March equinox. The glyphs carry U+FE0E so they stay
@@ -181,8 +183,7 @@ export const ELEMENT_NAMES: Record<Element, string> = {
 };
 
 /** Any angle, in degrees, into 0 ≤ angle < 360. */
-export const normalize = (degrees: number): number =>
-  ((degrees % 360) + 360) % 360;
+export const normalize = (degrees: number): number => mod(degrees, 360);
 
 export interface Placement {
   sign: Sign;

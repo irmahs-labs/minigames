@@ -1,5 +1,6 @@
-import { HOUSE_MEANINGS, houseOf } from "./profile";
+import { HOUSE_MEANINGS, houseOf, longitudeIn } from "./profile";
 import type { Chart } from "./profile";
+import { SignName } from "./sign-name";
 import { PLANET_GLYPHS, PLANET_MEANINGS } from "./sky";
 import type { Position } from "./sky";
 import {
@@ -54,8 +55,6 @@ const ChartWheel = ({ chart }: { chart: Chart }) => {
 
     return { x: radius * Math.cos(turn), y: -radius * Math.sin(turn) };
   };
-
-  const rising = placementOf(ascendant).index;
 
   return (
     <svg
@@ -117,7 +116,7 @@ const ChartWheel = ({ chart }: { chart: Chart }) => {
                 textAnchor="middle"
                 dominantBaseline="central"
               >
-                {((i - rising + 12) % 12) + 1}
+                {houseOf(i * 30, ascendant)}
               </text>
             ) : null}
           </g>
@@ -225,7 +224,7 @@ const Placements = ({ chart }: { chart: Chart }) => {
         </thead>
         <tbody>
           {chart.positions.map(({ planet, longitude, retrograde }) => {
-            const { sign, degree } = placementOf(longitude);
+            const { degree } = placementOf(longitude);
 
             return (
               <tr key={planet} title={`${planet}: ${PLANET_MEANINGS[planet]}`}>
@@ -236,8 +235,7 @@ const Placements = ({ chart }: { chart: Chart }) => {
                   {planet}
                 </th>
                 <td>
-                  <span aria-hidden="true">{sign.glyph} </span>
-                  {sign.name}{" "}
+                  <SignName longitude={longitude} />{" "}
                   <span className="board__record">{formatDegree(degree)}</span>
                   {retrograde ? (
                     <span className="badge badge--retro">
@@ -301,10 +299,7 @@ const Placements = ({ chart }: { chart: Chart }) => {
 /** What the Sun, the Moon and the Rising say, sign by sign. */
 const BigThree = ({ chart }: { chart: Chart }) => {
   const at = (planet: "Sun" | "Moon") =>
-    placementOf(
-      chart.positions.find((position) => position.planet === planet)
-        ?.longitude ?? 0
-    ).sign;
+    placementOf(longitudeIn(chart, planet)).sign;
 
   const sun = at("Sun");
   const moon = at("Moon");

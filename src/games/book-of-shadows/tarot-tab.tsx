@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { cryptoRandom } from "../../lib/random";
 import {
   FIRST_CHOICE,
   MAJOR_ARCANA,
@@ -9,7 +10,6 @@ import {
   SUIT_INFO,
   cardOf,
   choiceOf,
-  cryptoRandom,
   drawCard,
 } from "./tarot";
 import type { Choice, TarotCard } from "./tarot";
@@ -213,7 +213,7 @@ export const TarotTab = () => {
       >
         <span className="legend">card-reading.txt</span>
         <div className="tarot-reading">
-          <TarotFace card={card} reversed={choice.reversed} width={150} named />
+          <TarotFace card={card} reversed={choice.reversed} width={150} />
           <div className="stack tarot-reading__text">
             <p className="kicker">{kindOf(card)}</p>
             <h2 id="card-name" className="display page__title">
@@ -223,7 +223,7 @@ export const TarotTab = () => {
               {choice.reversed ? "Reversed" : "Upright"}
               {drawn ? <span className="badge">drawn</span> : null}
             </p>
-            <div className="tarot-side tarot-side--shown">
+            <div className="tarot-side">
               <p className="tarot-side__keywords">{reading.keywords}</p>
               <p>{reading.meaning}</p>
             </div>

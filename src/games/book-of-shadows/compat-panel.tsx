@@ -1,4 +1,5 @@
 import type { Match } from "./compat";
+import { Meter } from "./meter";
 
 /** "Sam Smith" → "Sam"; no name → "". */
 export const firstNameOf = (name: string): string =>
@@ -27,9 +28,7 @@ export const MatchPanel = ({ legend, title, match, name }: MatchPanelProps) => (
     </h2>
     <div className="match__meter">
       <span className="display match__score">{match.score}%</span>
-      <span className="match__track" aria-hidden="true">
-        <span className="match__fill" style={{ width: `${match.score}%` }} />
-      </span>
+      <Meter percent={match.score} />
     </div>
     <p className="match__verdict">{match.verdict}</p>
     <ul className="match__reasons">
@@ -67,7 +66,7 @@ export const NoMatch = ({ onOpen }: { onOpen: () => void }) => (
 
 interface SummaryRow {
   label: string;
-  match: Match | null;
+  match: Match;
   onOpen: () => void;
 }
 
@@ -94,15 +93,8 @@ export const MatchSummary = ({
           <li key={label}>
             <button type="button" className="match__row" onClick={onOpen}>
               <span className="match__label">{label}</span>
-              <span className="match__track" aria-hidden="true">
-                <span
-                  className="match__fill"
-                  style={{ width: `${match?.score ?? 0}%` }}
-                />
-              </span>
-              <span className="display match__row-score">
-                {match ? `${match.score}%` : "?"}
-              </span>
+              <Meter percent={match.score} />
+              <span className="display match__row-score">{match.score}%</span>
             </button>
           </li>
         ))}

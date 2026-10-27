@@ -13,6 +13,7 @@ import { EightBallTab } from "./eight-ball-tab";
 import { lunarYearOf } from "./lunar-zodiac";
 import { LunarZodiacTab } from "./lunar-zodiac-tab";
 import { MoonTab } from "./moon-tab";
+import { NeedsBirth } from "./needs-birth";
 import { NumbersTab } from "./numbers-tab";
 import {
   EMPTY_PROFILE,
@@ -46,17 +47,28 @@ const TAB_NAMES: Record<Tab, string> = {
 /** How often "now" moves on. */
 const REFRESH_MS = 10 * 60_000;
 
-/** What a tab that needs a birth date shows without one. */
-const NeedsBirth = ({ onOpen }: { onOpen: () => void }) => (
-  <section className="panel panel--book empty">
-    <span className="legend">locked.txt</span>
-    <h2 className="display page__title">This page is still blank</h2>
-    <p className="page__sub">It needs your birth date, on your profile.</p>
-    <button type="button" className="btn btn--primary" onClick={onOpen}>
-      Fill in your profile
-    </button>
-  </section>
-);
+/** The pages that compare you with someone else, and how they name it. */
+const MATCHES = {
+  chart: {
+    label: "Birth chart",
+    legend: "chart-match.csv",
+    title: "Your charts, side by side",
+  },
+  "lunar-zodiac": {
+    label: "Lunar Zodiac",
+    legend: "animals-match.csv",
+    title: "Your animals together",
+  },
+  numbers: {
+    label: "Numerology",
+    legend: "numbers-match.csv",
+    title: "Your numbers together",
+  },
+} as const;
+
+type MatchTab = keyof typeof MATCHES;
+
+const MATCH_TABS: readonly MatchTab[] = ["chart", "numbers", "lunar-zodiac"];
 
 const BookOfShadows = ({ name }: GameProps) => {
   const [state, setState] = useState<BookState>(loadState);
@@ -87,12 +99,35 @@ const BookOfShadows = ({ name }: GameProps) => {
 
   const chart = useMemo(() => (birth ? chartFor(birth) : null), [birth]);
 
-  const theirChart = useMemo(
-    () => (theirBirth ? chartFor(theirBirth) : null),
-    [theirBirth]
-  );
-
   const theirName = firstNameOf(partner.name);
+
+  // How you match someone else, three ways, once both have a birth date.
+  const matches = useMemo(() => {
+    if (!birth || !chart || !theirBirth) {
+      return null;
+    }
+
+    return {
+      chart: chartMatch(chart, chartFor(theirBirth), theirName),
+      "lunar-zodiac": lunarMatch(
+        lunarYearOf(birth.day),
+        lunarYearOf(theirBirth.day)
+      ),
+      numbers: numbersMatch(
+        birthNumbers(birth, profile.name, thisYear),
+        birthNumbers(theirBirth, partner.name, thisYear),
+        theirName
+      ),
+    };
+  }, [
+    birth,
+    chart,
+    theirBirth,
+    theirName,
+    profile.name,
+    partner.name,
+    thisYear,
+  ]);
 
   const open = (next: Tab) =>
     setState((current) => ({ ...current, tab: next }));
@@ -107,10 +142,19 @@ const BookOfShadows = ({ name }: GameProps) => {
     setState((current) => ({ ...current, [key]: { ...EMPTY_PROFILE } }));
 
   /** A page of yours, and how you match the other person on it. */
-  const withMatch = (page: ReactNode, match: ReactNode) => (
+  const withMatch = (page: MatchTab, reading: ReactNode) => (
     <>
-      {page}
-      {theirBirth ? match : <NoMatch onOpen={() => open("profile")} />}
+      {reading}
+      {matches ? (
+        <MatchPanel
+          legend={MATCHES[page].legend}
+          title={MATCHES[page].title}
+          match={matches[page]}
+          name={theirName}
+        />
+      ) : (
+        <NoMatch onOpen={() => open("profile")} />
+      )}
     </>
   );
 
@@ -147,17 +191,7 @@ const BookOfShadows = ({ name }: GameProps) => {
 
       case "chart": {
         return chart ? (
-          withMatch(
-            <ChartTab chart={chart} />,
-            theirChart ? (
-              <MatchPanel
-                legend="chart-match.csv"
-                title="Your charts, side by side"
-                match={chartMatch(chart, theirChart, theirName)}
-                name={theirName}
-              />
-            ) : null
-          )
+          withMatch("chart", <ChartTab chart={chart} />)
         ) : (
           <NeedsBirth onOpen={() => open("profile")} />
         );
@@ -166,23 +200,8 @@ const BookOfShadows = ({ name }: GameProps) => {
       case "numbers": {
         return birth ? (
           withMatch(
-            <NumbersTab
-              birth={birth}
-              name={profile.name}
-              thisYear={thisYear}
-            />,
-            theirBirth ? (
-              <MatchPanel
-                legend="numbers-match.csv"
-                title="Your numbers together"
-                match={numbersMatch(
-                  birthNumbers(birth, profile.name, thisYear),
-                  birthNumbers(theirBirth, partner.name, thisYear),
-                  theirName
-                )}
-                name={theirName}
-              />
-            ) : null
+            "numbers",
+            <NumbersTab birth={birth} name={profile.name} thisYear={thisYear} />
           )
         ) : (
           <NeedsBirth onOpen={() => open("profile")} />
@@ -200,22 +219,7 @@ const BookOfShadows = ({ name }: GameProps) => {
           />
         );
 
-        return birth
-          ? withMatch(
-              page,
-              theirBirth ? (
-                <MatchPanel
-                  legend="animals-match.csv"
-                  title="Your animals together"
-                  match={lunarMatch(
-                    lunarYearOf(birth.day),
-                    lunarYearOf(theirBirth.day)
-                  )}
-                  name={theirName}
-                />
-              ) : null
-            )
-          : page;
+        return birth ? withMatch("lunar-zodiac", page) : page;
       }
 
       default: {
@@ -249,35 +253,12 @@ const BookOfShadows = ({ name }: GameProps) => {
               <MatchSummary
                 name={theirName}
                 rows={
-                  birth && theirBirth
-                    ? [
-                        {
-                          label: "Birth chart",
-                          match:
-                            chart && theirChart
-                              ? chartMatch(chart, theirChart, theirName)
-                              : null,
-                          onOpen: () => open("chart"),
-                        },
-                        {
-                          label: "Numerology",
-                          match: numbersMatch(
-                            birthNumbers(birth, profile.name, thisYear),
-                            birthNumbers(theirBirth, partner.name, thisYear),
-                            theirName
-                          ),
-                          onOpen: () => open("numbers"),
-                        },
-                        {
-                          label: "Lunar Zodiac",
-                          match: lunarMatch(
-                            lunarYearOf(birth.day),
-                            lunarYearOf(theirBirth.day)
-                          ),
-                          onOpen: () => open("lunar-zodiac"),
-                        },
-                      ]
-                    : null
+                  matches &&
+                  MATCH_TABS.map((entry) => ({
+                    label: MATCHES[entry].label,
+                    match: matches[entry],
+                    onOpen: () => open(entry),
+                  }))
                 }
               />
               <BirthDetails

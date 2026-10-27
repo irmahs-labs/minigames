@@ -155,6 +155,15 @@ a:hover {
   font: 400 12.5px/1.4 var(--body);
   color: var(--text-muted);
 }
+/* Read by screen readers, not seen. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* ── header ── */
 .app-header {
@@ -488,6 +497,14 @@ a:hover {
   align-items: flex-start;
   gap: 28px;
 }
+/* In a .layout row: the main panel takes the room, the side one a column,
+   and the two stack when there is no room for both. */
+.panel--wide {
+  flex: 999 1 520px;
+}
+.panel--narrow {
+  flex: 1 1 320px;
+}
 .panel--wheel {
   flex: 999 1 520px;
   min-width: 0;
@@ -626,6 +643,19 @@ a:hover {
 .field::placeholder {
   color: var(--text-muted);
   opacity: 0.8;
+}
+/* iOS Safari sizes date and time fields to their contents, and centres
+   their value, unless their native look is taken off. */
+.field[type="date"],
+.field[type="time"] {
+  display: block;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+}
+.field::-webkit-date-and-time-value {
+  text-align: left;
 }
 .slice__input {
   flex: 1;
@@ -1159,15 +1189,6 @@ a:hover {
 }
 
 /* ── book of shadows ── */
-/* Read by screen readers, not seen: a moon's phase on a calendar day. */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 /* Six pages: on a narrow screen the tabs scroll sideways instead of wrapping. */
 .picker--scroll {
   flex-wrap: nowrap;
@@ -1180,12 +1201,6 @@ a:hover {
   flex-direction: column;
   gap: 16px;
   padding: 30px 22px 22px;
-}
-.panel--wide {
-  flex: 999 1 520px;
-}
-.panel--narrow {
-  flex: 1 1 320px;
 }
 .book__title {
   margin: 0;
@@ -1234,10 +1249,11 @@ a:hover {
   flex: none;
 }
 
-/* Birth details */
+/* Birth details: one field after the other, never side by side, so the
+   date and time pickers (wider on iOS Safari) never push past the panel. */
 .details__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 .details__more {
@@ -1333,14 +1349,16 @@ a:hover {
   font-size: 14px;
   font-weight: 700;
 }
-.element__track {
+/* A bar filled to a share: an element's, a match's score. */
+.meter {
+  flex: 1;
   height: 14px;
   border: var(--stroke-base) solid var(--outline);
   border-radius: var(--radius-pill);
   background: var(--raised);
   overflow: hidden;
 }
-.element__fill {
+.meter__fill {
   display: block;
   height: 100%;
   background: var(--selected);
@@ -1640,33 +1658,21 @@ a:hover {
   min-width: 0;
   gap: 12px;
 }
-.tarot-reading__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+/* The reading for the way up the card is: lit, like a chosen option. */
 .tarot-side {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 12px 14px;
-  border: var(--stroke-base) dashed var(--outline);
+  border: var(--line);
   border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--on-accent);
   font-size: 15px;
   line-height: 1.45;
 }
 .tarot-side p {
   margin: 0;
-}
-/* The way up the card was drawn, or turned: solid, and lit. */
-.tarot-side--shown {
-  border-style: solid;
-  border-width: var(--stroke-panel);
-  background: var(--accent-soft);
-  color: var(--on-accent);
-}
-.tarot-side--shown .field-label {
-  color: var(--on-accent);
 }
 .tarot-side__keywords {
   font-weight: 700;
@@ -1814,19 +1820,6 @@ a:hover {
 .match__score {
   font-size: 40px;
   line-height: 1;
-}
-.match__track {
-  flex: 1;
-  height: 16px;
-  border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-pill);
-  background: var(--raised);
-  overflow: hidden;
-}
-.match__fill {
-  display: block;
-  height: 100%;
-  background: var(--selected);
 }
 .match__verdict {
   margin: 0;

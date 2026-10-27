@@ -772,10 +772,6 @@ export const drawCard = (random: () => number): Draw => {
   return { card, reversed: random() < 0.5 };
 };
 
-/** A fair 0 ≤ n < 1 from the browser's crypto, for drawing. */
-export const cryptoRandom = (): number =>
-  (crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) / 2 ** 32;
-
 /** Cards of the day turn over at midnight in Paris, wherever you are. */
 export const DAILY_ZONE = "Europe/Paris";
 

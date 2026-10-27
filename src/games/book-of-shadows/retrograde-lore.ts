@@ -1,11 +1,6 @@
 import type { Retrograde, Wanderer } from "./sky";
 import { placementOf } from "./zodiac";
 
-/**
- * What each planet's retrograde is said to stir up, sign by sign: the same
- * for everyone, so each card reads the sign its planet turns back in. A
- * Mercury retrograde in Pisces and one in Scorpio say different things.
- */
 /** One line for each sign, Aries to Pisces. */
 type BySign = readonly [
   aries: string,
@@ -22,6 +17,11 @@ type BySign = readonly [
   pisces: string,
 ];
 
+/**
+ * What each planet's retrograde is said to stir up, sign by sign: the same
+ * for everyone, so each card reads the sign its planet turns back in. A
+ * Mercury retrograde in Pisces and one in Scorpio say different things.
+ */
 export const RETROGRADE_LORE: Readonly<Record<Wanderer, BySign>> = {
   Jupiter: [
     "Bold plans want a second look. Grow your courage quietly before you leap.",
