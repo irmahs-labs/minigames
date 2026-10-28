@@ -108,6 +108,16 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
     expect(Date.parse(brewers[0]?.at ?? "")).not.toBeNaN();
   });
 
+  it("shows a player's new name on every page they are on", async () => {
+    await recordBrew(pool, "Ember's Embrace", ana);
+    await recordBrew(pool, "Moonwater", ana);
+    await recordBrew(pool, "Moonwater", { ...ana, name: "Ana LM." });
+
+    const brewers = await readBrewers(pool, "Ember's Embrace");
+
+    expect(brewers.map((brewer) => brewer.name)).toEqual(["Ana LM."]);
+  });
+
   it("keeps each player's own book apart from the shared one", async () => {
     expect(await recordSoloBrew(pool, ana.id, "Autumn Hearth")).toMatchObject({
       isNew: true,

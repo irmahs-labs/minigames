@@ -92,16 +92,17 @@ export const askAdminAccess =
 
 /**
  * A name as the leaderboard and an opponent see it: the first name and the
- * last name's initial, "Irma Houversing" → "Irma H.". Nobody's full name or
- * photo is shown to strangers.
+ * initial of every name after it, "Irma Houversing" → "Irma H.", and with
+ * two last names "Irma HS.". Nobody's full name or photo is shown to
+ * strangers.
  */
 export const shortName = (name: string): string => {
   const [first, ...rest] = name.trim().split(/\s+/u);
-  const initial = rest.at(-1)?.[0];
+  const initials = rest.map((word) => word.charAt(0).toUpperCase()).join("");
 
   if (!first) {
     return "Player";
   }
 
-  return initial ? `${first} ${initial.toUpperCase()}.` : first;
+  return initials ? `${first} ${initials}.` : first;
 };

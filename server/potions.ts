@@ -68,6 +68,14 @@ export const recordBrew = async (
     [potion, account.id, account.name]
   );
 
+  // A player's name can change (it did when names kept every initial): show
+  // the one they brew under now on every page they are on.
+  await pool.query(
+    `update booster_potion_brews set name = $2
+     where user_id = $1 and name <> $2`,
+    [account.id, account.name]
+  );
+
   // The same as BREWERS for one potion, plus whether this player is first.
   const { rows } = await pool.query<BrewersRow & { first: boolean }>(
     `select potion,

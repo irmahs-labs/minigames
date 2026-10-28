@@ -28,7 +28,7 @@ Every online game counts on the **leaderboard**, which anyone can see, signed in
 | Draw | Your squares and planets, with no bonus |
 | Defeat | −25, and nothing you placed counts; letting the clock run out on your turn is a defeat |
 
-Nobody's total drops below 0. Players appear as first name and last initial, "Irma H.".
+Nobody's total drops below 0. Players appear as first name and the initials of the names after it, "Irma H." or, with two last names, "Irma HS.".
 
 **Booster Potion.** A potion-mixing game, from [Wellness Witch](https://github.com/irmahs/WellnessWitch). Its 100 potions are real wellness shots, teas and tonics, each cut down to its two to four core ingredients and linked to the recipe it comes from: ginger and turmeric shots, beet and green shots, switchel, fire cider and oxymels, jamu, golden milk, masala chai, kadha, sorrel, yuja-cha, jujube and goji teas, agua frescas and more. Put any two to four ingredients in the cauldron and brew. A few come more than one way, and you pick which in the cauldron: ginger fresh or dried (a ginger shot takes fresh, a ginger tea dried), turmeric fresh or powder, cinnamon as a stick or powder, mint fresh or dried, wheatgrass fresh or powder. Every ingredient has a one-line tip on what it is known for ("Ginger: eases nausea, with anti-inflammatory compounds"), shown when you hover it and under it in the cauldron. The right mix makes a potion, with a fact or a caution about it, like cooking elderberries. Anything else is a Mystery Potion, with a hint: the form to change when only that is wrong, or else how many of the ingredients are in the closest potion nobody has found yet, and its name.
 
