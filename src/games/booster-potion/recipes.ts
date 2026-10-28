@@ -662,14 +662,14 @@ export const RECIPES: readonly Recipe[] = [
   },
   {
     forms: { Cinnamon: "dried", Ginger: "dried" },
-    ingredients: ["Black tea", "Ginger", "Cardamom", "Cinnamon"],
+    ingredients: ["Red tea", "Ginger", "Cardamom", "Cinnamon"],
     name: "Spice Road",
     note: "Masala chai.",
     source: "https://lovefood.com/recipes/88287/dishoom-masala-chai-recipe",
   },
   {
     forms: { Cinnamon: "dried" },
-    ingredients: ["Black tea", "Apple", "Cinnamon"],
+    ingredients: ["Red tea", "Apple", "Cinnamon"],
     name: "Orchard Steam",
     note: "Apple cinnamon tea.",
     source: "https://www.whiskaffair.com/apple-cinnamon-tea/",
@@ -688,6 +688,20 @@ export const RECIPES: readonly Recipe[] = [
     note: "Moroccan mint tea, poured from a height.",
     source:
       "https://www.americastestkitchen.com/recipes/15572-moroccan-mint-tea",
+  },
+  {
+    forms: { Ginger: "fresh" },
+    ingredients: ["White tea", "Cucumber", "Lemon", "Ginger"],
+    name: "Pale Dawn",
+    note: "An iced white tea cooler with cucumber, lemon and ginger.",
+    source:
+      "https://foodisgood.com/recipe/white-tea-cucumber-cooler/paleo/?tag=summer",
+  },
+  {
+    ingredients: ["Black tea", "Chrysanthemum"],
+    name: "Teahouse Dusk",
+    note: "Guk po, pu-erh with chrysanthemum: the dim sum tea of Cantonese teahouses.",
+    source: "https://gocantonese.com/dimsum/dishes/chrysanthemum-pu-er-tea",
   },
   {
     forms: { Ginger: "dried" },
@@ -741,5 +755,97 @@ export const RECIPES: readonly Recipe[] = [
     name: "Ember Cider",
     note: "Mulled apple cider, without the alcohol.",
     source: "https://www.keep-calm-and-eat-ice-cream.com/mulled-apple-cider",
+  },
+  // A second potion for every ingredient
+  {
+    forms: { Ginger: "fresh" },
+    ingredients: ["Blue Pea", "Lemongrass", "Ginger", "Lime"],
+    name: "Indigo Dusk",
+    note: "Butterfly pea flower tea with lemongrass: blue, until the lime turns it purple.",
+    source:
+      "https://www.americastestkitchen.com/recipes/15573-butterfly-pea-flower-tea",
+  },
+  {
+    forms: { Mint: "fresh" },
+    ingredients: ["Grapefruit", "Mint", "Rosemary", "Honey"],
+    name: "Coral Tide",
+    note: "A grapefruit, mint and rosemary tonic. Grapefruit interferes with some medicines.",
+    source: "https://soilborn.org/recipe/grapefruit-mint-rosemary-tonic",
+  },
+  {
+    ingredients: ["Berries", "Spinach", "Moringa"],
+    name: "Verdant Bloom",
+    note: "A moringa smoothie with spinach and strawberries.",
+    source: "https://tasty.co/recipe/moringa-smoothie",
+  },
+  {
+    ingredients: ["Black tea", "Orange"],
+    name: "Mandarin Hollow",
+    note: "Xiao qing gan: a little mandarin hollowed out, filled with ripe pu-erh, and brewed whole.",
+    source:
+      "https://teasenz.eu/blogs/tea-magazine/how-to-make-xiao-qing-gan-tea",
+  },
+  {
+    ingredients: ["Coconut milk", "Matcha", "Honey"],
+    name: "Coconut Grove",
+    note: "A coconut milk matcha latte.",
+    source:
+      "https://navitasorganics.com/blogs/recipes/coconut-matcha-latte-recipe",
+  },
+  {
+    forms: { Ginger: "fresh" },
+    ingredients: ["Tamarind", "Lime", "Ginger", "Honey"],
+    name: "Tamarind Sundown",
+    note: "Jamaica's tamarind drink, with ginger and lime, over plenty of ice.",
+    source: "https://jamaicanfoodsandrecipes.com/tamarind-drink/",
+  },
+  {
+    ingredients: ["Yuzu", "Matcha", "Honey"],
+    name: "Yuzu Spark",
+    note: "Sparkling yuzu matcha, topped with soda water.",
+    source: "https://www.rishi-tea.com/blogs/journal/sparkling-yuzu-matcha",
+  },
+  {
+    forms: { Mint: "fresh" },
+    ingredients: ["Aloe Vera", "Cucumber", "Lemon", "Mint"],
+    name: "Desert Mirror",
+    note: "A minty aloe and cucumber lemonade. Only the clear inner gel of the leaf.",
+    source: "https://golubkakitchen.com/minty-aloe-and-cucumber-lemonade/",
+  },
+  {
+    forms: { Ginger: "fresh" },
+    ingredients: ["Kale", "Pineapple", "Orange", "Ginger"],
+    name: "Emerald Canopy",
+    note: "A pineapple, orange and kale green juice with ginger.",
+    source: "https://www.kuvings.com/blogs/recipes/pineapple-green-juice",
+  },
+  {
+    forms: { Mint: "fresh" },
+    ingredients: ["White tea", "Apple", "Coconut Water", "Mint"],
+    name: "White Garden",
+    note: "An iced white tea with apple, coconut water and mint.",
+    source:
+      "https://biggestmorningtea.com.au/tools/recipes/apple-coconut-and-mint-iced-tea",
+  },
+  {
+    forms: { Turmeric: "powder" },
+    ingredients: ["Mango", "Coconut milk", "Lime", "Turmeric"],
+    name: "Golden Lagoon",
+    note: "A mango and coconut smoothie with turmeric and lime.",
+    source:
+      "https://nyssaskitchen.com/mango-coconut-smoothie-with-turmeric-and-lime/",
+  },
+  {
+    ingredients: ["Watermelon", "Jalapeño", "Lime"],
+    name: "Ember Melon",
+    note: "A watermelon and jalapeño agua fresca. Seed the jalapeño for less heat.",
+    source: "https://watermelon.org/recipes/watermelon-jalapeno-agua-fresca",
+  },
+  {
+    ingredients: ["Apple cider vinegar", "Horseradish", "Lemon", "Honey"],
+    name: "Root Fire Honey",
+    note: "Fire cider made an oxymel: steeped in vinegar, then sweetened with honey. Taken by the spoonful.",
+    source:
+      "https://ohiomagazine.com/Food-Drink/Recipes/Details/rosemary-s-fire-cider-oxymel",
   },
 ];

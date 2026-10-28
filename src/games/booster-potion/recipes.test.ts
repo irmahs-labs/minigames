@@ -19,9 +19,9 @@ const SHOPS = [
 ];
 
 describe("the recipe book", () => {
-  it("has a hundred potions with different names", () => {
-    expect(RECIPES).toHaveLength(100);
-    expect(new Set(ALL_FOUND).size).toBe(100);
+  it("has 115 potions with different names", () => {
+    expect(RECIPES).toHaveLength(115);
+    expect(new Set(ALL_FOUND).size).toBe(115);
   });
 
   it("lists each ingredient on one shelf only", () => {
@@ -77,6 +77,22 @@ describe("the recipe book", () => {
         expect(parts).toContainEqual({ form, name });
       }
     }
+  });
+
+  it("puts every ingredient in at least two potions", () => {
+    const uses = new Map<string, number>();
+
+    for (const recipe of RECIPES) {
+      for (const name of recipe.ingredients) {
+        uses.set(name, (uses.get(name) ?? 0) + 1);
+      }
+    }
+
+    expect(
+      Object.values(PANTRY)
+        .flat()
+        .filter((name) => (uses.get(name) ?? 0) < 2)
+    ).toEqual([]);
   });
 
   it("has a tip for every ingredient, and none for anything else", () => {

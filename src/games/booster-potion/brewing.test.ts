@@ -106,7 +106,7 @@ describe("the book's pages", () => {
   it("lists ingredients shelf by shelf, alphabetically on each", () => {
     expect(
       shelvedPartsOf(recipe("Spice Road")).map((part) => part.name)
-    ).toEqual(["Black tea", "Cardamom", "Cinnamon", "Ginger"]);
+    ).toEqual(["Red tea", "Cardamom", "Cinnamon", "Ginger"]);
     expect(
       shelvedPartsOf(recipe("Ember's Embrace")).map((part) => part.name)
     ).toEqual(["Apple", "Lime", "Cayenne", "Ginger"]);
