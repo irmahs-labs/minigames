@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { FoundPage } from "./api";
-import { bylinesOf } from "./brew-dialog";
+import { bylinesOf, neededOf, sharedView } from "./brew-dialog";
 
 const page: FoundPage = {
   at: "2026-10-28T10:00:00.000Z",
@@ -35,5 +35,36 @@ describe("bylinesOf", () => {
       first: "First brewed by Alexandre L. on 28 Oct 2026, and 3 more",
       last: "Last brewed by Ben C. on 29 Oct 2026",
     });
+  });
+});
+
+describe("neededOf", () => {
+  it("counts the kinds a potion still needs", () => {
+    expect(neededOf(["spice"])).toBe("a spice");
+    expect(neededOf(["fruit", "dried spice"])).toBe(
+      "a fruit and a dried spice"
+    );
+    expect(neededOf(["fruit", "fruit", "sweetener"])).toBe(
+      "two fruits and a sweetener"
+    );
+  });
+});
+
+const mystery = (shared: number, missing: string[]) =>
+  sharedView({
+    closest: { missing, name: "Ember's Embrace", needs: 4, shared },
+    size: 4,
+    type: "mystery",
+    wrongForm: null,
+  }).lines;
+
+describe("the mystery hint", () => {
+  it("says how many are in the closest potion, and the kinds it still needs", () => {
+    expect(mystery(2, ["fruit", "spice"])).toEqual([
+      "2 of these 4 are in Ember's Embrace. It still needs a fruit and a spice.",
+    ]);
+    expect(mystery(3, ["spice"])).toEqual([
+      "So close! 3 of these 4 are in Ember's Embrace. It still needs a spice.",
+    ]);
   });
 });
