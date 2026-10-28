@@ -43,7 +43,7 @@ const NumberCard = ({
         </>
       ) : (
         <p className="number-card__about">
-          Add your full birth name on your profile to find it.
+          Add your name on your profile to find it.
         </p>
       )}
       <p className="number-card__from">{from}</p>
