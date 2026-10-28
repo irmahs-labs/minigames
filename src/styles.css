@@ -1251,9 +1251,11 @@ a:hover {
 
 /* Birth details: one field after the other, never side by side, so the
    date and time pickers (wider on iOS Safari) never push past the panel. */
-.details__row {
-  display: flex;
-  flex-direction: column;
+/* The fields side by side, as many to a row as fit; one per row on a phone. */
+.details__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  align-items: start;
   gap: 12px;
 }
 .details__more {

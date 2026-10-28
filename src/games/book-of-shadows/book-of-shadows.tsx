@@ -99,16 +99,21 @@ const BookOfShadows = ({ name }: GameProps) => {
 
   const chart = useMemo(() => (birth ? chartFor(birth) : null), [birth]);
 
+  const theirChart = useMemo(
+    () => (theirBirth ? chartFor(theirBirth) : null),
+    [theirBirth]
+  );
+
   const theirName = firstNameOf(partner.name);
 
   // How you match someone else, three ways, once both have a birth date.
   const matches = useMemo(() => {
-    if (!birth || !chart || !theirBirth) {
+    if (!birth || !chart || !theirBirth || !theirChart) {
       return null;
     }
 
     return {
-      chart: chartMatch(chart, chartFor(theirBirth), theirName),
+      chart: chartMatch(chart, theirChart, theirName),
       "lunar-zodiac": lunarMatch(
         lunarYearOf(birth.day),
         lunarYearOf(theirBirth.day)
@@ -123,6 +128,7 @@ const BookOfShadows = ({ name }: GameProps) => {
     birth,
     chart,
     theirBirth,
+    theirChart,
     theirName,
     profile.name,
     partner.name,
@@ -235,39 +241,43 @@ const BookOfShadows = ({ name }: GameProps) => {
                 }
               />
             </div>
-            <div className="layout">
-              <WitchCard
-                profile={profile}
-                birth={birth}
-                chart={chart}
-                thisYear={thisYear}
-              />
-              <BirthDetails
-                who="you"
-                profile={profile}
-                onChange={editor("profile")}
-                onClear={clearer("profile")}
-              />
-            </div>
-            <div className="layout">
-              <MatchSummary
-                name={theirName}
-                rows={
-                  matches &&
-                  MATCH_TABS.map((entry) => ({
-                    label: MATCHES[entry].label,
-                    match: matches[entry],
-                    onOpen: () => open(entry),
-                  }))
-                }
-              />
-              <BirthDetails
-                who="partner"
-                profile={partner}
-                onChange={editor("partner")}
-                onClear={clearer("partner")}
-              />
-            </div>
+            <BirthDetails
+              who="you"
+              profile={profile}
+              onChange={editor("profile")}
+              onClear={clearer("profile")}
+            />
+            <WitchCard
+              who="you"
+              profile={profile}
+              birth={birth}
+              chart={chart}
+              thisYear={thisYear}
+            />
+            <MatchSummary
+              name={theirName}
+              rows={
+                matches &&
+                MATCH_TABS.map((entry) => ({
+                  label: MATCHES[entry].label,
+                  match: matches[entry],
+                  onOpen: () => open(entry),
+                }))
+              }
+            />
+            <BirthDetails
+              who="partner"
+              profile={partner}
+              onChange={editor("partner")}
+              onClear={clearer("partner")}
+            />
+            <WitchCard
+              who="partner"
+              profile={partner}
+              birth={theirBirth}
+              chart={theirChart}
+              thisYear={thisYear}
+            />
           </>
         );
       }

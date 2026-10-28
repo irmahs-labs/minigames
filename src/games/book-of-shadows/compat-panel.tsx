@@ -78,10 +78,7 @@ export const MatchSummary = ({
   name: string;
   rows: readonly SummaryRow[] | null;
 }) => (
-  <section
-    aria-labelledby="summary-title"
-    className="panel panel--book panel--wide match"
-  >
+  <section aria-labelledby="summary-title" className="panel panel--book match">
     <span className="legend">compatibility.txt</span>
     <p className="kicker">You and {name || "them"}</p>
     <h2 id="summary-title" className="display book__title">
