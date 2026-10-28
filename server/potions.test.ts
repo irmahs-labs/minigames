@@ -38,7 +38,13 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
 
   it("puts the first brewer's name on a potion", async () => {
     expect(await recordBrew(pool, "Ember's Embrace", ana)).toEqual({
-      brewers: { by: "Ana L.", count: 1, yours: true },
+      brewers: {
+        at: expect.any(String),
+        by: "Ana L.",
+        count: 1,
+        last: null,
+        yours: true,
+      },
       first: true,
       isNew: true,
     });
@@ -48,7 +54,13 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
     await recordBrew(pool, "Ember's Embrace", ana);
 
     expect(await recordBrew(pool, "Ember's Embrace", ben)).toEqual({
-      brewers: { by: "Ana L.", count: 2, yours: true },
+      brewers: {
+        at: expect.any(String),
+        by: "Ana L.",
+        count: 2,
+        last: { at: expect.any(String), name: "Ben" },
+        yours: true,
+      },
       first: false,
       isNew: true,
     });
@@ -58,7 +70,13 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
     await recordBrew(pool, "Ember's Embrace", ana);
 
     expect(await recordBrew(pool, "Ember's Embrace", ana)).toEqual({
-      brewers: { by: "Ana L.", count: 1, yours: true },
+      brewers: {
+        at: expect.any(String),
+        by: "Ana L.",
+        count: 1,
+        last: { at: expect.any(String), name: "Ana L." },
+        yours: true,
+      },
       first: false,
       isNew: false,
     });
@@ -71,15 +89,34 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
 
     expect(await readBrews(pool, ana.id)).toEqual(
       new Map([
-        ["Ember's Embrace", { by: "Ana L.", count: 2, yours: true }],
-        ["Autumn Hearth", { by: "Ben", count: 1, yours: false }],
+        [
+          "Ember's Embrace",
+          {
+            at: expect.any(String),
+            by: "Ana L.",
+            count: 2,
+            last: { at: expect.any(String), name: "Ben" },
+            yours: true,
+          },
+        ],
+        [
+          "Autumn Hearth",
+          {
+            at: expect.any(String),
+            by: "Ben",
+            count: 1,
+            last: null,
+            yours: false,
+          },
+        ],
       ])
     );
     const signedOut = await readBrews(pool, null);
 
-    expect(signedOut.get("Ember's Embrace")).toEqual({
+    expect(signedOut.get("Ember's Embrace")).toMatchObject({
       by: "Ana L.",
       count: 2,
+      last: { name: "Ben" },
       yours: false,
     });
   });
