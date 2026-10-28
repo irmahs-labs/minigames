@@ -74,7 +74,13 @@ export const brewers = z.object({ brewers: z.array(brewer) });
 const mystery = z.object({
   /** The potion still to find that shares the most of these ingredients. */
   closest: z.nullable(
-    z.object({ name: z.string(), needs: z.int(), shared: z.int() })
+    z.object({
+      /** The kinds of its ingredients not in the cauldron: "dried spice". */
+      missing: z.array(z.string()),
+      name: z.string(),
+      needs: z.int(),
+      shared: z.int(),
+    })
   ),
   /** How many ingredients went in. */
   size: z.int(),

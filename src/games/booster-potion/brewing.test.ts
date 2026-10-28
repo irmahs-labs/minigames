@@ -77,7 +77,12 @@ describe("brew", () => {
   it("hints at the unfound potion sharing the most ingredients", () => {
     // Apple, Lime and Ginger are in Ember's Embrace; Mint is not.
     expect(brew(pick("Apple", "Lime", "Ginger", "Mint"), NOBODY)).toEqual({
-      closest: { name: "Ember's Embrace", needs: 4, shared: 3 },
+      closest: {
+        missing: ["spice"],
+        name: "Ember's Embrace",
+        needs: 4,
+        shared: 3,
+      },
       size: 4,
       type: "mystery",
       wrongForm: null,
