@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import type { BrewAnswer, Mystery, SoloBrewAnswer } from "./api";
+import type { BrewAnswer, FoundPage, Mystery, SoloBrewAnswer } from "./api";
 
 /** "Apple, Lime, Fresh ginger and Cayenne"; "Garlic and Honey". */
 export const listed = (names: readonly string[]) =>
@@ -10,6 +10,33 @@ export const listed = (names: readonly string[]) =>
 
 /** Ends text with a full stop, unless it ends with one: "Irma H.". */
 const sentence = (text: string) => (text.endsWith(".") ? text : `${text}.`);
+
+/** "28 Oct 2026", in English whatever the browser's language. */
+export const brewDay = (iso: string): string =>
+  new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+interface Bylines {
+  first: string;
+  last: string;
+}
+
+/**
+ * Who brewed a page's potion, as two lines: "First brewed by Ana L. on 28
+ * Oct 2026, and 3 more" and "Last brewed by Ben C. on 29 Oct 2026", or "Last
+ * brewed by no one" while nobody has brewed it since.
+ */
+export const bylinesOf = ({ at, by, last, others }: FoundPage): Bylines => ({
+  first: `First brewed by ${by} on ${brewDay(at)}${
+    others > 0 ? `, and ${others} more` : ""
+  }`,
+  last: last
+    ? `Last brewed by ${last.name} on ${brewDay(last.at)}`
+    : "Last brewed by no one",
+});
 
 const WORDS = ["none", "one", "two", "three", "four"] as const;
 
@@ -82,7 +109,7 @@ export const sharedView = (answer: BrewAnswer): DialogView => {
       `${listed(page.ingredients)}. ${page.note}`,
       first
         ? "Your name is on its page in the grimoire, for everyone to see."
-        : sentence(`First brewed by ${page.by}`),
+        : sentence(bylinesOf(page).first),
     ],
     title: `🔮 ${page.name}`,
   };

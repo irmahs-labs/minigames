@@ -19,7 +19,14 @@ import {
   postSoloBrew,
   resetSoloBook,
 } from "./book-api";
-import { BrewDialog, listed, sharedView, soloView } from "./brew-dialog";
+import {
+  BrewDialog,
+  brewDay,
+  bylinesOf,
+  listed,
+  sharedView,
+  soloView,
+} from "./brew-dialog";
 import type { DialogView } from "./brew-dialog";
 import { BASE_KINDS, KIND_EMOJI, PANTRY, TIPS, TOPPING_KINDS } from "./pantry";
 import type { Form, Kind } from "./pantry";
@@ -181,16 +188,6 @@ const ago = (iso: string, now: number) => {
   return days === 1 ? "1 day ago" : `${days} days ago`;
 };
 
-const day = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-  });
-
-/** "First brewed by Irma H. and 3 more". */
-const bylineOf = ({ by, others }: Extract<Page, { state: "found" }>) =>
-  others > 0 ? `First brewed by ${by} and ${others} more` : `Brewed by ${by}`;
-
 /**
  * Who brewed a page's potion: the byline, which opens the full list, first
  * first, fetched the first time it is opened.
@@ -200,10 +197,16 @@ const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
   // undefined until fetched, null when it cannot be had.
   const [brewers, setBrewers] = useState<Brewer[] | null | undefined>();
 
-  const byline = `${bylineOf(page)}${page.yours ? " · you brewed it too" : ""}`;
+  const bylines = bylinesOf(page);
+  const last = <p className="recipe-card__by">{bylines.last}</p>;
 
   if (page.others === 0) {
-    return <p className="recipe-card__by">{byline}</p>;
+    return (
+      <div className="stack">
+        <p className="recipe-card__by">{bylines.first}</p>
+        {last}
+      </div>
+    );
   }
 
   const toggle = async () => {
@@ -222,8 +225,9 @@ const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
         aria-expanded={open}
         onClick={toggle}
       >
-        {byline} {open ? "▴" : "▾"}
+        {bylines.first} {open ? "▴" : "▾"}
       </button>
+      {last}
       {open && brewers === undefined ? (
         <p className="recipe-card__note">Looking them up…</p>
       ) : null}
@@ -236,7 +240,7 @@ const Brewers = ({ page }: { page: Extract<Page, { state: "found" }> }) => {
             // Two people may share a name; their place in the list is theirs.
             // oxlint-disable-next-line no-array-index-key
             <li key={i}>
-              {brewer.name} <span>{day(brewer.at)}</span>
+              {brewer.name} <span>{brewDay(brewer.at)}</span>
             </li>
           ))}
         </ol>
@@ -315,7 +319,7 @@ const SoloBookPage = ({ page }: { page: SoloPage }) => {
       <h3 className="display recipe-card__name">🔮 {page.name}</h3>
       <p className="recipe-card__recipe">{listed(page.ingredients)}</p>
       <p className="recipe-card__note">{page.note}</p>
-      <p className="recipe-card__by">Found {day(page.foundAt)}</p>
+      <p className="recipe-card__by">Found {brewDay(page.foundAt)}</p>
       <a
         className="recipe-card__source"
         href={page.source}

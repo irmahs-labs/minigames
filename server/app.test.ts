@@ -55,8 +55,10 @@ const brewersOf = (potion: string, userId: string | null): Brewers => {
   const rows = brewLog.filter((row) => row.potion === potion);
 
   return {
+    at: "2026-10-22T10:00:00.000Z",
     by: rows[0]?.name ?? "",
     count: rows.length,
+    last: null,
     yours: rows.some((row) => row.id === userId),
   };
 };

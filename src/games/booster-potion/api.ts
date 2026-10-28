@@ -17,11 +17,18 @@ export const brewRequest = z.object({
 });
 
 /** A page someone has found: the whole recipe, and who brewed it first. */
+/** A brew someone made: who, and when, as an ISO date. */
+const brewOf = z.object({ at: z.string(), name: z.string() });
+
 const foundPage = z.object({
+  /** When it was first brewed, as an ISO date. */
+  at: z.string(),
   /** The first to brew it, as everyone sees them: "Irma H.". */
   by: z.string(),
   /** "Lemon", "Fresh ginger", "Honey". */
   ingredients: z.array(z.string()),
+  /** The latest brew after the first, by anyone; null while there is none. */
+  last: z.nullable(brewOf),
   name: z.string(),
   note: z.string(),
   /** How many others have brewed it since. */

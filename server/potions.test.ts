@@ -108,6 +108,25 @@ describe.skipIf(!url)("the recipe book in Postgres", () => {
     expect(Date.parse(brewers[0]?.at ?? "")).not.toBeNaN();
   });
 
+  it("dates the first brew, and keeps the last one by anyone", async () => {
+    const first = await recordBrew(pool, "Moonwater", ana);
+
+    expect(Date.parse(first.brewers.at)).not.toBeNaN();
+    expect(first.brewers.last).toBeNull();
+
+    await recordBrew(pool, "Moonwater", ben);
+
+    const second = await recordBrew(pool, "Moonwater", ana);
+
+    expect(second.brewers.by).toBe("Ana L.");
+    expect(second.brewers.at).toBe(first.brewers.at);
+    expect(second.brewers.last?.name).toBe("Ana L.");
+
+    const log = await readBrews(pool, null);
+
+    expect(log.get("Moonwater")?.last?.name).toBe("Ana L.");
+  });
+
   it("shows a player's new name on every page they are on", async () => {
     await recordBrew(pool, "Ember's Embrace", ana);
     await recordBrew(pool, "Moonwater", ana);
