@@ -18,6 +18,7 @@ import {
 import type { Birth, Chart, Profile } from "./profile";
 import { SignName } from "./sign-name";
 import { PLANET_GLYPHS, moonAngle } from "./sky";
+import { witchTitle } from "./titles";
 import { ELEMENTS, ELEMENT_NAMES } from "./zodiac";
 
 /** Every time zone the browser knows, for a birthplace not on the list. */
@@ -273,6 +274,13 @@ export const WitchCard = ({
   const [moonFrom, moonTo] = chart.moonSpan ?? [];
   const moonUnsure = moonFrom && moonTo && moonFrom.sign !== moonTo.sign;
 
+  const title = witchTitle({
+    animal: lunar.animal.id,
+    moon: longitudeIn(chart, "Moon"),
+    rising: chart.angles?.ascendant ?? null,
+    sun: longitudeIn(chart, "Sun"),
+  });
+
   return (
     <section aria-labelledby={titleId} className="panel panel--book witch-card">
       <span className="legend">{card.legend}</span>
@@ -281,9 +289,11 @@ export const WitchCard = ({
         {formatDay(birth.day, LONG_DAY)}
       </p>
       <h2 id={titleId} className="display page__title">
-        {craft.name}
+        {title}
       </h2>
-      <p className="witch-card__about">{craft.about}</p>
+      <p className="witch-card__about">
+        <strong>{craft.name}.</strong> {craft.about}
+      </p>
 
       <div className="lights">
         <Light
@@ -310,7 +320,8 @@ export const WitchCard = ({
       ) : null}
       {chart.angles ? null : (
         <p className="hint">
-          The rising sign needs a birth time and a birthplace.
+          The rising sign needs a birth time and a birthplace; it gives the
+          first word of the title.
         </p>
       )}
 

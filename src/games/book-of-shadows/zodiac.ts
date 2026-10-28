@@ -9,8 +9,22 @@ export type Element = "fire" | "earth" | "air" | "water";
 
 export type Modality = "cardinal" | "fixed" | "mutable";
 
+export type SignName =
+  | "Aries"
+  | "Taurus"
+  | "Gemini"
+  | "Cancer"
+  | "Leo"
+  | "Virgo"
+  | "Libra"
+  | "Scorpio"
+  | "Sagittarius"
+  | "Capricorn"
+  | "Aquarius"
+  | "Pisces";
+
 export interface Sign {
-  name: string;
+  name: SignName;
   glyph: string;
   element: Element;
   modality: Modality;
