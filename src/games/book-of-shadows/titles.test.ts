@@ -23,7 +23,7 @@ describe("witchTitle", () => {
   it("starts at the Sun when there is no rising sign", () => {
     expect(
       witchTitle({ animal: "tiger", moon: sign(0), rising: null, sun: sign(4) })
-    ).toBe("Sovereign of the Burning Bamboo Forest");
+    ).toBe("Sovereign of the Burning Mountains");
   });
 
   it("has a word for every sign", () => {

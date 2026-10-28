@@ -60,18 +60,18 @@ export const MOON_PLACES: Readonly<Record<SignName, string>> = {
 
 /** The Lunar zodiac animal: where it would reign. */
 export const ANIMAL_REALMS: Readonly<Record<AnimalId, string>> = {
-  dog: "Gate",
+  dog: "Fortress",
   dragon: "Palace",
-  goat: "Highlands",
+  goat: "Cliffs",
   horse: "Steppe",
   monkey: "Canopy",
   ox: "Valley",
-  pig: "Hall",
+  pig: "Woods",
   rabbit: "Orchard",
   rat: "Labyrinth",
   rooster: "Tower",
   snake: "Temple",
-  tiger: "Bamboo Forest",
+  tiger: "Mountains",
 };
 
 export interface TitleSigns {
