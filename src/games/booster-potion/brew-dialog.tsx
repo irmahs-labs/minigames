@@ -40,6 +40,24 @@ export const bylinesOf = ({ at, by, last, others }: FoundPage): Bylines => ({
 
 const WORDS = ["none", "one", "two", "three", "four"] as const;
 
+/**
+ * The kinds a potion still needs, counted: ["fruit", "fruit", "dried spice"]
+ * → "two fruits and a dried spice".
+ */
+export const neededOf = (kinds: readonly string[]): string => {
+  const counts = new Map<string, number>();
+
+  for (const kind of kinds) {
+    counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+
+  return listed(
+    [...counts].map(([kind, count]) =>
+      count === 1 ? `a ${kind}` : `${WORDS[count] ?? count} ${kind}s`
+    )
+  );
+};
+
 /** What the popup says about a brew. */
 export interface DialogView {
   kicker: string;
@@ -65,7 +83,7 @@ const hintFor = ({ closest, size, wrongForm }: Mystery, unfound: string) => {
     return `None of these ${WORDS[size] ?? size} is in a potion ${unfound}.`;
   }
 
-  const { name, needs, shared } = closest;
+  const { missing, name, needs, shared } = closest;
 
   if (shared === needs) {
     return `Everything in ${name} is in there, and more besides.`;
@@ -74,9 +92,7 @@ const hintFor = ({ closest, size, wrongForm }: Mystery, unfound: string) => {
   const count =
     shared === 1 ? `1 of these ${size} is` : `${shared} of these ${size} are`;
 
-  const takes = needs === size ? "" : `, which takes ${WORDS[needs] ?? needs}`;
-
-  return `${shared === needs - 1 ? "So close! " : ""}${count} in ${name}${takes}.`;
+  return `${shared === needs - 1 ? "So close! " : ""}${count} in ${name}. It still needs ${neededOf(missing)}.`;
 };
 
 const mysteryView = (answer: Mystery, unfound: string): DialogView => ({
