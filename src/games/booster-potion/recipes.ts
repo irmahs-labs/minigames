@@ -662,14 +662,14 @@ export const RECIPES: readonly Recipe[] = [
   },
   {
     forms: { Cinnamon: "dried", Ginger: "dried" },
-    ingredients: ["Black tea", "Ginger", "Cardamom", "Cinnamon"],
+    ingredients: ["Red tea", "Ginger", "Cardamom", "Cinnamon"],
     name: "Spice Road",
     note: "Masala chai.",
     source: "https://lovefood.com/recipes/88287/dishoom-masala-chai-recipe",
   },
   {
     forms: { Cinnamon: "dried" },
-    ingredients: ["Black tea", "Apple", "Cinnamon"],
+    ingredients: ["Red tea", "Apple", "Cinnamon"],
     name: "Orchard Steam",
     note: "Apple cinnamon tea.",
     source: "https://www.whiskaffair.com/apple-cinnamon-tea/",
@@ -688,6 +688,20 @@ export const RECIPES: readonly Recipe[] = [
     note: "Moroccan mint tea, poured from a height.",
     source:
       "https://www.americastestkitchen.com/recipes/15572-moroccan-mint-tea",
+  },
+  {
+    forms: { Ginger: "fresh" },
+    ingredients: ["White tea", "Cucumber", "Lemon", "Ginger"],
+    name: "Pale Dawn",
+    note: "An iced white tea cooler with cucumber, lemon and ginger.",
+    source:
+      "https://foodisgood.com/recipe/white-tea-cucumber-cooler/paleo/?tag=summer",
+  },
+  {
+    ingredients: ["Black tea", "Chrysanthemum"],
+    name: "Teahouse Dusk",
+    note: "Guk po, pu-erh with chrysanthemum: the dim sum tea of Cantonese teahouses.",
+    source: "https://gocantonese.com/dimsum/dishes/chrysanthemum-pu-er-tea",
   },
   {
     forms: { Ginger: "dried" },

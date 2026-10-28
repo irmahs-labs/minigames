@@ -69,7 +69,7 @@ export const PANTRY: Record<Kind, readonly string[]> = {
     "Turmeric",
   ],
   sweetener: ["Honey", "Maple syrup"],
-  tea: ["Black tea", "Green tea"],
+  tea: ["Black tea", "Green tea", "Red tea", "White tea"],
   vegetable: [
     "Beetroot",
     "Carrot",
@@ -111,7 +111,8 @@ const TIP_LIST = {
   Beetroot: "Nitrates, which can help blood flow and exercise.",
   Berries: "Rich in antioxidants, the ones that colour them.",
   "Black pepper": "Piperine, which helps the body take up turmeric.",
-  "Black tea": "Caffeine and antioxidants, the base of chai.",
+  "Black tea":
+    "Dark tea, aged and fermented: earthy and smooth. Try ripe Pu-erh or Liu Bao.",
   "Blue Pea": "Turns tea blue, and purple when lemon goes in.",
   Cardamom: "A warm spice long used for digestion.",
   Carrot: "Beta-carotene, which the body turns into vitamin A.",
@@ -130,7 +131,8 @@ const TIP_LIST = {
   Ginger: "Eases nausea, with anti-inflammatory compounds.",
   Goji: "Dried berries, rich in vitamin A.",
   Grapefruit: "Vitamin C. Interferes with some medicines.",
-  "Green tea": "Catechins, with a little caffeine and L-theanine.",
+  "Green tea":
+    "Catechins, with a little caffeine and L-theanine. Try Sencha or Gunpowder.",
   Hibiscus: "Tart and red; may help lower blood pressure.",
   Honey: "Soothes a sore throat. Not for babies under one.",
   Horseradish: "A sinus-clearing root: the fire in fire cider.",
@@ -149,6 +151,8 @@ const TIP_LIST = {
   Orange: "Vitamin C and natural sweetness.",
   Pineapple: "Bromelain, an enzyme that breaks down protein.",
   Pomegranate: "Rich in polyphenols, a kind of antioxidant.",
+  "Red tea":
+    "Fully oxidized, what English calls black tea: the base of chai. Try English Breakfast or Darjeeling.",
   Rosehip: "The fruit of the rose, very rich in vitamin C.",
   Rosemary: "Aromatic, and rich in antioxidants.",
   Spinach: "Folate, iron and vitamin K.",
@@ -160,6 +164,8 @@ const TIP_LIST = {
   Turmeric: "Curcumin, studied for inflammation. Best with black pepper.",
   Watermelon: "Mostly water: hydrating.",
   Wheatgrass: "Young wheat, juiced or powdered: vitamins and chlorophyll.",
+  "White tea":
+    "The youngest buds, barely processed: delicate, with little caffeine. Try White Peony or Silver Needle.",
   Yuzu: "A fragrant East Asian citrus, rich in vitamin C.",
 } satisfies Record<string, string>;
 

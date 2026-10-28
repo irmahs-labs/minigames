@@ -19,9 +19,9 @@ const SHOPS = [
 ];
 
 describe("the recipe book", () => {
-  it("has a hundred potions with different names", () => {
-    expect(RECIPES).toHaveLength(100);
-    expect(new Set(ALL_FOUND).size).toBe(100);
+  it("has 102 potions with different names", () => {
+    expect(RECIPES).toHaveLength(102);
+    expect(new Set(ALL_FOUND).size).toBe(102);
   });
 
   it("lists each ingredient on one shelf only", () => {

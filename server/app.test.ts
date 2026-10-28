@@ -385,7 +385,7 @@ describe("/api/potions", () => {
     const book = await bodyOf(fetch(`http://${base}/api/potions`));
 
     expect(book.latest).toBeNull();
-    expect(book.pages).toHaveLength(100);
+    expect(book.pages).toHaveLength(102);
     expect(book.pages[0]).toEqual({
       clue: expect.any(String),
       state: "locked",
@@ -518,7 +518,7 @@ describe("/api/potions/solo", () => {
   it("starts every player's own book empty", async () => {
     const { pages } = await bodyOf(soloBookOf("session=ana"));
 
-    expect(pages).toHaveLength(100);
+    expect(pages).toHaveLength(102);
     expect(
       pages.every((page: { state: string }) => page.state === "locked")
     ).toBe(true);
