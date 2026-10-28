@@ -562,7 +562,7 @@ describe("/api/potions/solo", () => {
     );
 
     expect(answer).toMatchObject({
-      closest: { name: "Ember's Embrace", shared: 3 },
+      closest: { missing: ["spice"], name: "Ember's Embrace", shared: 3 },
       type: "mystery",
     });
   });

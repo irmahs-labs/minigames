@@ -45,15 +45,16 @@ export const shelvedPartsOf = (recipe: Recipe): readonly Part[] =>
     (a, b) => shelfOf(a.name) - shelfOf(b.name) || a.name.localeCompare(b.name)
   );
 
+/** What an ingredient is, without saying which: "fruit", "dried spice". */
+const kindLabelOf = ({ form, name }: Part) => {
+  const kind = kindOf(name) ?? "fruit";
+
+  return form ? `${form} ${kind}` : kind;
+};
+
 /** A locked page's clue: "fruit + dried spice + sweetener". */
 export const clueOf = (recipe: Recipe) =>
-  shelvedPartsOf(recipe)
-    .map(({ form, name }) => {
-      const kind = kindOf(name) ?? "fruit";
-
-      return form ? `${form} ${kind}` : kind;
-    })
-    .join(" + ");
+  shelvedPartsOf(recipe).map(kindLabelOf).join(" + ");
 
 export const foundPageOf = (recipe: Recipe, brewers: Brewers): FoundPage => ({
   at: brewers.at,
@@ -149,7 +150,7 @@ export const brew = (
       }
     : null;
 
-  let closest: { name: string; needs: number; shared: number } | null = null;
+  let closest: Mystery["closest"] = null;
 
   for (const candidate of RECIPES) {
     const shared = sharedWith(candidate, selection);
@@ -160,6 +161,12 @@ export const brew = (
       shared > (closest?.shared ?? 0)
     ) {
       closest = {
+        // Only the kinds, as its locked page shows them: never which.
+        missing: shelvedPartsOf(candidate)
+          .filter(
+            (part) => !selection.some((chosen) => chosen.name === part.name)
+          )
+          .map(kindLabelOf),
         name: candidate.name,
         needs: candidate.ingredients.length,
         shared,
