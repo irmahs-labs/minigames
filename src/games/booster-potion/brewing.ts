@@ -14,6 +14,10 @@ import type { Part, Selection } from "./rules";
 export interface Brewers {
   /** The first to brew it: "Irma H.". */
   by: string;
+  /** When they did, as an ISO date. */
+  at: string;
+  /** The latest brew after the first, by anyone; null while there is none. */
+  last: { name: string; at: string } | null;
   /** How many people have brewed it, the first included. */
   count: number;
   /** The player asking is one of them. */
@@ -52,8 +56,10 @@ export const clueOf = (recipe: Recipe) =>
     .join(" + ");
 
 export const foundPageOf = (recipe: Recipe, brewers: Brewers): FoundPage => ({
+  at: brewers.at,
   by: brewers.by,
   ingredients: shelvedPartsOf(recipe).map(labelOf),
+  last: brewers.last,
   name: recipe.name,
   note: recipe.note,
   others: brewers.count - 1,

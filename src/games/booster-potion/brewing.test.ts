@@ -119,13 +119,17 @@ describe("the book's pages", () => {
   it("gives a found page the recipe and who brewed it", () => {
     expect(
       foundPageOf(recipe("Autumn Hearth"), {
+        at: "2026-10-28T09:00:00.000Z",
         by: "Irma H.",
         count: 3,
+        last: { at: "2026-10-29T09:00:00.000Z", name: "Ben C." },
         yours: true,
       })
     ).toEqual({
+      at: "2026-10-28T09:00:00.000Z",
       by: "Irma H.",
       ingredients: ["Jujube", "Dried ginger"],
+      last: { at: "2026-10-29T09:00:00.000Z", name: "Ben C." },
       name: "Autumn Hearth",
       note: "Daechu saenggang-cha, Korea's jujube and ginger tea.",
       others: 2,
@@ -138,7 +142,18 @@ describe("the book's pages", () => {
 
   it("lists every recipe in order, locked until someone brews it", () => {
     const pages = bookOf(
-      new Map([["Ember's Embrace", { by: "Ana L.", count: 1, yours: false }]])
+      new Map([
+        [
+          "Ember's Embrace",
+          {
+            at: "2026-10-28T09:00:00.000Z",
+            by: "Ana L.",
+            count: 1,
+            last: null,
+            yours: false,
+          },
+        ],
+      ])
     );
 
     expect(pages).toHaveLength(RECIPES.length);

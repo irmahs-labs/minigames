@@ -18,23 +18,39 @@ export interface Recorded {
 interface BrewersRow {
   potion: string;
   by: string;
+  first_at: Date;
+  last_by: string;
+  last_at: Date;
   count: number;
   yours: boolean;
 }
 
 // The first brewer is the earliest; two at the same instant go by id, so the
-// name on a page never changes.
+// name on a page never changes. The last brew is the latest by anyone, a
+// repeat included.
+const COLUMNS = `
+  potion,
+  (array_agg(name order by brewed_at, user_id))[1] as by,
+  min(brewed_at) as first_at,
+  (array_agg(name order by last_brewed_at desc, user_id))[1] as last_by,
+  max(last_brewed_at) as last_at,
+  count(*)::integer as count`;
+
 const BREWERS = `
-  select potion,
-         (array_agg(name order by brewed_at, user_id))[1] as by,
-         count(*)::integer as count,
+  select ${COLUMNS},
          coalesce(bool_or(user_id = $1::uuid), false) as yours
   from booster_potion_brews`;
 
-const brewersOf = ({ by, count, yours }: BrewersRow): Brewers => ({
-  by,
-  count,
-  yours,
+const brewersOf = (row: BrewersRow): Brewers => ({
+  at: row.first_at.toISOString(),
+  by: row.by,
+  count: row.count,
+  // Nobody has brewed it since the first brew, the first brewer included.
+  last:
+    row.last_at.getTime() > row.first_at.getTime()
+      ? { at: row.last_at.toISOString(), name: row.last_by }
+      : null,
+  yours: row.yours,
 });
 
 /** Every potion someone has brewed, and whether `userId` is among them. */
@@ -68,11 +84,17 @@ export const recordBrew = async (
     [potion, account.id, account.name]
   );
 
+  // A player's name can change (it did when names kept every initial): show
+  // the one they brew under now on every page they are on.
+  await pool.query(
+    `update booster_potion_brews set name = $2
+     where user_id = $1 and name <> $2`,
+    [account.id, account.name]
+  );
+
   // The same as BREWERS for one potion, plus whether this player is first.
   const { rows } = await pool.query<BrewersRow & { first: boolean }>(
-    `select potion,
-            (array_agg(name order by brewed_at, user_id))[1] as by,
-            count(*)::integer as count,
+    `select ${COLUMNS},
             bool_or(user_id = $1::uuid) as yours,
             (array_agg(user_id order by brewed_at, user_id))[1] = $1::uuid
               as first
