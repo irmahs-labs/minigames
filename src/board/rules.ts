@@ -55,17 +55,21 @@ export const isValidBody = (body: string) => {
   return length > 0 && length <= MAX_LENGTH;
 };
 
-/** When a note posted at `postedAt` comes down: "gone in 5h", "gone in 40 min". */
-export const goneIn = (postedAt: string, now: number) => {
+/**
+ * When a note posted at `postedAt` comes down: "gone in 5h", "gone in 40 min",
+ * or in French "partie dans 5 h".
+ */
+export const goneIn = (postedAt: string, now: number, french = false) => {
   const left = Date.parse(postedAt) + LIFETIME_MS - now;
+  const gone = french ? "partie dans" : "gone in";
 
   if (left >= HOUR_MS) {
-    return `gone in ${Math.floor(left / HOUR_MS)}h`;
+    return `${gone} ${Math.floor(left / HOUR_MS)}${french ? " h" : "h"}`;
   }
 
   if (left >= MINUTE_MS) {
-    return `gone in ${Math.floor(left / MINUTE_MS)} min`;
+    return `${gone} ${Math.floor(left / MINUTE_MS)} min`;
   }
 
-  return "gone in a moment";
+  return french ? "partie dans un instant" : "gone in a moment";
 };

@@ -5,6 +5,7 @@ import { MiniGamesIcon } from "./components/app-icons";
 import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { APP_NAME } from "./lib/brand";
+import { useLanguage } from "./lib/language";
 import { Link } from "./lib/router";
 
 /**
@@ -14,22 +15,32 @@ import { Link } from "./lib/router";
  */
 export const Hub = () => {
   const [sides, setSides] = useState<HTMLDivElement | null>(null);
+  const language = useLanguage();
+  const french = language === "fr";
 
   return (
     <>
       <Header icon={<MiniGamesIcon />} name={APP_NAME} href="/" />
       <div className="hub">
         <main className="page">
-          <p className="page__sub">pick a game, any game</p>
+          <p className="page__sub">
+            {french
+              ? "choisissez un jeu, n’importe lequel"
+              : "pick a game, any game"}
+          </p>
 
           <ul className="games">
             {GAMES.map((game) => (
               <li key={game.slug}>
                 <Link href={`/${game.slug}`} className="game-card">
                   <span className="legend">{game.legend}</span>
-                  <h2 className="display game-card__name">{game.name}</h2>
-                  <p className="game-card__blurb">{game.blurb}</p>
-                  <span className="game-card__play">play</span>
+                  <h2 className="display game-card__name">
+                    {game.name[language]}
+                  </h2>
+                  <p className="game-card__blurb">{game.blurb[language]}</p>
+                  <span className="game-card__play">
+                    {french ? "jouer" : "play"}
+                  </span>
                 </Link>
               </li>
             ))}

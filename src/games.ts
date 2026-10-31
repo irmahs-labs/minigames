@@ -1,6 +1,8 @@
 import { lazy } from "react";
 import type { ComponentType, LazyExoticComponent } from "react";
 
+import type { Language } from "./lib/language";
+
 /** What every game screen is given: its own entry's name, for its heading. */
 export interface GameProps {
   name: string;
@@ -13,8 +15,9 @@ export interface GameProps {
  */
 interface Game {
   slug: string;
-  name: string;
-  blurb: string;
+  /** Its name and the card's line, in each of the site's languages. */
+  name: Record<Language, string>;
+  blurb: Record<Language, string>;
   /** The card's filename, on its pill, with a real extension: "booster-potion.exe". */
   legend: string;
   Screen: LazyExoticComponent<ComponentType<GameProps>>;
@@ -23,33 +26,42 @@ interface Game {
 export const GAMES: readonly Game[] = [
   {
     Screen: lazy(() => import("./games/wheel-of-fortune/wheel-of-fortune")),
-    blurb: "Spin a wheel of names, a wheel of doom, or a wheel of your own.",
+    blurb: {
+      en: "Spin a wheel of names, a wheel of doom, or a wheel of your own.",
+      fr: "Faites tourner une roue de prénoms, une roue du destin, ou la vôtre.",
+    },
     legend: "wheel-of-fortune.exe",
-    name: "Wheel of Fortune",
+    name: { en: "Wheel of Fortune", fr: "Roue de la fortune" },
     slug: "wheel-of-fortune",
   },
   {
     Screen: lazy(() => import("./games/super-tic-tac-toe/super-tic-tac-toe")),
-    blurb:
-      "Nine games of tic-tac-toe, one on each planet. Conquer three planets in a row to win.",
+    blurb: {
+      en: "Nine games of tic-tac-toe, one on each planet. Conquer three planets in a row to win.",
+      fr: "Neuf parties de morpion, une sur chaque planète. Conquérez trois planètes alignées pour gagner.",
+    },
     legend: "super-tic-tac-toe.exe",
-    name: "Super Tic-Tac-Toe",
+    name: { en: "Super Tic-Tac-Toe", fr: "Super Morpion" },
     slug: "super-tic-tac-toe",
   },
   {
     Screen: lazy(() => import("./games/booster-potion/booster-potion")),
-    blurb:
-      "Brew real wellness shots and teas in the cauldron, from the ginger shot to masala chai. A hundred to discover.",
+    blurb: {
+      en: "Brew real wellness shots and teas in the cauldron, from the ginger shot to masala chai. A hundred to discover.",
+      fr: "Préparez dans le chaudron de vrais shots et thés bien-être, du shot de gingembre au masala chai. Une centaine à découvrir.",
+    },
     legend: "booster-potion.exe",
-    name: "Booster Potion",
+    name: { en: "Booster Potion", fr: "Potion tonique" },
     slug: "booster-potion",
   },
   {
     Screen: lazy(() => import("./games/book-of-shadows/book-of-shadows")),
-    blurb:
-      "Your witch profile: the moon tonight, the Wheel of the Year, retrogrades, your birth chart and your numbers.",
+    blurb: {
+      en: "Your witch profile: the moon tonight, the Wheel of the Year, retrogrades, your birth chart and your numbers.",
+      fr: "Votre profil de sorcière : la lune ce soir, la Roue de l’année, les rétrogrades, votre thème astral et vos nombres.",
+    },
     legend: "book-of-shadows.exe",
-    name: "Book of Shadows",
+    name: { en: "Book of Shadows", fr: "Livre des ombres" },
     slug: "book-of-shadows",
   },
 ];

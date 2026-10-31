@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 
+import { useCopy, useLanguage } from "../lib/language";
 import { readStored, writeStored } from "../lib/storage";
 import type { Note } from "./api";
 import {
@@ -57,6 +58,25 @@ interface Held {
   moved: boolean;
 }
 
+const COPY = {
+  en: {
+    down: (n: number) => `Thumbs down, ${n}`,
+    move: "Move this note: drag it, or use the arrow keys",
+    signIn: "Sign in to vote",
+    sure: "Sure? Take down",
+    takeDown: "Take down",
+    up: (n: number) => `Thumbs up, ${n}`,
+  },
+  fr: {
+    down: (n: number) => `Pouce en bas, ${n}`,
+    move: "Déplacer cette note : faites-la glisser, ou utilisez les flèches",
+    signIn: "Connectez-vous pour voter",
+    sure: "Sûr ? Décrocher",
+    takeDown: "Décrocher",
+    up: (n: number) => `Pouce en haut, ${n}`,
+  },
+};
+
 interface Thumbs {
   note: Note;
   /** Null when signed out: the counts show, the buttons don't press. */
@@ -65,14 +85,15 @@ interface Thumbs {
 
 const ThumbsRow = ({ note, onVote }: Thumbs) => {
   const toggle = (vote: Vote) => onVote?.(note.mine === vote ? 0 : vote);
-  const hint = onVote ? undefined : "Sign in to vote";
+  const t = useCopy(COPY);
+  const hint = onVote ? undefined : t.signIn;
 
   return (
     <div className="sticky__votes">
       <button
         type="button"
         className="sticky__vote"
-        aria-label={`Thumbs up, ${note.up}`}
+        aria-label={t.up(note.up)}
         aria-pressed={note.mine === 1}
         disabled={!onVote}
         title={hint}
@@ -83,7 +104,7 @@ const ThumbsRow = ({ note, onVote }: Thumbs) => {
       <button
         type="button"
         className="sticky__vote"
-        aria-label={`Thumbs down, ${note.down}`}
+        aria-label={t.down(note.down)}
         aria-pressed={note.mine === -1}
         disabled={!onVote}
         title={hint}
@@ -154,6 +175,8 @@ export const Corkboard = ({
   onTakeDown,
   armed,
 }: CorkboardProps) => {
+  const language = useLanguage();
+  const t = COPY[language];
   const layout = sides ? ON_THE_SIDES : IN_THE_BOX;
   const board = useRef<HTMLUListElement>(null);
   const [width, setWidth] = useState(0);
@@ -327,13 +350,13 @@ export const Corkboard = ({
                 <button
                   type="button"
                   className="sticky__tape"
-                  aria-label="Move this note: drag it, or use the arrow keys"
+                  aria-label={t.move}
                   onKeyDown={(event) => nudge(event, note.id, spot)}
                 />
                 <p className="sticky__body">{note.body}</p>
                 <p className="sticky__time">
                   <time dateTime={note.postedAt}>
-                    {goneIn(note.postedAt, now)}
+                    {goneIn(note.postedAt, now, language === "fr")}
                   </time>
                 </p>
                 <ThumbsRow
@@ -346,7 +369,7 @@ export const Corkboard = ({
                     className="sticky__remove"
                     onClick={() => onTakeDown(note.id)}
                   >
-                    {armed === note.id ? "Sure? Take down" : "Take down"}
+                    {armed === note.id ? t.sure : t.takeDown}
                   </button>
                 ) : null}
               </li>
