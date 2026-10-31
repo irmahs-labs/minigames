@@ -15,6 +15,7 @@ import {
   formatMonth,
   inDays,
 } from "./format";
+import { inFrench, say, tr } from "./french";
 import {
   PHASE_LORE,
   fullMoonName,
@@ -36,7 +37,6 @@ import {
   weekdayOf,
 } from "./time";
 import { placementOf } from "./zodiac";
-import { inFrench, say, tr } from "./french";
 
 interface MoonTabProps {
   now: Date;
@@ -245,10 +245,7 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
                 {say(day.phase)}
               </span>
               {festival ? (
-                <span
-                  className="moon-cal__festival"
-                  title={say(festival.name)}
-                >
+                <span className="moon-cal__festival" title={say(festival.name)}>
                   <span aria-hidden="true">{festival.emoji}</span>
                   <span className="sr-only">{say(festival.name)}</span>
                 </span>

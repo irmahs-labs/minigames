@@ -1,8 +1,8 @@
 import momentkh from "@thyrith/momentkh";
 
+import { inFrench } from "./french";
 import { lunarNewYear } from "./lunar-zodiac";
 import { DAY, daysBetween, keyOf, parseDay } from "./time";
-import { inFrench } from "./french";
 
 /**
  * The Buddhist lunar calendar, as Cambodia keeps it (Chhankitek, worked
