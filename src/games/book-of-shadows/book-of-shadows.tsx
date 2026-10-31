@@ -89,6 +89,7 @@ const BookOfShadows = ({ name }: GameProps) => {
   const [state, setState] = useState<BookState>(loadState);
   // Every line of the book reads the page's language as it renders.
   const language = useLanguage();
+  const french = language === "fr";
   // Every "today" in the book is this moment, moved on now and then so a
   // book left open past midnight turns the page.
   const [now, setNow] = useState(() => new Date());
@@ -130,15 +131,17 @@ const BookOfShadows = ({ name }: GameProps) => {
     }
 
     return {
-      chart: chartMatch(chart, theirChart, theirName),
+      chart: chartMatch(chart, theirChart, theirName, french),
       "lunar-zodiac": lunarMatch(
         lunarYearOf(birth.day),
-        lunarYearOf(theirBirth.day)
+        lunarYearOf(theirBirth.day),
+        french
       ),
       numbers: numbersMatch(
         birthNumbers(birth, profile.name, thisYear),
         birthNumbers(theirBirth, partner.name, thisYear),
-        theirName
+        theirName,
+        french
       ),
     };
   }, [
@@ -150,7 +153,7 @@ const BookOfShadows = ({ name }: GameProps) => {
     profile.name,
     partner.name,
     thisYear,
-    language,
+    french,
   ]);
 
   const open = (next: Tab) =>

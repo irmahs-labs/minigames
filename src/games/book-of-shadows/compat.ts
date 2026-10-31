@@ -49,20 +49,24 @@ export const possessive = (name: string): string => {
 };
 
 /** A planet or a sign's element in French, for the lines built from parts. */
-const FRENCH_ELEMENTS: Readonly<Record<string, string>> = {
-  air: "air",
-  earth: "terre",
-  fire: "feu",
-  water: "eau",
-};
+const FRENCH_ELEMENTS = new Map(
+  Object.entries({
+    air: "air",
+    earth: "terre",
+    fire: "feu",
+    water: "eau",
+  })
+);
 
-const FRENCH_ASPECTS: Readonly<Record<string, string>> = {
-  conjunction: "en conjonction avec",
-  opposition: "en opposition à",
-  sextile: "en sextile avec",
-  square: "au carré de",
-  trine: "en trigone avec",
-};
+const FRENCH_ASPECTS = new Map(
+  Object.entries({
+    conjunction: "en conjonction avec",
+    opposition: "en opposition à",
+    sextile: "en sextile avec",
+    square: "au carré de",
+    trine: "en trigone avec",
+  })
+);
 
 /** "de Sam", or "de l’autre" with no name. */
 const ofName = (name: string) => {
@@ -195,7 +199,12 @@ const elementPair = (a: number, b: number): ElementPair => {
 };
 
 /** Two birth charts, side by side: the aspects between them and their Suns' elements. */
-export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
+export const chartMatch = (
+  mine: Chart,
+  theirs: Chart,
+  name: string,
+  french = inFrench()
+): Match => {
   const reasons: Reason[] = [];
   let score = 50;
 
@@ -206,10 +215,14 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
   const theirSun = placementOf(theirSunAt).sign;
 
   score += { complementary: 6, different: -4, kindred: 8 }[suns];
-  const myElement = FRENCH_ELEMENTS[sunSign.element] ?? sunSign.element;
-  const theirElement = FRENCH_ELEMENTS[theirSun.element] ?? theirSun.element;
+
+  const myElement = FRENCH_ELEMENTS.get(sunSign.element) ?? sunSign.element;
+
+  const theirElement =
+    FRENCH_ELEMENTS.get(theirSun.element) ?? theirSun.element;
+
   reasons.push({
-    text: inFrench()
+    text: french
       ? {
           complementary: `Votre ${myElement} et le ${theirElement} ${ofName(name)} se nourrissent.`,
           different: `Votre ${myElement} et le ${theirElement} ${ofName(name)} parlent des langues différentes : à apprendre.`,
@@ -220,7 +233,7 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
           different: `Your ${sunSign.element} and ${possessive(name)} ${theirSun.element} speak different languages: worth learning.`,
           kindred: `You are both ${sunSign.element} signs: you understand each other without words.`,
         }[suns],
-    title: inFrench()
+    title: french
       ? `Soleil en ${say(sunSign.name)} et Soleil en ${say(theirSun.name)}`
       : `${sunSign.name} Sun and ${theirSun.name} Sun`,
     tone: suns === "different" ? "mixed" : "good",
@@ -237,8 +250,8 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
       const aboutText = say(about);
       reasons.push({
         text: `${aboutText[0]?.toUpperCase()}${aboutText.slice(1)} ${say(aspect.verb)}.`,
-        title: inFrench()
-          ? `Votre ${say(planet)} ${FRENCH_ASPECTS[aspect.name] ?? aspect.name} ${say(other)} ${ofName(name)}`
+        title: french
+          ? `Votre ${say(planet)} ${FRENCH_ASPECTS.get(aspect.name) ?? aspect.name} ${say(other)} ${ofName(name)}`
           : `Your ${planet} ${aspect.name} ${possessive(name)} ${other}`,
         tone: aspect.tone,
       });
@@ -304,14 +317,15 @@ export const numberPair = (a: number, b: number): Pairing => {
 export const numbersMatch = (
   mine: Numbers,
   theirs: Numbers,
-  name: string
+  name: string,
+  french = inFrench()
 ): Match => {
   const life = numberPair(mine.lifePath, theirs.lifePath);
 
   const reasons: Reason[] = [
     {
       text: say(life.text),
-      title: inFrench()
+      title: french
         ? `Chemin de vie ${mine.lifePath} et ${theirs.lifePath} ${ofName(name)}`
         : `Life path ${mine.lifePath} and ${possessive(name)} ${theirs.lifePath}`,
       tone: life.tone,
@@ -334,9 +348,7 @@ export const numbersMatch = (
       weight += 1;
       reasons.push({
         text: say(pair.text),
-        title: inFrench()
-          ? `${say(label)} ${a} et ${b}`
-          : `${label} ${a} and ${b}`,
+        title: french ? `${say(label)} ${a} et ${b}` : `${label} ${a} and ${b}`,
         tone: pair.tone,
       });
     }
@@ -368,7 +380,11 @@ const CHECKS: Readonly<Record<ZodiacElement, ZodiacElement>> = {
 };
 
 /** Two Lunar zodiac years: the animals first, then their elements. */
-export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
+export const lunarMatch = (
+  mine: LunarYear,
+  theirs: LunarYear,
+  french = inFrench()
+): Match => {
   const a = mine.animal;
   const b = theirs.animal;
   const sum = mod(ANIMALS.indexOf(a) + ANIMALS.indexOf(b), 12);
@@ -415,7 +431,7 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
   const reasons: Reason[] = [
     {
       text: say(animal.text),
-      title: inFrench()
+      title: french
         ? `${a.emoji} ${say(a.name)} et ${b.emoji} ${say(b.name)}`
         : `${a.emoji} ${a.name} and ${b.emoji} ${b.name}`,
       tone: animal.tone,
@@ -427,12 +443,12 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
   const two = theirs.element;
   const frOne = say(one);
   const frTwo = say(two);
-  const both = inFrench() ? `${frOne} et ${frTwo}` : `${one} and ${two}`;
+  const both = french ? `${frOne} et ${frTwo}` : `${one} and ${two}`;
 
   if (one === two) {
     score += 4;
     reasons.push({
-      text: inFrench()
+      text: french
         ? `Vous êtes tous deux ${frOne} : stables, quoique semblables.`
         : `You are both ${one}: steady, if alike.`,
       title: both,
@@ -441,7 +457,7 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
   } else if (FEEDS[one] === two || FEEDS[two] === one) {
     score += 8;
     reasons.push({
-      text: inFrench()
+      text: french
         ? `${frOne} et ${frTwo} se nourrissent : un flux naturel entre vous.`
         : `${one} and ${two} feed each other: a natural flow between you.`,
       title: both,
@@ -450,7 +466,7 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
   } else if (CHECKS[one] === two || CHECKS[two] === one) {
     score -= 8;
     reasons.push({
-      text: inFrench()
+      text: french
         ? `${frOne} et ${frTwo} se tiennent en respect : respectez la manière de l’autre.`
         : `${one} and ${two} keep each other in check: respect the other's way.`,
       title: both,
