@@ -63,6 +63,7 @@ export const foundPageOf = (recipe: Recipe, brewers: Brewers): FoundPage => ({
   last: brewers.last,
   name: recipe.name,
   note: recipe.note,
+  noteFr: recipe.noteFr,
   others: brewers.count - 1,
   source: recipe.source,
   state: "found",
@@ -87,6 +88,7 @@ export const soloFoundPageOf = (
   ingredients: shelvedPartsOf(recipe).map(labelOf),
   name: recipe.name,
   note: recipe.note,
+  noteFr: recipe.noteFr,
   source: recipe.source,
   state: "found",
 });

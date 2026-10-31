@@ -31,6 +31,8 @@ const foundPage = z.object({
   last: z.nullable(brewOf),
   name: z.string(),
   note: z.string(),
+  /** The same note in French. */
+  noteFr: z.string(),
   /** How many others have brewed it since. */
   others: z.int(),
   source: z.string(),
@@ -111,6 +113,8 @@ const soloFoundPage = z.object({
   ingredients: z.array(z.string()),
   name: z.string(),
   note: z.string(),
+  /** The same note in French. */
+  noteFr: z.string(),
   source: z.string(),
   state: z.literal("found"),
 });

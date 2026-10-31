@@ -60,6 +60,20 @@ const FRENCH = new Map([
   ["You are not in a game.", "Vous n’êtes pas dans une partie."],
   ["It is not your turn.", "Ce n’est pas votre tour."],
   ["That square cannot be played.", "Cette case ne peut pas être jouée."],
+  // The cauldron's own, when the server didn't say
+  ["The brew didn't go through.", "La préparation n’est pas passée."],
+  [
+    "The cauldron's answer made no sense.",
+    "La réponse du chaudron n’avait aucun sens.",
+  ],
+  [
+    "The cauldron can't be reached right now.",
+    "Le chaudron est injoignable pour le moment.",
+  ],
+  [
+    "Your grimoire could not be started over. Try again.",
+    "Votre grimoire n’a pas pu être recommencé. Réessayez.",
+  ],
   // The board's own, when the server didn't say
   ["The note didn't go up.", "La note n’a pas été collée."],
   [
