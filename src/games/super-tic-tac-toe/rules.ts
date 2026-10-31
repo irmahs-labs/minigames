@@ -1,3 +1,5 @@
+import type { Language } from "../../lib/language";
+
 /**
  * Super Tic-Tac-Toe: nine games of tic-tac-toe, one on each planet, laid out
  * as a tic-tac-toe board of their own. Three in a row on a planet conquers it;
@@ -20,9 +22,21 @@ export const PLAYERS: Record<Player, { name: string; emoji: string }> = {
   purple: { emoji: "🔮", name: "Purple" },
 };
 
+/** Each player's name in French: the emoji stays. */
+const FRENCH_PLAYERS: Record<Player, string> = {
+  pink: "Rose",
+  purple: "Violet",
+};
+
+/** A player's name in a language: "Pink", or "Rose" in French. */
+export const playerName = (player: Player, language: Language = "en") =>
+  language === "fr" ? FRENCH_PLAYERS[player] : PLAYERS[player].name;
+
 /** A player as the game names them: "Pink 🌸". */
-export const playerLabel = (player: Player): string =>
-  `${PLAYERS[player].name} ${PLAYERS[player].emoji}`;
+export const playerLabel = (
+  player: Player,
+  language: Language = "en"
+): string => `${playerName(player, language)} ${PLAYERS[player].emoji}`;
 
 export const FIRST: Player = "pink";
 
@@ -178,40 +192,82 @@ export const tally = (game: Game): Record<Player, number> => ({
   purple: game.conquered.filter((owner) => owner === "purple").length,
 });
 
-const planetName = (board: number) => PLANETS[board]?.name ?? "";
+/** The planets' names in French, in board order. */
+const FRENCH_PLANETS = [
+  "Mercure",
+  "Vénus",
+  "Mars",
+  "Jupiter",
+  "Soleil et Lune",
+  "Saturne",
+  "Neptune",
+  "Uranus",
+  "Pluton",
+] as const;
+
+/** A planet's name, by its place on the board, in a language. */
+export const planetName = (board: number, language: Language = "en") =>
+  (language === "fr" ? FRENCH_PLANETS[board] : PLANETS[board]?.name) ?? "";
+
+const DESCRIBE = {
+  en: {
+    any: (player: string) => `${player} starts, on any planet.`,
+    elsewhere: (planet: string, conquered: boolean, player: string) =>
+      `${planet} ${conquered ? "has been conquered" : "is full"}, so ${player} may visit any planet.`,
+    full: "Every planet is conquered or full, with no three in a row.",
+    playsOn: (player: string, planet: string) =>
+      `${player} plays on ${planet}.`,
+    wins: (player: string, planet: string) => `${player} wins ${planet}! `,
+    won: (player: string) => `${player} conquered three planets in a row.`,
+  },
+  fr: {
+    any: (player: string) =>
+      `${player} commence, sur n’importe quelle planète.`,
+    elsewhere: (planet: string, conquered: boolean, player: string) =>
+      `${planet} ${conquered ? "a été conquise" : "est pleine"}, donc ${player} peut aller sur n’importe quelle planète.`,
+    full: "Toutes les planètes sont conquises ou pleines, sans trois alignées.",
+    playsOn: (player: string, planet: string) =>
+      `${player} joue sur ${planet}.`,
+    wins: (player: string, planet: string) => `${player} remporte ${planet} ! `,
+    won: (player: string) => `${player} a conquis trois planètes alignées.`,
+  },
+};
 
 /**
  * What the last move did and where the next one goes, in a line or two:
  * the old game's toasts ("Pink 🌸 wins Mercury", "Mars has been conquered!
  * Visit another planet!") as one running note.
  */
-export const describe = (game: Game): string => {
+export const describe = (game: Game, language: Language = "en"): string => {
   const { last, turn } = game;
+  const words = DESCRIBE[language];
+  const label = (player: Player) => playerLabel(player, language);
 
   if (game.winner) {
-    return `${playerLabel(game.winner)} conquered three planets in a row.`;
+    return words.won(label(game.winner));
   }
 
   if (game.over) {
-    return "Every planet is conquered or full, with no three in a row.";
+    return words.full;
   }
 
   if (!last) {
-    return `${playerLabel(turn)} starts, on any planet.`;
+    return words.any(label(turn));
   }
 
   const won = game.conquered[last.board];
 
   const conquest = won
-    ? `${playerLabel(won)} wins ${planetName(last.board)}! `
+    ? words.wins(label(won), planetName(last.board, language))
     : "";
 
   if (game.forced !== null) {
-    return `${conquest}${playerLabel(turn)} plays on ${planetName(game.forced)}.`;
+    return `${conquest}${words.playsOn(label(turn), planetName(game.forced, language))}`;
   }
 
-  const target = planetName(last.cell);
-  const why = game.conquered[last.cell] ? "has been conquered" : "is full";
-
-  return `${conquest}${target} ${why}, so ${playerLabel(turn)} may visit any planet.`;
+  return `${conquest}${words.elsewhere(
+    planetName(last.cell, language),
+    Boolean(game.conquered[last.cell]),
+    label(turn)
+  )}`;
 };

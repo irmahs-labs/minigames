@@ -1,7 +1,43 @@
 import { useEffect, useState } from "react";
 import * as z from "zod/mini";
 
+import { useCopy } from "../../lib/language";
 import { POINTS } from "./scoring";
+
+const COPY = {
+  en: {
+    defeat: `Defeat: −${POINTS.defeat}, and nothing you placed counts. Letting the five-minute clock run out on your turn is a defeat.`,
+    draw: "Draw: your squares and planets, with no bonus.",
+    floor: "Nobody drops below 0.",
+    how: "How points work",
+    loading: "Loading…",
+    none: "No online games yet. Win the first one to top the board.",
+    player: "Player",
+    points: "Points",
+    record: "W · L · D",
+    recordTitle: "Wins, losses, draws",
+    title: "Leaderboard",
+    unavailable: "The leaderboard is not available right now.",
+    win: `Win: ${POINTS.square} for each square you placed, ${POINTS.planet} for each planet you claimed, and ${POINTS.victory} for the victory.`,
+    you: " (you)",
+  },
+  fr: {
+    defeat: `Défaite : −${POINTS.defeat}, et rien de ce que vous avez posé ne compte. Laisser filer le chrono de cinq minutes à votre tour, c’est perdre.`,
+    draw: "Égalité : vos cases et vos planètes, sans bonus.",
+    floor: "Personne ne descend sous 0.",
+    how: "Comment marchent les points",
+    loading: "Chargement…",
+    none: "Pas encore de partie en ligne. Gagnez la première pour prendre la tête.",
+    player: "Joueur",
+    points: "Points",
+    record: "V · D · N",
+    recordTitle: "Victoires, défaites, nuls",
+    title: "Classement",
+    unavailable: "Le classement n’est pas disponible pour le moment.",
+    win: `Victoire : ${POINTS.square} par case posée, ${POINTS.planet} par planète conquise, et ${POINTS.victory} pour la victoire.`,
+    you: " (vous)",
+  },
+};
 
 const standing = z.object({
   draws: z.int(),
@@ -39,12 +75,12 @@ const fetchBoard = async (): Promise<Board | null> => {
   }
 };
 
-const Row = ({ row }: { row: Standing }) => (
+const Row = ({ row, you }: { row: Standing; you: string }) => (
   <tr className={row.you ? "board__you" : undefined}>
     <td className="board__rank">{row.rank}</td>
     <th scope="row">
       {row.name}
-      {row.you ? " (you)" : ""}
+      {row.you ? you : ""}
     </th>
     <td className="board__points">{row.points}</td>
     <td className="board__record">
@@ -60,6 +96,7 @@ const Row = ({ row }: { row: Standing }) => (
 export const Leaderboard = () => {
   // undefined while loading, null when it cannot be had.
   const [board, setBoard] = useState<Board | null | undefined>();
+  const t = useCopy(COPY);
 
   useEffect(() => {
     let current = true;
@@ -83,17 +120,13 @@ export const Leaderboard = () => {
     <section aria-labelledby="board-title" className="panel panel--board">
       <span className="legend">leaderboard.csv</span>
       <h2 id="board-title" className="display turn">
-        Leaderboard
+        {t.title}
       </h2>
 
-      {board === undefined ? <p className="hint">Loading…</p> : null}
-      {board === null ? (
-        <p className="hint">The leaderboard is not available right now.</p>
-      ) : null}
+      {board === undefined ? <p className="hint">{t.loading}</p> : null}
+      {board === null ? <p className="hint">{t.unavailable}</p> : null}
       {board && board.top.length === 0 ? (
-        <p className="turn__note">
-          No online games yet. Win the first one to top the board.
-        </p>
+        <p className="turn__note">{t.none}</p>
       ) : null}
 
       {board && board.top.length > 0 ? (
@@ -101,39 +134,37 @@ export const Leaderboard = () => {
           <thead>
             <tr>
               <th scope="col">#</th>
-              <th scope="col">Player</th>
-              <th scope="col">Points</th>
+              <th scope="col">{t.player}</th>
+              <th scope="col">{t.points}</th>
               <th scope="col">
-                <abbr title="Wins, losses, draws">W · L · D</abbr>
+                <abbr title={t.recordTitle}>{t.record}</abbr>
               </th>
             </tr>
           </thead>
           <tbody>
             {board.top.map((row) => (
-              <Row key={`${row.rank}-${row.name}-${row.points}`} row={row} />
+              <Row
+                key={`${row.rank}-${row.name}-${row.points}`}
+                row={row}
+                you={t.you}
+              />
             ))}
           </tbody>
           {board.you ? (
             <tbody className="board__below">
-              <Row row={board.you} />
+              <Row row={board.you} you={t.you} />
             </tbody>
           ) : null}
         </table>
       ) : null}
 
       <div className="stack">
-        <h3 className="field-label">How points work</h3>
+        <h3 className="field-label">{t.how}</h3>
         <ul className="how-to">
-          <li>
-            Win: {POINTS.square} for each square you placed, {POINTS.planet} for
-            each planet you claimed, and {POINTS.victory} for the victory.
-          </li>
-          <li>Draw: your squares and planets, with no bonus.</li>
-          <li>
-            Defeat: −{POINTS.defeat}, and nothing you placed counts. Letting the
-            five-minute clock run out on your turn is a defeat.
-          </li>
-          <li>Nobody drops below 0.</li>
+          <li>{t.win}</li>
+          <li>{t.draw}</li>
+          <li>{t.defeat}</li>
+          <li>{t.floor}</li>
         </ul>
       </div>
     </section>

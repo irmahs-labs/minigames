@@ -3,8 +3,9 @@ import * as z from "zod/mini";
 // as a Promise.
 import { catch as withFallback } from "zod/mini";
 
+import { currentLanguage } from "../../lib/language";
 import { readStored, writeStored } from "../../lib/storage";
-import { STARTERS, STARTER_IDS } from "./starters";
+import { STARTERS, STARTER_IDS, starterFor } from "./starters";
 
 export const STORAGE_KEY = "minigames:wheel-of-fortune:v1";
 
@@ -43,8 +44,8 @@ export type Wheel = z.infer<typeof wheelSchema>;
 const starterWheels = (): Wheel[] =>
   STARTER_IDS.map((starter) => ({
     id: crypto.randomUUID(),
-    name: STARTERS[starter].name,
-    slots: [...STARTERS[starter].slices],
+    name: starterFor(starter).name,
+    slots: [...starterFor(starter).slices],
     starter,
   }));
 
@@ -107,16 +108,17 @@ export const namedPositions = (slots: readonly string[]): number[] => {
   return positions;
 };
 
-/** "Wheel N" for the Nth tab, counting on if that name is taken. */
+/** "Wheel N" ("Roue N" in French) for the Nth tab, counting on if that name is taken. */
 const nextWheelName = (wheels: readonly Wheel[]): string => {
   const taken = new Set(wheels.map((wheel) => wheel.name));
+  const word = currentLanguage() === "fr" ? "Roue" : "Wheel";
   let n = wheels.length + 1;
 
-  while (taken.has(`Wheel ${n}`)) {
+  while (taken.has(`${word} ${n}`)) {
     n += 1;
   }
 
-  return `Wheel ${n}`;
+  return `${word} ${n}`;
 };
 
 export type WheelAction =
@@ -224,7 +226,7 @@ export const reducer = (state: WheelState, action: WheelAction): WheelState => {
       return editWheel(state, (wheel) => ({
         ...wheel,
         slots: wheel.starter
-          ? [...STARTERS[wheel.starter].slices]
+          ? [...starterFor(wheel.starter).slices]
           : blankSlots(),
       }));
     }
