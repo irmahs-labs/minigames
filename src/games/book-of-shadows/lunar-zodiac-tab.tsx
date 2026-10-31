@@ -1,5 +1,6 @@
 import { festivalsIn } from "./buddhist-calendar";
 import { LONG_DAY, formatDay } from "./format";
+import { inFrench, say, tr } from "./french";
 import {
   ANIMALS,
   ELEMENT_LORE,
@@ -24,7 +25,13 @@ import { dayKey, mod, parseClock } from "./time";
 
 /** The animals one gets on with, as a sentence: "Dragon 🐉, Monkey 🐒". */
 const listed = (animals: readonly Animal[]) =>
-  animals.map((animal) => `${animal.name} ${animal.emoji}`).join(", ");
+  animals.map((animal) => `${say(animal.name)} ${animal.emoji}`).join(", ");
+
+/** "the Dragon 🐉", or "le Dragon 🐉" (la Chèvre) in French. */
+const theAnimal = (animal: Animal) =>
+  inFrench()
+    ? `${animal.id === "goat" ? "la" : "le"} ${say(animal.name)} ${animal.emoji}`
+    : `the ${animal.name} ${animal.emoji}`;
 
 /** Khmer New Year's first day, Moha Songkran, in a year. */
 const songkranOf = (year: number): string | null =>
@@ -40,13 +47,19 @@ const traditionally = (day: string, year: number): string | null => {
   const newYear = lunarNewYear(year);
 
   if (day < newYear) {
-    return `By tradition the animal changes at the Lunar New Year (${formatDay(newYear, LONG_DAY)}), so before it you are the ${yearName(before)} ${before.animal.emoji}.`;
+    return tr(
+      `By tradition the animal changes at the Lunar New Year (${formatDay(newYear, LONG_DAY)}), so before it you are the ${yearName(before)} ${before.animal.emoji}.`,
+      `Par tradition, l’animal change au Nouvel an lunaire (${formatDay(newYear, LONG_DAY)}) : avant, vous êtes ${yearName(before)} ${before.animal.emoji}.`
+    );
   }
 
   const songkran = songkranOf(year);
 
   return songkran && day < songkran
-    ? `In Cambodia the animal changes at Khmer New Year (${formatDay(songkran, LONG_DAY)}), so there you are the ${before.animal.name} ${before.animal.emoji}.`
+    ? tr(
+        `In Cambodia the animal changes at Khmer New Year (${formatDay(songkran, LONG_DAY)}), so there you are the ${before.animal.name} ${before.animal.emoji}.`,
+        `Au Cambodge, l’animal change au Nouvel an khmer (${formatDay(songkran, LONG_DAY)}) : là-bas, vous êtes ${theAnimal(before.animal)}.`
+      )
     : null;
 };
 
@@ -65,8 +78,11 @@ const YourAnimal = ({
       <NeedsBirth
         onOpen={onOpenProfile}
         legend="your-animal.txt"
-        title="Your animal"
-        text="Your birth date on your profile tells which of the twelve is yours."
+        title={tr("Your animal", "Votre animal")}
+        text={tr(
+          "Your birth date on your profile tells which of the twelve is yours.",
+          "Votre date de naissance, dans votre profil, dit lequel des douze est le vôtre."
+        )}
         className="panel--wide"
       />
     );
@@ -90,48 +106,54 @@ const YourAnimal = ({
         </span>
         <div className="stack">
           <p className="kicker">
-            {year.polarity} {year.element} · {cycleName(year)}
+            {year.polarity} {say(year.element)} · {cycleName(year)}
           </p>
           <h2 id="animal-title" className="display page__title">
             {yearName(year)}
           </h2>
-          <p className="page__sub">{animal.keywords}</p>
+          <p className="page__sub">{say(animal.keywords)}</p>
         </div>
       </div>
-      <p className="witch-card__about">{animal.about}</p>
+      <p className="witch-card__about">{say(animal.about)}</p>
       <dl className="facts">
         <div>
-          <dt>Strengths</dt>
-          <dd>{animal.strengths}</dd>
+          <dt>{tr("Strengths", "Forces")}</dt>
+          <dd>{say(animal.strengths)}</dd>
         </div>
         <div>
-          <dt>Challenges</dt>
-          <dd>{animal.challenges}</dd>
+          <dt>{tr("Challenges", "Défis")}</dt>
+          <dd>{say(animal.challenges)}</dd>
         </div>
         <div>
-          <dt>{year.element}</dt>
+          <dt>{say(year.element)}</dt>
           <dd>
-            Makes your {animal.name} {ELEMENT_LORE[year.element]}.
+            {tr(
+              `Makes your ${animal.name} ${ELEMENT_LORE[year.element]}.`,
+              `Rend votre ${say(animal.name)} ${say(ELEMENT_LORE[year.element])}.`
+            )}
           </dd>
         </div>
         <div>
-          <dt>Best with</dt>
+          <dt>{tr("Best with", "Idéal avec")}</dt>
           <dd>
-            {listed(allies(animal))}, and your secret friend the{" "}
-            {secretFriend(animal).name} {secretFriend(animal).emoji}
+            {listed(allies(animal))}
+            {tr(", and your secret friend ", ", et votre ami secret, ")}
+            {theAnimal(secretFriend(animal))}
           </dd>
         </div>
         <div>
-          <dt>Clashes with</dt>
-          <dd>
-            the {clash(animal).name} {clash(animal).emoji}
-          </dd>
+          <dt>{tr("Clashes with", "S’oppose à")}</dt>
+          <dd>{theAnimal(clash(animal))}</dd>
         </div>
         {inner ? (
           <div>
-            <dt>Your inner animal</dt>
+            <dt>{tr("Your inner animal", "Votre animal intérieur")}</dt>
             <dd>
-              the {inner.name} {inner.emoji}, from your birth hour (
+              {theAnimal(inner)}
+              {tr(
+                ", from your birth hour (",
+                ", d’après votre heure de naissance ("
+              )}
               {hoursOf(inner)})
             </dd>
           </div>
@@ -157,24 +179,37 @@ const ThisYear = ({ year }: { year: LunarYear }) => {
       <span aria-hidden="true" className="lunar-you__emoji">
         {year.animal.emoji}
       </span>
-      <p className="kicker">This year · {cycleName(year)}</p>
+      <p className="kicker">
+        {tr("This year", "Cette année")} · {cycleName(year)}
+      </p>
       <h2 id="this-year-title" className="display page__title">
-        Year of the {yearName(year)}
+        {tr(
+          `Year of the ${yearName(year)}`,
+          `Année ${year.animal.id === "goat" ? "de la" : "du"} ${yearName(year)}`
+        )}
       </h2>
       <p className="page__sub">
-        From 1 January to 31 December {year.year}. By tradition it begins at the
-        Lunar New Year, {formatDay(newYear, LONG_DAY)}
+        {tr(
+          `From 1 January to 31 December ${year.year}. By tradition it begins at the Lunar New Year, ${formatDay(newYear, LONG_DAY)}`,
+          `Du 1er janvier au 31 décembre ${year.year}. Par tradition, elle commence au Nouvel an lunaire, le ${formatDay(newYear, LONG_DAY)}`
+        )}
         {songkran
-          ? `, and in Cambodia at Khmer New Year, ${formatDay(songkran, LONG_DAY)}`
+          ? tr(
+              `, and in Cambodia at Khmer New Year, ${formatDay(songkran, LONG_DAY)}`,
+              `, et au Cambodge au Nouvel an khmer, le ${formatDay(songkran, LONG_DAY)}`
+            )
           : ""}
         .
       </p>
       <p>
-        A {year.element} year is {ELEMENT_LORE[year.element]}; the{" "}
-        {year.animal.name} brings {year.animal.keywords}.
+        {tr(
+          `A ${year.element} year is ${ELEMENT_LORE[year.element]}; the ${year.animal.name} brings ${year.animal.keywords}.`,
+          `Une année de ${say(year.element)} est ${say(ELEMENT_LORE[year.element])} ; ${theAnimal(year.animal)} apporte ${say(year.animal.keywords)}.`
+        )}
       </p>
       <p className="hint">
-        Next: the {yearName(next)} {next.animal.emoji}.
+        {tr("Next: the ", "Ensuite : ")}
+        {yearName(next)} {next.animal.emoji}.
       </p>
     </section>
   );
@@ -191,7 +226,7 @@ const TwelveAnimals = ({
   <section aria-labelledby="twelve-title" className="panel panel--book">
     <span className="legend">twelve-animals.csv</span>
     <h2 id="twelve-title" className="display book__title">
-      The twelve animals
+      {tr("The twelve animals", "Les douze animaux")}
     </h2>
     <ol className="animals">
       {ANIMALS.map((animal) => (
@@ -203,27 +238,32 @@ const TwelveAnimals = ({
             {animal.emoji}
           </span>
           <h3 className="display animal__name">
-            {animal.name} <span className="animal__hanzi">{animal.hanzi}</span>
+            {say(animal.name)}{" "}
+            <span className="animal__hanzi">{animal.hanzi}</span>
           </h3>
           <p className="animal__keywords">
             {animal.branch.hanzi} {animal.branch.pinyin} · Khmer {animal.khmer}
           </p>
-          <p className="animal__keywords">{animal.keywords}</p>
+          <p className="animal__keywords">{say(animal.keywords)}</p>
           <p className="animal__years">
             {yearsOf(animal, current.year).join(", ")}
           </p>
-          {animal === yours ? <span className="badge">yours</span> : null}
+          {animal === yours ? (
+            <span className="badge">{tr("yours", "le vôtre")}</span>
+          ) : null}
           {animal === current.animal ? (
-            <span className="badge badge--retro">this year</span>
+            <span className="badge badge--retro">
+              {tr("this year", "cette année")}
+            </span>
           ) : null}
         </li>
       ))}
     </ol>
     <p className="hint">
-      Here each animal’s year runs from 1 January. By tradition it begins at the
-      Lunar New Year, between 21 January and 20 February, and in Cambodia at
-      Khmer New Year in mid-April. In Vietnam the Rabbit is the Cat and the Ox
-      the Buffalo; in Japan the Pig is the Boar.
+      {tr(
+        "Here each animal’s year runs from 1 January. By tradition it begins at the Lunar New Year, between 21 January and 20 February, and in Cambodia at Khmer New Year in mid-April. In Vietnam the Rabbit is the Cat and the Ox the Buffalo; in Japan the Pig is the Boar.",
+        "Ici, l’année de chaque animal court à partir du 1er janvier. Par tradition, elle commence au Nouvel an lunaire, entre le 21 janvier et le 20 février, et au Cambodge au Nouvel an khmer, mi-avril. Au Viêt Nam, le Lapin est le Chat et le Buffle le Buffle d’eau ; au Japon, le Cochon est le Sanglier."
+      )}
     </p>
   </section>
 );
@@ -235,8 +275,10 @@ const CycleRow = ({ label, year }: { label: string; year: LunarYear }) => (
       {label}, {cycleName(year)}
     </dt>
     <dd>
-      {year.stem.hanzi} {year.polarity} {year.element} and{" "}
-      {year.animal.branch.hanzi} the {year.animal.name}, year {year.cycle} of 60
+      {tr(
+        `${year.stem.hanzi} ${year.polarity} ${year.element} and ${year.animal.branch.hanzi} the ${year.animal.name}, year ${year.cycle} of 60`,
+        `${year.stem.hanzi} ${year.polarity} ${say(year.element)} et ${year.animal.branch.hanzi} ${theAnimal(year.animal).replace(/ \S+$/u, "")}, année ${year.cycle} sur 60`
+      )}
     </dd>
   </div>
 );
@@ -261,27 +303,32 @@ const HeavenlyStems = ({
     <span className="legend">heavenly-stems.csv</span>
     <p className="kicker">天干 tiāngān</p>
     <h2 id="stems-title" className="display book__title">
-      The Heavenly Stems
+      {tr("The Heavenly Stems", "Les Tiges célestes")}
     </h2>
     <p>
-      The roots of the calendar. Every year, month, day and hour takes one of
-      the ten stems, which gives its element, yang or yin, paired with one of
-      the twelve Earthly Branches, which gives its animal. Together they go
-      round in sixty.
+      {tr(
+        "The roots of the calendar. Every year, month, day and hour takes one of the ten stems, which gives its element, yang or yin, paired with one of the twelve Earthly Branches, which gives its animal. Together they go round in sixty.",
+        "Les racines du calendrier. Chaque année, mois, jour et heure prend l’une des dix tiges, qui donne son élément, yang ou yin, associée à l’une des douze Branches terrestres, qui donne son animal. Ensemble, elles font un cycle de soixante."
+      )}
     </p>
     <dl className="facts">
-      <CycleRow label="This year" year={current} />
-      {yours ? <CycleRow label="Your year" year={yours} /> : null}
+      <CycleRow label={tr("This year", "Cette année")} year={current} />
+      {yours ? (
+        <CycleRow label={tr("Your year", "Votre année")} year={yours} />
+      ) : null}
       {day ? (
         <div>
           <dt>
-            Your day master, {day.stem.hanzi}
+            {tr("Your day master", "Votre maître du jour")}, {day.stem.hanzi}
             {day.animal.branch.hanzi}
           </dt>
           <dd>
-            {day.stem.hanzi} {day.stem.polarity} {day.stem.element},{" "}
-            {day.stem.image}: the stem of the day you were born, who you are in
-            Four Pillars (八字) astrology
+            {day.stem.hanzi} {day.stem.polarity} {say(day.stem.element)},{" "}
+            {say(day.stem.image)}
+            {tr(
+              ": the stem of the day you were born, who you are in Four Pillars (八字) astrology",
+              " : la tige du jour de votre naissance, qui vous êtes dans l’astrologie des Quatre Piliers (八字)"
+            )}
           </dd>
         </div>
       ) : null}
@@ -290,9 +337,9 @@ const HeavenlyStems = ({
       {STEMS.map((stem, i) => {
         const badges = (
           [
-            [current.stem, "this year"],
-            [yours?.stem, "your year"],
-            [day?.stem, "your day"],
+            [current.stem, tr("this year", "cette année")],
+            [yours?.stem, tr("your year", "votre année")],
+            [day?.stem, tr("your day", "votre jour")],
           ] as const
         ).flatMap(([marked, label]) => (marked === stem ? [label] : []));
 
@@ -304,12 +351,16 @@ const HeavenlyStems = ({
             <span className="display stem__hanzi">{stem.hanzi}</span>
             <div className="stack">
               <h3 className="stem__name">
-                {stem.pinyin} · {stem.polarity} {stem.element}
+                {stem.pinyin} · {stem.polarity} {say(stem.element)}
               </h3>
               <p>
-                {stem.image}: {stem.keywords}
+                {say(stem.image)}
+                {tr(": ", " : ")}
+                {say(stem.keywords)}
               </p>
-              <p className="stem__years">years ending in {mod(i + 4, 10)}</p>
+              <p className="stem__years">
+                {tr("years ending in", "années finissant par")} {mod(i + 4, 10)}
+              </p>
               {badges.length > 0 ? (
                 <p className="stem__badges">
                   {badges.map((badge) => (
@@ -326,8 +377,10 @@ const HeavenlyStems = ({
     </ol>
     {yours ? (
       <p className="hint">
-        Your own pair comes back in {yours.year + 60}, your sixtieth year: a
-        whole cycle, and a big birthday across East Asia.
+        {tr(
+          `Your own pair comes back in ${yours.year + 60}, your sixtieth year: a whole cycle, and a big birthday across East Asia.`,
+          `Votre propre paire revient en ${yours.year + 60}, l’année de vos soixante ans : un cycle complet, et un grand anniversaire dans toute l’Asie de l’Est.`
+        )}
       </p>
     ) : null}
   </section>
