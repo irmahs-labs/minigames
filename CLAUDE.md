@@ -45,9 +45,13 @@ The server (`server/`, Hono on Node) serves the built site, `/api`, and `/ws`, t
 - The server is the referee: `server/lobby.ts` runs the queue, the rooms and their five-minute clocks in memory, and checks every move with the same `rules.ts` the browser uses. Scoring is `src/games/super-tic-tac-toe/scoring.ts`.
 - The schema is the dbmate migrations in `db/migrations/`. Every table is named after its game's slug in snake_case (`super_tic_tac_toe_players`, `booster_potion_brews`), or `hub_` for the hub's own (`hub_sticky_notes`), so the shared database says whose each table is. Never edit a migration that is already merged: add a new one with `npm run db:new -- <name>`, with a matching `-- migrate:down`.
 
+## Languages
+
+The site reads in English or French. The choice is `src/lib/language.ts`: kept in localStorage and in a `lang` cookie on `irmahs.dev` that every irmahs.dev app reads and writes, so one pick carries across the apps; the header's EN/FR pill (`src/components/language-toggle.tsx`) switches it. Every string a visitor sees has both versions, in a `COPY = { en, fr }` object beside the component that shows it (`useCopy(COPY)`), and a game's `name` and `blurb` in `GAMES` are `{ en, fr }`. The server's refusals stay English sentences and `src/lib/server-words.ts` gives each its French. Booster Potion's notes are `noteFr` beside `note` in the server-only recipes; its ingredients and clues are read back in French from `pantry-fr.ts`. The Book of Shadows' data stays in English, and `french.ts` (one file per topic in `french/`) gives each line its French through `say`; its own words use `tr(english, french)`.
+
 ## Adding a game
 
-1. Put it in its own folder, `src/games/<slug>/`, with a default-exported screen component.
+1. Put it in its own folder, `src/games/<slug>/`, with a default-exported screen component, its words in English and French.
 2. Add an entry to `GAMES` in `src/games.ts`. The hub lists it and `/<slug>` routes to it; it loads only when opened.
 3. Keep its rules (spinning, scoring, state changes) in plain functions next to it with Vitest tests, apart from the React code.
 

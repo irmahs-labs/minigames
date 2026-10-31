@@ -24,6 +24,9 @@ import { placementOf } from "./zodiac";
 
 type Sky = ReturnType<typeof workOutSky>;
 
+/** Ends with a full stop, unless the date already does: "12 déc.". */
+const sentence = (text: string) => (text.endsWith(".") ? text : `${text}.`);
+
 const workOutSky = (today: string) => {
   const moment = new Date(`${today}T12:00:00Z`);
 
@@ -187,7 +190,7 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
                     {tr("in", "en")}{" "}
                     {say(placementOf(period.start.longitude).sign.name)},{" "}
                     {tr("until", "jusqu’au")}{" "}
-                    {formatDay(dayKey(period.end.time, timeZone))}.{" "}
+                    {sentence(formatDay(dayKey(period.end.time, timeZone)))}{" "}
                     <span className="today__lore">
                       {loreFor(period).map(say).join(" ")}
                     </span>
