@@ -36,6 +36,7 @@ import {
   weekdayOf,
 } from "./time";
 import { placementOf } from "./zodiac";
+import { inFrench, say, tr } from "./french";
 
 interface MoonTabProps {
   now: Date;
@@ -43,7 +44,10 @@ interface MoonTabProps {
   southern: boolean;
 }
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = {
+  en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  fr: ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."],
+};
 
 /** "Sat 10 Oct". */
 const SHORT_WEEKDAY = {
@@ -58,7 +62,9 @@ const lunarMonthsOf = (all: readonly (LunarDate | null)[]): string => {
   const months = [...new Set(dates.map((date) => LUNAR_MONTHS[date.month]))];
   const eras = [...new Set(dates.map((date) => date.era))];
 
-  return `${months.join(" to ")}, Buddhist Era ${eras.join("–")}`;
+  return inFrench()
+    ? `${months.join(" à ")}, ère bouddhique ${eras.join("–")}`
+    : `${months.join(" to ")}, Buddhist Era ${eras.join("–")}`;
 };
 
 /** Tonight's Moon: its phase, its sign, and the next new and full moons. */
@@ -80,21 +86,23 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
       <span className="legend">tonight.log</span>
       <MoonGlyph angle={moon.angle} size={150} southern={southern} />
       <h2 id="tonight-title" className="display page__title">
-        {day.phase}
+        {say(day.phase)}
       </h2>
       <p className="tonight__stats">
-        {Math.round(moon.illumination * 100)}% lit · day{" "}
-        {Math.floor(moon.age) + 1} of 29.5 · in{" "}
+        {tr(
+          `${Math.round(moon.illumination * 100)}% lit · day ${Math.floor(moon.age) + 1} of 29.5 · in`,
+          `éclairée à ${Math.round(moon.illumination * 100)} % · jour ${Math.floor(moon.age) + 1} sur 29,5 · en`
+        )}{" "}
         <SignName longitude={moon.longitude} />
       </p>
-      <p className="tonight__lore">{PHASE_LORE[day.phase]}</p>
+      <p className="tonight__lore">{say(PHASE_LORE[day.phase])}</p>
 
       <dl className="facts">
         {nextFull ? (
           <div>
-            <dt>Next full moon</dt>
+            <dt>{tr("Next full moon", "Prochaine pleine lune")}</dt>
             <dd>
-              {fullMoonName(nextFull.time, timeZone)},{" "}
+              {say(fullMoonName(nextFull.time, timeZone))},{" "}
               {formatMoment(nextFull.time, timeZone)} (
               {inDays(daysBetween(today, dayKey(nextFull.time, timeZone)))})
             </dd>
@@ -102,7 +110,7 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
         ) : null}
         {nextNew ? (
           <div>
-            <dt>Next new moon</dt>
+            <dt>{tr("Next new moon", "Prochaine nouvelle lune")}</dt>
             <dd>
               {formatMoment(nextNew.time, timeZone)} (
               {inDays(daysBetween(today, dayKey(nextNew.time, timeZone)))})
@@ -111,16 +119,23 @@ const Tonight = ({ now, timeZone, southern }: MoonTabProps) => {
         ) : null}
         {lunar ? (
           <div>
-            <dt>Buddhist lunar date</dt>
+            <dt>{tr("Buddhist lunar date", "Date lunaire bouddhique")}</dt>
             <dd>
-              {lunarDateName(lunar)}, Buddhist Era {lunar.era}
-              {lunar.holy ? ": a holy day, Thngai Sel" : ""}
+              {lunarDateName(lunar)}, {tr("Buddhist Era", "ère bouddhique")}{" "}
+              {lunar.era}
+              {lunar.holy
+                ? tr(": a holy day, Thngai Sel", " : un jour saint, Thngai Sel")
+                : ""}
             </dd>
           </div>
         ) : null}
         <div>
-          <dt>Moon in {sign.name}</dt>
-          <dd>Feelings run {sign.keywords}.</dd>
+          <dt>
+            {tr("Moon in", "Lune en")} {say(sign.name)}
+          </dt>
+          <dd>
+            {tr("Feelings run", "Les émotions sont")} {say(sign.keywords)}.
+          </dd>
         </div>
       </dl>
     </section>
@@ -190,11 +205,15 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
       />
 
       <p className="lunar-months">
-        In the Buddhist lunar calendar: {lunarMonthsOf(lunar)}
+        {tr(
+          "In the Buddhist lunar calendar: ",
+          "Dans le calendrier lunaire bouddhique : "
+        )}
+        {lunarMonthsOf(lunar)}
       </p>
 
       <ol className="moon-cal">
-        {WEEKDAYS.map((weekday) => (
+        {WEEKDAYS[inFrench() ? "fr" : "en"].map((weekday) => (
           <li key={weekday} aria-hidden="true" className="moon-cal__weekday">
             {weekday}
           </li>
@@ -216,17 +235,22 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
               <span className="moon-cal__num">
                 {day.day}
                 {day.key === today ? (
-                  <span className="sr-only"> (today)</span>
+                  <span className="sr-only">
+                    {tr(" (today)", " (aujourd’hui)")}
+                  </span>
                 ) : null}
               </span>
               <MoonGlyph angle={day.angle} size={26} southern={southern} />
               <span className={day.exact ? "moon-cal__phase" : "sr-only"}>
-                {day.phase}
+                {say(day.phase)}
               </span>
               {festival ? (
-                <span className="moon-cal__festival" title={festival.name}>
+                <span
+                  className="moon-cal__festival"
+                  title={say(festival.name)}
+                >
                   <span aria-hidden="true">{festival.emoji}</span>
-                  <span className="sr-only">{festival.name}</span>
+                  <span className="sr-only">{say(festival.name)}</span>
                 </span>
               ) : null}
               {date ? (
@@ -244,7 +268,7 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
                   </span>
                   <span className="sr-only">
                     {lunarDateName(date)}
-                    {date.holy ? ", a holy day" : ""}
+                    {date.holy ? tr(", a holy day", ", un jour saint") : ""}
                   </span>
                 </span>
               ) : null}
@@ -259,9 +283,11 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
             <MoonGlyph angle={day.angle} size={20} southern={southern} />
             <span>
               <strong>
-                {day.phase === "Full Moon" && day.exact
-                  ? fullMoonName(day.exact, timeZone)
-                  : day.phase}
+                {say(
+                  day.phase === "Full Moon" && day.exact
+                    ? fullMoonName(day.exact, timeZone)
+                    : day.phase
+                )}
               </strong>{" "}
               {formatDay(day.key, SHORT_WEEKDAY)}
               {day.exact ? `, ${formatClock(day.exact, timeZone)}` : ""}
@@ -277,19 +303,20 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
                 {festival.emoji}
               </span>
               <span>
-                <strong>{festival.name}</strong>{" "}
+                <strong>{say(festival.name)}</strong>{" "}
                 {start === end
                   ? formatDay(start, SHORT_WEEKDAY)
-                  : `${formatDay(start, SHORT_WEEKDAY)} to ${formatDay(end, SHORT_WEEKDAY)}`}
+                  : `${formatDay(start, SHORT_WEEKDAY)} ${tr("to", "au")} ${formatDay(end, SHORT_WEEKDAY)}`}
               </span>
             </li>
           ))}
         </ul>
       ) : null}
       <p className="hint">
-        Times are in your time zone, {timeZone}. The small numbers are the days
-        of the Buddhist lunar month, as Cambodia counts them: up from the new
-        moon, then down from the full. ☸ marks the holy days, Thngai Sel.
+        {tr(
+          `Times are in your time zone, ${timeZone}. The small numbers are the days of the Buddhist lunar month, as Cambodia counts them: up from the new moon, then down from the full. ☸ marks the holy days, Thngai Sel.`,
+          `Les heures sont dans votre fuseau horaire, ${timeZone}. Les petits nombres sont les jours du mois lunaire bouddhique, comptés comme au Cambodge : en montant depuis la nouvelle lune, puis en descendant depuis la pleine. ☸ marque les jours saints, Thngai Sel.`
+        )}
       </p>
     </section>
   );
