@@ -1,0 +1,23 @@
+/** eight-ball.ts in French: each English line, and its French. */
+export const EIGHT_BALL: readonly (readonly [string, string])[] = [
+  ["It is certain", "C’est certain"],
+  ["It is decidedly so", "C’est décidément ainsi"],
+  ["Without a doubt", "Sans aucun doute"],
+  ["Yes, definitely", "Oui, absolument"],
+  ["You may rely on it", "Vous pouvez compter dessus"],
+  ["As I see it, yes", "D’après moi, oui"],
+  ["Most likely", "Très probablement"],
+  ["Outlook good", "C’est bien parti"],
+  ["Yes", "Oui"],
+  ["Signs point to yes", "Les signes disent oui"],
+  ["Reply hazy, try again", "Réponse floue, réessayez"],
+  ["Ask again later", "Redemandez plus tard"],
+  ["Better not tell you now", "Mieux vaut ne pas vous le dire maintenant"],
+  ["Cannot predict now", "Impossible de prédire maintenant"],
+  ["Concentrate and ask again", "Concentrez-vous et redemandez"],
+  ["Don't count on it", "N’y comptez pas"],
+  ["My reply is no", "Ma réponse est non"],
+  ["My sources say no", "Mes sources disent non"],
+  ["Outlook not so good", "Ce n’est pas bien parti"],
+  ["Very doubtful", "Très douteux"],
+];
