@@ -1,3 +1,4 @@
+import { say, tr } from "./french";
 import { HOUSE_MEANINGS, houseOf, longitudeIn } from "./profile";
 import type { Chart } from "./profile";
 import { SignName } from "./sign-name";
@@ -12,6 +13,21 @@ import {
   placementOf,
 } from "./zodiac";
 import type { Modality } from "./zodiac";
+
+/** A sign's element and modality in French, for the lines built from parts. */
+const FRENCH_ELEMENTS = new Map(
+  Object.entries({ air: "air", earth: "terre", fire: "feu", water: "eau" })
+);
+
+const MODALITIES_FR = new Map(
+  Object.entries({ cardinal: "Cardinal", fixed: "Fixe", mutable: "Mutable" })
+);
+
+const modalityName = (modality: Modality) =>
+  tr(
+    `${modality[0]?.toUpperCase()}${modality.slice(1)}`,
+    MODALITIES_FR.get(modality) ?? modality
+  );
 
 /** The least gap kept between two planets' glyphs on the wheel, in degrees. */
 const SPREAD = 9;
@@ -63,7 +79,10 @@ const ChartWheel = ({ chart }: { chart: Chart }) => {
       aria-labelledby="chart-wheel-title"
     >
       <title id="chart-wheel-title">
-        A wheel of the birth chart; the table beside it lists every placement.
+        {tr(
+          "A wheel of the birth chart; the table beside it lists every placement.",
+          "Une roue du thème astral ; le tableau à côté liste chaque position."
+        )}
       </title>
       <circle
         r="172"
@@ -217,9 +236,11 @@ const Placements = ({ chart }: { chart: Chart }) => {
       <table className="board board--compact">
         <thead>
           <tr>
-            <th scope="col">Planet</th>
-            <th scope="col">Sign</th>
-            {ascendant === undefined ? null : <th scope="col">House</th>}
+            <th scope="col">{tr("Planet", "Planète")}</th>
+            <th scope="col">{tr("Sign", "Signe")}</th>
+            {ascendant === undefined ? null : (
+              <th scope="col">{tr("House", "Maison")}</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -227,26 +248,31 @@ const Placements = ({ chart }: { chart: Chart }) => {
             const { degree } = placementOf(longitude);
 
             return (
-              <tr key={planet} title={`${planet}: ${PLANET_MEANINGS[planet]}`}>
+              <tr
+                key={planet}
+                title={`${say(planet)}${tr(": ", " : ")}${say(PLANET_MEANINGS[planet])}`}
+              >
                 <th scope="row">
                   <span aria-hidden="true" className="glyph">
                     {PLANET_GLYPHS[planet]}
                   </span>{" "}
-                  {planet}
+                  {say(planet)}
                 </th>
                 <td>
                   <SignName longitude={longitude} />{" "}
                   <span className="board__record">{formatDegree(degree)}</span>
                   {retrograde ? (
                     <span className="badge badge--retro">
-                      <abbr title="retrograde">℞</abbr>
+                      <abbr title={tr("retrograde", "rétrograde")}>℞</abbr>
                     </span>
                   ) : null}
                 </td>
                 {ascendant === undefined ? null : (
                   <td
                     className="board__rank"
-                    title={HOUSE_MEANINGS[houseOf(longitude, ascendant) - 1]}
+                    title={say(
+                      HOUSE_MEANINGS[houseOf(longitude, ascendant) - 1] ?? ""
+                    )}
                   >
                     {houseOf(longitude, ascendant)}
                   </td>
@@ -257,9 +283,9 @@ const Placements = ({ chart }: { chart: Chart }) => {
           {chart.angles ? (
             <>
               <tr>
-                <th scope="row">Ascendant</th>
+                <th scope="row">{tr("Ascendant", "Ascendant")}</th>
                 <td>
-                  {placementOf(chart.angles.ascendant).sign.name}{" "}
+                  {say(placementOf(chart.angles.ascendant).sign.name)}{" "}
                   <span className="board__record">
                     {formatDegree(placementOf(chart.angles.ascendant).degree)}
                   </span>
@@ -267,9 +293,9 @@ const Placements = ({ chart }: { chart: Chart }) => {
                 <td className="board__rank">1</td>
               </tr>
               <tr>
-                <th scope="row">Midheaven</th>
+                <th scope="row">{tr("Midheaven", "Milieu du ciel")}</th>
                 <td>
-                  {placementOf(chart.angles.midheaven).sign.name}{" "}
+                  {say(placementOf(chart.angles.midheaven).sign.name)}{" "}
                   <span className="board__record">
                     {formatDegree(placementOf(chart.angles.midheaven).degree)}
                   </span>
@@ -284,12 +310,13 @@ const Placements = ({ chart }: { chart: Chart }) => {
       </table>
       <p className="tally">
         {ELEMENTS.map(
-          (element) => `${ELEMENT_NAMES[element]} ${elements.get(element) ?? 0}`
+          (element) =>
+            `${say(ELEMENT_NAMES[element])} ${elements.get(element) ?? 0}`
         ).join(" · ")}
         <br />
         {MODALITIES.map(
           (modality) =>
-            `${modality[0]?.toUpperCase()}${modality.slice(1)} ${modalities.get(modality) ?? 0}`
+            `${modalityName(modality)} ${modalities.get(modality) ?? 0}`
         ).join(" · ")}
       </p>
     </>
@@ -309,25 +336,30 @@ const BigThree = ({ chart }: { chart: Chart }) => {
     <dl className="facts facts--wide">
       <div>
         <dt>
-          {PLANET_GLYPHS.Sun} Sun in {sun.name}
+          {PLANET_GLYPHS.Sun} {tr("Sun in", "Soleil en")} {say(sun.name)}
         </dt>
         <dd>
-          {sun.sun}{" "}
+          {say(sun.sun)}{" "}
           <span className="facts__aside">
-            ({sun.keywords}; {sun.element}, ruled by {sun.ruler})
+            {tr(
+              `(${sun.keywords}; ${sun.element}, ruled by ${sun.ruler})`,
+              `(${say(sun.keywords)} ; ${FRENCH_ELEMENTS.get(sun.element) ?? sun.element}, gouverné par ${say(sun.ruler)})`
+            )}
           </span>
         </dd>
       </div>
       <div>
         <dt>
-          {PLANET_GLYPHS.Moon} Moon in {moon.name}
+          {PLANET_GLYPHS.Moon} {tr("Moon in", "Lune en")} {say(moon.name)}
         </dt>
-        <dd>{moon.moon}</dd>
+        <dd>{say(moon.moon)}</dd>
       </div>
       {rising ? (
         <div>
-          <dt>↑ {rising.name} rising</dt>
-          <dd>{rising.rising}</dd>
+          <dt>
+            ↑ {tr(`${rising.name} rising`, `Ascendant ${say(rising.name)}`)}
+          </dt>
+          <dd>{say(rising.rising)}</dd>
         </div>
       ) : null}
     </dl>
@@ -342,18 +374,23 @@ export const ChartTab = ({ chart }: { chart: Chart }) => (
     >
       <span className="legend">birth-chart.svg</span>
       <h2 id="chart-title" className="display book__title">
-        Your birth chart
+        {tr("Your birth chart", "Votre thème astral")}
       </h2>
       <ChartWheel chart={chart} />
       <BigThree chart={chart} />
       {chart.angles ? (
         <p className="hint">
-          Houses are whole signs: your rising sign is the 1st house, the next
-          sign the 2nd, and so on. Hover a house for what it rules.
+          {tr(
+            "Houses are whole signs: your rising sign is the 1st house, the next sign the 2nd, and so on. Hover a house for what it rules.",
+            "Les maisons sont des signes entiers : votre signe ascendant est la 1re maison, le signe suivant la 2e, et ainsi de suite. Survolez une maison pour voir ce qu’elle gouverne."
+          )}
         </p>
       ) : (
         <p className="hint">
-          Add a birth time and a birthplace for your rising sign and houses.
+          {tr(
+            "Add a birth time and a birthplace for your rising sign and houses.",
+            "Ajoutez une heure et un lieu de naissance pour votre ascendant et vos maisons."
+          )}
         </p>
       )}
     </section>
@@ -363,7 +400,7 @@ export const ChartTab = ({ chart }: { chart: Chart }) => (
     >
       <span className="legend">placements.csv</span>
       <h2 id="placements-title" className="display book__title">
-        Placements
+        {tr("Placements", "Positions")}
       </h2>
       <Placements chart={chart} />
     </section>
