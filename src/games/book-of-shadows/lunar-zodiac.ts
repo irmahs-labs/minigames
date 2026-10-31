@@ -1,5 +1,6 @@
 import { SearchMoonPhase, SearchSunLongitude, Seasons } from "astronomy-engine";
 
+import { inFrench, say } from "./french";
 import { DAY, dayKey, mod, pad } from "./time";
 
 /**
@@ -345,7 +346,9 @@ export const lunarYear = (year: number): LunarYear => {
 
 /** "Metal Horse": a year's element and animal together. */
 export const yearName = (year: LunarYear): string =>
-  `${year.element} ${year.animal.name}`;
+  inFrench()
+    ? `${say(year.animal.name)} de ${say(year.element)}`
+    : `${year.element} ${year.animal.name}`;
 
 /** "丙午 bǐngwǔ": a year's stem and branch, its name in the sixty-year cycle. */
 export const cycleName = ({ stem, animal }: LunarYear): string =>

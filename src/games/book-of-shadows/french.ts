@@ -40,3 +40,11 @@ export const say = (text: string): string =>
 
 /** Whether the page is in French, for the few lines built from parts. */
 export const inFrench = () => currentLanguage() === "fr";
+
+/** One of the page's own words, given in both languages where it is used. */
+export const tr = (english: string, french: string): string =>
+  inFrench() ? french : english;
+
+/** A pair of words, English then French, in the page's language. */
+export const pick = ([english, french]: readonly [string, string]): string =>
+  tr(english, french);

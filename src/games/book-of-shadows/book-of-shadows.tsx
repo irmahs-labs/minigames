@@ -5,11 +5,13 @@ import { BookOfShadowsIcon } from "../../components/app-icons";
 import { Header } from "../../components/header";
 import type { GameProps } from "../../games";
 import { Icon } from "../../lib/icon";
+import { useLanguage } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { ChartTab } from "./chart-tab";
 import { chartMatch, lunarMatch, numbersMatch } from "./compat";
 import { MatchPanel, MatchSummary, NoMatch, firstNameOf } from "./compat-panel";
 import { EightBallTab } from "./eight-ball-tab";
+import { tr } from "./french";
 import { lunarYearOf } from "./lunar-zodiac";
 import { LunarZodiacTab } from "./lunar-zodiac-tab";
 import { MoonTab } from "./moon-tab";
@@ -32,17 +34,30 @@ import { TarotTab } from "./tarot-tab";
 import { localTimeZone, wallTimeAt } from "./time";
 import { DailyCard, TodayPanel } from "./today-panel";
 
-const TAB_NAMES: Record<Tab, string> = {
-  chart: "Birth chart",
-  "eight-ball": "Magic 8 Ball",
-  "lunar-zodiac": "Lunar Zodiac",
-  moon: "Moon",
-  numbers: "Numerology",
-  profile: "Profile",
-  sabbats: "Sabbats",
-  sky: "Sky",
-  tarot: "Tarot",
-};
+const TAB_NAMES = {
+  en: {
+    chart: "Birth chart",
+    "eight-ball": "Magic 8 Ball",
+    "lunar-zodiac": "Lunar Zodiac",
+    moon: "Moon",
+    numbers: "Numerology",
+    profile: "Profile",
+    sabbats: "Sabbats",
+    sky: "Sky",
+    tarot: "Tarot",
+  },
+  fr: {
+    chart: "Thème astral",
+    "eight-ball": "Boule magique",
+    "lunar-zodiac": "Zodiaque lunaire",
+    moon: "Lune",
+    numbers: "Numérologie",
+    profile: "Profil",
+    sabbats: "Sabbats",
+    sky: "Ciel",
+    tarot: "Tarot",
+  },
+} satisfies Record<"en" | "fr", Record<Tab, string>>;
 
 /** How often "now" moves on. */
 const REFRESH_MS = 10 * 60_000;
@@ -50,19 +65,19 @@ const REFRESH_MS = 10 * 60_000;
 /** The pages that compare you with someone else, and how they name it. */
 const MATCHES = {
   chart: {
-    label: "Birth chart",
+    label: ["Birth chart", "Thème astral"],
     legend: "chart-match.csv",
-    title: "Your charts, side by side",
+    title: ["Your charts, side by side", "Vos thèmes, côte à côte"],
   },
   "lunar-zodiac": {
-    label: "Lunar Zodiac",
+    label: ["Lunar Zodiac", "Zodiaque lunaire"],
     legend: "animals-match.csv",
-    title: "Your animals together",
+    title: ["Your animals together", "Vos animaux ensemble"],
   },
   numbers: {
-    label: "Numerology",
+    label: ["Numerology", "Numérologie"],
     legend: "numbers-match.csv",
-    title: "Your numbers together",
+    title: ["Your numbers together", "Vos nombres ensemble"],
   },
 } as const;
 
@@ -72,6 +87,8 @@ const MATCH_TABS: readonly MatchTab[] = ["chart", "numbers", "lunar-zodiac"];
 
 const BookOfShadows = ({ name }: GameProps) => {
   const [state, setState] = useState<BookState>(loadState);
+  // Every line of the book reads the page's language as it renders.
+  const language = useLanguage();
   // Every "today" in the book is this moment, moved on now and then so a
   // book left open past midnight turns the page.
   const [now, setNow] = useState(() => new Date());
@@ -133,6 +150,7 @@ const BookOfShadows = ({ name }: GameProps) => {
     profile.name,
     partner.name,
     thisYear,
+    language,
   ]);
 
   const open = (next: Tab) =>
@@ -154,7 +172,7 @@ const BookOfShadows = ({ name }: GameProps) => {
       {matches ? (
         <MatchPanel
           legend={MATCHES[page].legend}
-          title={MATCHES[page].title}
+          title={tr(MATCHES[page].title[0], MATCHES[page].title[1])}
           match={matches[page]}
           name={theirName}
         />
@@ -232,7 +250,12 @@ const BookOfShadows = ({ name }: GameProps) => {
         return (
           <>
             <div className="layout">
-              <TodayPanel now={now} timeZone={timeZone} southern={southern} />
+              <TodayPanel
+                now={now}
+                timeZone={timeZone}
+                southern={southern}
+                language={language}
+              />
               <DailyCard
                 now={now}
                 pull={state.dailyCard}
@@ -259,7 +282,7 @@ const BookOfShadows = ({ name }: GameProps) => {
               rows={
                 matches &&
                 MATCH_TABS.map((entry) => ({
-                  label: MATCHES[entry].label,
+                  label: tr(MATCHES[entry].label[0], MATCHES[entry].label[1]),
                   match: matches[entry],
                   onOpen: () => open(entry),
                 }))
@@ -289,15 +312,21 @@ const BookOfShadows = ({ name }: GameProps) => {
       <Header icon={<BookOfShadowsIcon />} name={name} href="/book-of-shadows">
         <Link href="/" className="btn">
           <Icon name="back" size={16} />
-          all games
+          {tr("all games", "tous les jeux")}
         </Link>
       </Header>
       <main className="page">
         <p className="page__sub">
-          your moons, sabbats, stars, numbers and cards, in one book
+          {tr(
+            "your moons, sabbats, stars, numbers and cards, in one book",
+            "vos lunes, sabbats, étoiles, nombres et cartes, dans un seul livre"
+          )}
         </p>
 
-        <nav aria-label="Pages of the book" className="picker picker--scroll">
+        <nav
+          aria-label={tr("Pages of the book", "Pages du livre")}
+          className="picker picker--scroll"
+        >
           {TABS.map((entry) => (
             <button
               key={entry}
@@ -306,7 +335,7 @@ const BookOfShadows = ({ name }: GameProps) => {
               aria-pressed={entry === tab}
               onClick={() => open(entry)}
             >
-              {TAB_NAMES[entry]}
+              {TAB_NAMES[language][entry]}
             </button>
           ))}
         </nav>

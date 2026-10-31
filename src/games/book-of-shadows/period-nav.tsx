@@ -1,5 +1,20 @@
 import type { ReactNode } from "react";
 
+import { pick } from "./french";
+
+const UNIT_WORDS = {
+  month: {
+    current: ["This month", "Ce mois-ci"],
+    next: ["Next month", "Mois suivant"],
+    previous: ["Previous month", "Mois précédent"],
+  },
+  year: {
+    current: ["This year", "Cette année"],
+    next: ["Next year", "Année suivante"],
+    previous: ["Previous year", "Année précédente"],
+  },
+} as const;
+
 interface PeriodNavProps {
   /** The heading's id, for the panel's aria-labelledby. */
   id: string;
@@ -25,7 +40,7 @@ export const PeriodNav = ({
     <button
       type="button"
       className="icon-btn"
-      aria-label={`Previous ${unit}`}
+      aria-label={pick(UNIT_WORDS[unit].previous)}
       onClick={() => onStep(-1)}
     >
       ‹
@@ -36,14 +51,14 @@ export const PeriodNav = ({
     <button
       type="button"
       className="icon-btn"
-      aria-label={`Next ${unit}`}
+      aria-label={pick(UNIT_WORDS[unit].next)}
       onClick={() => onStep(1)}
     >
       ›
     </button>
     {atCurrent ? null : (
       <button type="button" className="btn btn--quiet" onClick={onCurrent}>
-        This {unit}
+        {pick(UNIT_WORDS[unit].current)}
       </button>
     )}
   </div>

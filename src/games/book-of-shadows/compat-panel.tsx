@@ -1,4 +1,5 @@
 import type { Match } from "./compat";
+import { tr } from "./french";
 import { Meter } from "./meter";
 
 /** "Sam Smith" → "Sam"; no name → "". */
@@ -22,7 +23,10 @@ export const MatchPanel = ({ legend, title, match, name }: MatchPanelProps) => (
     className="panel panel--book match"
   >
     <span className="legend">{legend}</span>
-    <p className="kicker">You and {name || "them"}</p>
+    <p className="kicker">
+      {tr("You and ", "Vous et ")}
+      {name || tr("them", "l’autre")}
+    </p>
     <h2 id={`${legend}-title`} className="display book__title">
       {title}
     </h2>
@@ -53,13 +57,17 @@ export const MatchPanel = ({ legend, title, match, name }: MatchPanelProps) => (
 export const NoMatch = ({ onOpen }: { onOpen: () => void }) => (
   <section className="panel panel--book match match--empty">
     <span className="legend">compatibility.txt</span>
-    <h2 className="display book__title">How do you match?</h2>
+    <h2 className="display book__title">
+      {tr("How do you match?", "Êtes-vous compatibles ?")}
+    </h2>
     <p className="page__sub">
-      Add someone else’s birth details on your profile, and this page shows how
-      the two of you get on.
+      {tr(
+        "Add someone else’s birth details on your profile, and this page shows how the two of you get on.",
+        "Ajoutez la naissance de quelqu’un d’autre dans votre profil, et cette page montre comment vous vous entendez."
+      )}
     </p>
     <button type="button" className="btn" onClick={onOpen}>
-      Add someone
+      {tr("Add someone", "Ajouter quelqu’un")}
     </button>
   </section>
 );
@@ -80,9 +88,12 @@ export const MatchSummary = ({
 }) => (
   <section aria-labelledby="summary-title" className="panel panel--book match">
     <span className="legend">compatibility.txt</span>
-    <p className="kicker">You and {name || "them"}</p>
+    <p className="kicker">
+      {tr("You and ", "Vous et ")}
+      {name || tr("them", "l’autre")}
+    </p>
     <h2 id="summary-title" className="display book__title">
-      How you match
+      {tr("How you match", "Votre compatibilité")}
     </h2>
     {rows ? (
       <ul className="match__summary">
@@ -98,8 +109,10 @@ export const MatchSummary = ({
       </ul>
     ) : (
       <p className="page__sub">
-        Fill in their birth date, and their birth time and place if you know
-        them, to see how the two of you match.
+        {tr(
+          "Fill in their birth date, and their birth time and place if you know them, to see how the two of you match.",
+          "Renseignez sa date de naissance, et son heure et son lieu de naissance si vous les connaissez, pour voir votre compatibilité."
+        )}
       </p>
     )}
   </section>

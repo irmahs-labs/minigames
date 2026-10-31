@@ -1,3 +1,4 @@
+import { say, tr } from "./french";
 import {
   MASTER_NUMBERS,
   meaningOf,
@@ -37,13 +38,16 @@ const NumberCard = ({
       <p className="display number-card__value">{value ?? "?"}</p>
       {meaning ? (
         <>
-          <h3 className="display number-card__title">{meaning.title}</h3>
-          <p className="number-card__keywords">{meaning.keywords}</p>
-          <p className="number-card__about">{meaning.about}</p>
+          <h3 className="display number-card__title">{say(meaning.title)}</h3>
+          <p className="number-card__keywords">{say(meaning.keywords)}</p>
+          <p className="number-card__about">{say(meaning.about)}</p>
         </>
       ) : (
         <p className="number-card__about">
-          Add your name on your profile to find it.
+          {tr(
+            "Add your name on your profile to find it.",
+            "Ajoutez votre nom dans votre profil pour le trouver."
+          )}
         </p>
       )}
       <p className="number-card__from">{from}</p>
@@ -60,59 +64,82 @@ export const NumbersTab = ({ birth, name, thisYear }: NumbersTabProps) => {
     <section aria-labelledby="numbers-title" className="panel panel--book">
       <span className="legend">numerology.txt</span>
       <h2 id="numbers-title" className="display book__title">
-        Your numbers
+        {tr("Your numbers", "Vos nombres")}
       </h2>
       <p className="page__sub">
-        Your life path: {birth.month} + {birth.date} + {birth.year} →{" "}
-        {parts.join(" + ")} = {sum}
+        {tr("Your life path: ", "Votre chemin de vie : ")}
+        {birth.month} + {birth.date} + {birth.year} → {parts.join(" + ")} ={" "}
+        {sum}
         {sum === numbers.lifePath ? "" : ` → ${numbers.lifePath}`}.
       </p>
 
       <ul className="numbers">
         <NumberCard
-          label="Life path"
+          label={tr("Life path", "Chemin de vie")}
           value={numbers.lifePath}
-          from="Your birth date: the road you walk."
+          from={tr(
+            "Your birth date: the road you walk.",
+            "Votre date de naissance : la route que vous suivez."
+          )}
         />
         <NumberCard
-          label="Expression"
+          label={tr("Expression", "Expression")}
           value={numbers.expression}
-          from="Every letter of your name: what you are here to do."
+          from={tr(
+            "Every letter of your name: what you are here to do.",
+            "Chaque lettre de votre nom : ce que vous êtes venu faire."
+          )}
         />
         <NumberCard
-          label="Soul urge"
+          label={tr("Soul urge", "Élan de l’âme")}
           value={numbers.soulUrge}
-          from="The vowels of your name: what your heart wants."
+          from={tr(
+            "The vowels of your name: what your heart wants.",
+            "Les voyelles de votre nom : ce que veut votre cœur."
+          )}
         />
         <NumberCard
-          label="Personality"
+          label={tr("Personality", "Personnalité")}
           value={numbers.personality}
-          from="The consonants of your name: how others see you."
+          from={tr(
+            "The consonants of your name: how others see you.",
+            "Les consonnes de votre nom : comment les autres vous voient."
+          )}
         />
         <NumberCard
-          label="Birthday"
+          label={tr("Birthday", "Jour de naissance")}
           value={numbers.birthday}
-          from="The day you were born: a gift you came with."
+          from={tr(
+            "The day you were born: a gift you came with.",
+            "Le jour de votre naissance : un don apporté avec vous."
+          )}
         />
         <NumberCard
-          label="Maturity"
+          label={tr("Maturity", "Maturité")}
           value={numbers.maturity}
-          from="Life path and expression together: who you grow into."
+          from={tr(
+            "Life path and expression together: who you grow into.",
+            "Chemin de vie et expression réunis : qui vous devenez."
+          )}
         />
       </ul>
 
       <div className="personal-year">
-        <p className="kicker">Your personal year, {thisYear}</p>
+        <p className="kicker">
+          {tr("Your personal year", "Votre année personnelle")}, {thisYear}
+        </p>
         <p>
           <span className="display number-card__value">
             {numbers.personalYear}
           </span>{" "}
-          {personalYearOf(numbers.personalYear)}
+          {say(personalYearOf(numbers.personalYear) ?? "")}
         </p>
       </div>
       <p className="hint">
-        Pythagorean numerology: A is 1, I is 9, J is 1 again; numbers add down
-        to one digit, but 11, 22 and 33 are master numbers and stay.
+        {tr(
+          "Pythagorean numerology: A is 1, I is 9, J is 1 again; numbers add down to one digit, but 11, 22 and 33 are master numbers and stay.",
+          "Numérologie pythagoricienne : A vaut 1, I vaut 9, J revaut 1 ; les nombres se réduisent à un chiffre, mais 11, 22 et 33 sont des nombres maîtres et restent."
+        )}
       </p>
     </section>
   );
