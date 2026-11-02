@@ -1,5 +1,6 @@
 import momentkh from "@thyrith/momentkh";
 
+import { inFrench } from "./french";
 import { lunarNewYear } from "./lunar-zodiac";
 import { DAY, daysBetween, keyOf, parseDay } from "./time";
 
@@ -45,7 +46,9 @@ export interface LunarDate {
 
 /** "15 waxing Assoch". */
 export const lunarDateName = ({ day, waxing, month }: LunarDate): string =>
-  `${day} ${waxing ? "waxing" : "waning"} ${LUNAR_MONTHS[month] ?? ""}`;
+  inFrench()
+    ? `${day} ${waxing ? "croissant" : "décroissant"} de ${LUNAR_MONTHS[month] ?? ""}`
+    : `${day} ${waxing ? "waxing" : "waning"} ${LUNAR_MONTHS[month] ?? ""}`;
 
 /** The Khmer date of a day, read at noon. */
 const khmerDateOf = (date: Date) =>

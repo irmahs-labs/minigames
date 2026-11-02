@@ -2,6 +2,7 @@ import { EclipseKind } from "astronomy-engine";
 import { useMemo, useState } from "react";
 
 import { formatDay } from "./format";
+import { inFrench, say, tr } from "./french";
 import { PeriodNav } from "./period-nav";
 import { loreFor } from "./retrograde-lore";
 import { SignName } from "./sign-name";
@@ -21,11 +22,11 @@ interface SkyTabProps {
   timeZone: string;
 }
 
-const ECLIPSE_KINDS: Record<EclipseKind, string> = {
-  [EclipseKind.Annular]: "Annular",
-  [EclipseKind.Partial]: "Partial",
-  [EclipseKind.Penumbral]: "Penumbral",
-  [EclipseKind.Total]: "Total",
+const ECLIPSE_KINDS: Record<EclipseKind, readonly [string, string]> = {
+  [EclipseKind.Annular]: ["Annular", "annulaire"],
+  [EclipseKind.Partial]: ["Partial", "partielle"],
+  [EclipseKind.Penumbral]: ["Penumbral", "pénombrale"],
+  [EclipseKind.Total]: ["Total", "totale"],
 };
 
 /** "24 Oct in Scorpio", with the year when it is not the one shown. */
@@ -46,7 +47,7 @@ const StationAt = ({
 
   return (
     <>
-      {when} in <SignName longitude={station.longitude} />
+      {when} {tr("in", "en")} <SignName longitude={station.longitude} />
     </>
   );
 };
@@ -62,26 +63,29 @@ const SkyToday = ({ now }: SkyTabProps) => {
     >
       <span className="legend">sky-today.log</span>
       <h2 id="today-title" className="display book__title">
-        The sky today
+        {tr("The sky today", "Le ciel aujourd’hui")}
       </h2>
       <table className="board board--compact">
         <thead>
           <tr>
-            <th scope="col">Planet</th>
-            <th scope="col">In</th>
+            <th scope="col">{tr("Planet", "Planète")}</th>
+            <th scope="col">{tr("In", "En")}</th>
             <th scope="col">
-              <abbr title="Retrograde">℞</abbr>
+              <abbr title={tr("Retrograde", "Rétrograde")}>℞</abbr>
             </th>
           </tr>
         </thead>
         <tbody>
           {positions.map(({ planet, longitude, retrograde }) => (
-            <tr key={planet} title={`${planet}: ${PLANET_MEANINGS[planet]}`}>
+            <tr
+              key={planet}
+              title={`${say(planet)}${tr(": ", " : ")}${say(PLANET_MEANINGS[planet])}`}
+            >
               <th scope="row">
                 <span aria-hidden="true" className="glyph">
                   {PLANET_GLYPHS[planet]}
                 </span>{" "}
-                {planet}
+                {say(planet)}
               </th>
               <td>
                 <SignName longitude={longitude} />{" "}
@@ -92,7 +96,7 @@ const SkyToday = ({ now }: SkyTabProps) => {
               <td>
                 {retrograde ? (
                   <span className="badge badge--retro">
-                    <abbr title="retrograde">℞</abbr>
+                    <abbr title={tr("retrograde", "rétrograde")}>℞</abbr>
                   </span>
                 ) : null}
               </td>
@@ -150,7 +154,7 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
       <PeriodNav
         id="year-title"
         unit="year"
-        title={`Retrogrades of ${year}`}
+        title={tr(`Retrogrades of ${year}`, `Rétrogrades de ${year}`)}
         atCurrent={year === thisYear}
         onStep={(by) => setYear(year + by)}
         onCurrent={() => setYear(thisYear)}
@@ -170,8 +174,10 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
                 <span aria-hidden="true" className="glyph">
                   {PLANET_GLYPHS[planet]}
                 </span>{" "}
-                {planet} retrograde
-                {current ? <span className="badge">now</span> : null}
+                {tr(`${planet} retrograde`, `${say(planet)} rétrograde`)}
+                {current ? (
+                  <span className="badge">{tr("now", "en cours")}</span>
+                ) : null}
               </h3>
               <p className="retrograde__dates">
                 <StationAt station={start} timeZone={timeZone} year={year} /> →{" "}
@@ -179,7 +185,7 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
               </p>
               {loreFor(retrograde).map((line) => (
                 <p key={line} className="retrograde__lore">
-                  {line}
+                  {say(line)}
                 </p>
               ))}
             </li>
@@ -187,7 +193,9 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
         })}
       </ol>
 
-      <h2 className="display book__title">Eclipses of {year}</h2>
+      <h2 className="display book__title">
+        {tr(`Eclipses of ${year}`, `Éclipses de ${year}`)}
+      </h2>
       <ul className="eclipses">
         {eclipses.map((eclipse) => (
           <li key={eclipse.peak.getTime()}>
@@ -196,18 +204,22 @@ const SkyYear = ({ now, timeZone }: SkyTabProps) => {
             </span>
             <span>
               <strong>
-                {formatDay(dayKey(eclipse.peak, timeZone))}:{" "}
-                {ECLIPSE_KINDS[eclipse.kind]}{" "}
-                {eclipse.body === "Sun" ? "solar" : "lunar"} eclipse
+                {formatDay(dayKey(eclipse.peak, timeZone))}
+                {tr(": ", " : ")}
+                {inFrench()
+                  ? `éclipse ${eclipse.body === "Sun" ? "solaire" : "lunaire"} ${ECLIPSE_KINDS[eclipse.kind][1]}`
+                  : `${ECLIPSE_KINDS[eclipse.kind][0]} ${eclipse.body === "Sun" ? "solar" : "lunar"} eclipse`}
               </strong>{" "}
-              in <SignName longitude={eclipse.longitude} />
+              {tr("in", "en")} <SignName longitude={eclipse.longitude} />
             </span>
           </li>
         ))}
       </ul>
       <p className="hint">
-        Eclipses are wild cards: big beginnings at a solar one, big endings at a
-        lunar one. Most witches rest instead of casting.
+        {tr(
+          "Eclipses are wild cards: big beginnings at a solar one, big endings at a lunar one. Most witches rest instead of casting.",
+          "Les éclipses sont des jokers : de grands débuts à une éclipse solaire, de grandes fins à une lunaire. La plupart des sorcières se reposent au lieu de lancer des sorts."
+        )}
       </p>
     </section>
   );

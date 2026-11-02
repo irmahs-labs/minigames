@@ -7,6 +7,7 @@ import type { GameProps } from "../../games";
 import { currentAccount } from "../../lib/account";
 import type { Account } from "../../lib/account";
 import { Icon } from "../../lib/icon";
+import { useCopy } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { readStored, writeStored } from "../../lib/storage";
 import { Leaderboard } from "./leaderboard";
@@ -14,7 +15,22 @@ import { LocalGame } from "./local-game";
 import { OnlineGame } from "./online-game";
 
 const MODE_KEY = "minigames:super-tic-tac-toe:mode:v1";
-const MODES = { local: "Same screen", online: "Online" } as const;
+
+const COPY = {
+  en: {
+    allGames: "all games",
+    how: "How to play",
+    modes: { local: "Same screen", online: "Online" },
+    sub: "conquer three planets in a row",
+  },
+  fr: {
+    allGames: "tous les jeux",
+    how: "Comment jouer",
+    modes: { local: "Même écran", online: "En ligne" },
+    sub: "conquérez trois planètes alignées",
+  },
+};
+
 const modeSchema = z.enum(["local", "online"]);
 
 type Mode = z.infer<typeof modeSchema>;
@@ -51,6 +67,7 @@ const SuperTicTacToe = ({ name }: GameProps) => {
   }, []);
 
   const onFinished = useCallback(() => setFinished((n) => n + 1), []);
+  const t = useCopy(COPY);
 
   return (
     <>
@@ -61,13 +78,13 @@ const SuperTicTacToe = ({ name }: GameProps) => {
       >
         <Link href="/" className="btn">
           <Icon name="back" size={16} />
-          all games
+          {t.allGames}
         </Link>
       </Header>
       <main className="page">
-        <p className="page__sub">conquer three planets in a row</p>
+        <p className="page__sub">{t.sub}</p>
 
-        <nav aria-label="How to play" className="picker">
+        <nav aria-label={t.how} className="picker">
           {modeSchema.options.map((option) => (
             <button
               key={option}
@@ -76,7 +93,7 @@ const SuperTicTacToe = ({ name }: GameProps) => {
               aria-pressed={option === mode}
               onClick={() => setMode(option)}
             >
-              {MODES[option]}
+              {t.modes[option]}
             </button>
           ))}
         </nav>

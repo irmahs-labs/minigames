@@ -4,6 +4,7 @@ import { WheelIcon } from "../../components/app-icons";
 import { Header } from "../../components/header";
 import type { GameProps } from "../../games";
 import { Icon } from "../../lib/icon";
+import { useCopy } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { useConfirm } from "../../lib/use-confirm";
 import { beep, primeAudio } from "./beep";
@@ -24,9 +25,67 @@ import {
 import { landingRotation, randomIndex } from "./wheel";
 import { WheelView, sliceColors } from "./wheel-view";
 
+const COPY = {
+  en: {
+    add: "Add a slice",
+    allGames: "all games",
+    beep: "Beep when it lands",
+    clear: "Clear",
+    delete: "Delete wheel",
+    named: (n: number) => `of ${n} named`,
+    newWheel: "+ New wheel",
+    onTheWheel: "On the wheel",
+    placeholder: "Type a name",
+    removeSlice: (n: number) => `Remove slice ${n}`,
+    reset: "Reset",
+    saved: "Saved in this browser only.",
+    slice: (n: number) => `Slice ${n}`,
+    spin: "spin the wheel",
+    spinning: "spinning…",
+    sub: "fill in a wheel, give it a spin",
+    sureClear: "Sure? Clear",
+    sureDelete: "Sure? Delete",
+    sureReset: "Sure? Reset",
+    tooFew: "Name at least two slices to spin.",
+    untitled: "Untitled",
+    wheel: "Wheel",
+    wheelName: "Wheel name",
+    yourWheels: "Your wheels",
+  },
+  fr: {
+    add: "Ajouter une part",
+    allGames: "tous les jeux",
+    beep: "Bip à l’arrêt",
+    clear: "Vider",
+    delete: "Supprimer la roue",
+    named: (n: number) => `sur ${n} remplies`,
+    newWheel: "+ Nouvelle roue",
+    onTheWheel: "Sur la roue",
+    placeholder: "Tapez un nom",
+    removeSlice: (n: number) => `Retirer la part ${n}`,
+    reset: "Réinitialiser",
+    saved: "Enregistré dans ce navigateur uniquement.",
+    slice: (n: number) => `Part ${n}`,
+    spin: "faire tourner la roue",
+    spinning: "ça tourne…",
+    sub: "remplissez une roue, faites-la tourner",
+    sureClear: "Sûr ? Vider",
+    sureDelete: "Sûr ? Supprimer",
+    sureReset: "Sûr ? Réinitialiser",
+    tooFew: "Nommez au moins deux parts pour lancer.",
+    untitled: "Sans titre",
+    wheel: "Roue",
+    wheelName: "Nom de la roue",
+    yourWheels: "Vos roues",
+  },
+};
+
 /** A wheel's name as a filename for its panel's pill: "Team lunch" → team-lunch.gif. */
 const legendFor = (name: string) => {
   const slug = name
+    // "Prénoms" → "prenoms", not "pr-noms"
+    .normalize("NFD")
+    .replaceAll(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/gu, "-")
     .replaceAll(/^-|-$/gu, "");
@@ -41,6 +100,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
   const [landing, setLanding] = useState<number | null>(null);
   const [winner, setWinner] = useState<number | null>(null);
   const confirm = useConfirm();
+  const t = useCopy(COPY);
 
   const wheel = currentWheel(state);
   const { slots } = wheel;
@@ -83,13 +143,13 @@ const WheelOfFortune = ({ name }: GameProps) => {
       <Header icon={<WheelIcon />} name={name} href="/wheel-of-fortune">
         <Link href="/" className="btn">
           <Icon name="back" size={16} />
-          all games
+          {t.allGames}
         </Link>
       </Header>
       <main className="page">
-        <p className="page__sub">fill in a wheel, give it a spin</p>
+        <p className="page__sub">{t.sub}</p>
 
-        <nav aria-label="Your wheels" className="picker">
+        <nav aria-label={t.yourWheels} className="picker">
           {state.wheels.map((entry) => (
             <button
               key={entry.id}
@@ -102,7 +162,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                 dispatch({ id: entry.id, type: "select" });
               }}
             >
-              {entry.name.trim() || "Untitled"}
+              {entry.name.trim() || t.untitled}
             </button>
           ))}
           <button
@@ -113,12 +173,12 @@ const WheelOfFortune = ({ name }: GameProps) => {
               dispatch({ id: crypto.randomUUID(), type: "create" })
             }
           >
-            + New wheel
+            {t.newWheel}
           </button>
         </nav>
 
         <div className="layout">
-          <section aria-label="Wheel" className="panel panel--wheel">
+          <section aria-label={t.wheel} className="panel panel--wheel">
             <span className="legend">{legendFor(wheel.name)}</span>
             <WheelView
               labels={labels}
@@ -133,10 +193,10 @@ const WheelOfFortune = ({ name }: GameProps) => {
               disabled={!canSpin}
             >
               <Icon name="spin" />
-              {spinning ? "spinning…" : "spin the wheel"}
+              {spinning ? t.spinning : t.spin}
             </button>
             <p className="hint" aria-live="polite">
-              {tooFew ? "Name at least two slices to spin." : ""}
+              {tooFew ? t.tooFew : ""}
             </p>
           </section>
 
@@ -148,7 +208,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
 
             <div className="stack">
               <label className="field-label" htmlFor="wheel-name">
-                Wheel name
+                {t.wheelName}
               </label>
               <input
                 id="wheel-name"
@@ -165,10 +225,10 @@ const WheelOfFortune = ({ name }: GameProps) => {
             <div className="slices__head">
               <div className="stack">
                 <h2 id="slices-title" className="field-label">
-                  On the wheel
+                  {t.onTheWheel}
                 </h2>
                 <span className="slices__count">
-                  {labels.length} <span>of {slots.length} named</span>
+                  {labels.length} <span>{t.named(slots.length)}</span>
                 </span>
               </div>
               <button
@@ -177,7 +237,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                 onClick={() => dispatch({ type: "add" })}
                 disabled={spinning || slots.length >= MAX_SLOTS}
               >
-                Add a slice
+                {t.add}
               </button>
             </div>
 
@@ -197,11 +257,11 @@ const WheelOfFortune = ({ name }: GameProps) => {
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <input
-                    aria-label={`Slice ${i + 1}`}
+                    aria-label={t.slice(i + 1)}
                     className="field slice__input"
                     value={slot}
                     maxLength={MAX_LABEL}
-                    placeholder="Type a name"
+                    placeholder={t.placeholder}
                     disabled={spinning}
                     onChange={(event) =>
                       dispatch({
@@ -214,7 +274,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                   <button
                     type="button"
                     className="icon-btn"
-                    aria-label={`Remove slice ${i + 1}`}
+                    aria-label={t.removeSlice(i + 1)}
                     disabled={
                       spinning || (slots.length <= MIN_SLOTS && slot === "")
                     }
@@ -234,7 +294,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                 className="switch"
                 onClick={() => dispatch({ on: !state.sound, type: "sound" })}
               >
-                <span>Beep when it lands</span>
+                <span>{t.beep}</span>
                 <span aria-hidden="true" className="switch__track">
                   <span className="switch__thumb" />
                 </span>
@@ -248,7 +308,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                   }
                   disabled={spinning || labels.length === 0}
                 >
-                  {confirm.armed === "clear" ? "Sure? Clear" : "Clear"}
+                  {confirm.armed === "clear" ? t.sureClear : t.clear}
                 </button>
                 <button
                   type="button"
@@ -258,7 +318,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                   }
                   disabled={spinning}
                 >
-                  {confirm.armed === "reset" ? "Sure? Reset" : "Reset"}
+                  {confirm.armed === "reset" ? t.sureReset : t.reset}
                 </button>
                 {state.wheels.length > 1 ? (
                   <button
@@ -271,14 +331,12 @@ const WheelOfFortune = ({ name }: GameProps) => {
                     }
                     disabled={spinning}
                   >
-                    {confirm.armed === "delete"
-                      ? "Sure? Delete"
-                      : "Delete wheel"}
+                    {confirm.armed === "delete" ? t.sureDelete : t.delete}
                   </button>
                 ) : null}
               </div>
             </div>
-            <p className="hint">Saved in this browser only.</p>
+            <p className="hint">{t.saved}</p>
           </section>
         </div>
 

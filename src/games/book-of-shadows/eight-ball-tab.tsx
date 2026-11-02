@@ -21,6 +21,7 @@ import {
   ZERO,
 } from "./eight-ball";
 import type { Answer, Quat, ShakeState, Vec } from "./eight-ball";
+import { say, tr } from "./french";
 
 /** The ball's radius, in the drawing's units (it is 300 across, with room). */
 const RADIUS = 130;
@@ -92,7 +93,7 @@ const Ball = ({
 }) => {
   const eight = project(turn, EIGHT, RADIUS);
   const window = project(turn, WINDOW, RADIUS);
-  const lines = answer ? linesOf(answer.text) : [];
+  const lines = answer ? linesOf(say(answer.text)) : [];
 
   return (
     <svg
@@ -199,10 +200,10 @@ interface Held {
 /** What the line under the ball says. */
 const captionOf = (phase: Phase, answer: Answer | null) => {
   if (phase === "spinning" || phase === "settling") {
-    return "The spirits are stirring…";
+    return tr("The spirits are stirring…", "Les esprits s’agitent…");
   }
 
-  return phase === "answered" && answer ? answer.text : null;
+  return phase === "answered" && answer ? say(answer.text) : null;
 };
 
 export const EightBallTab = () => {
@@ -428,12 +429,15 @@ export const EightBallTab = () => {
       >
         <span className="legend">magic-8-ball.gif</span>
         <h2 id="eight-ball-title" className="display book__title">
-          Ask the Magic 8 Ball
+          {tr("Ask the Magic 8 Ball", "Interrogez la boule magique")}
         </h2>
         <input
           className="field"
-          aria-label="Your question"
-          placeholder="Ask a yes-or-no question…"
+          aria-label={tr("Your question", "Votre question")}
+          placeholder={tr(
+            "Ask a yes-or-no question…",
+            "Posez une question fermée…"
+          )}
           maxLength={120}
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
@@ -460,7 +464,10 @@ export const EightBallTab = () => {
           {caption ??
             (question.trim()
               ? `“${question.trim()}”`
-              : "Hold a question in your mind.")}
+              : tr(
+                  "Hold a question in your mind.",
+                  "Gardez une question en tête."
+                ))}
         </p>
         <div className="eight-ball__actions">
           <button
@@ -469,20 +476,29 @@ export const EightBallTab = () => {
             disabled={busy}
             onClick={() => shake()}
           >
-            Shake the ball
+            {tr("Shake the ball", "Secouer la boule")}
           </button>
           {motion === "ask" && !felt ? (
             <button type="button" className="btn" onClick={askForMotion}>
-              Shake your phone instead
+              {tr("Shake your phone instead", "Secouer plutôt votre téléphone")}
             </button>
           ) : null}
         </div>
         <p className="hint">
           {felt
-            ? "Shake your phone to ask, or flick the ball."
-            : "Flick the ball hard to shake it, or drag it to turn it and peek."}
+            ? tr(
+                "Shake your phone to ask, or flick the ball.",
+                "Secouez votre téléphone pour demander, ou lancez la boule d’un coup."
+              )
+            : tr(
+                "Flick the ball hard to shake it, or drag it to turn it and peek.",
+                "Lancez la boule d’un coup sec pour la secouer, ou faites-la glisser pour la tourner et regarder."
+              )}
           {motion === "denied"
-            ? " Motion is off for this site; you can allow it in your browser's settings."
+            ? tr(
+                " Motion is off for this site; you can allow it in your browser's settings.",
+                " Le mouvement est désactivé pour ce site ; vous pouvez l’autoriser dans les réglages du navigateur."
+              )
             : ""}
         </p>
       </section>
@@ -493,25 +509,39 @@ export const EightBallTab = () => {
       >
         <span className="legend">how-it-works.txt</span>
         <h2 id="eight-ball-how" className="display book__title">
-          How it works
+          {tr("How it works", "Comment ça marche")}
         </h2>
         <ol className="how-to">
-          <li>Think of a question that can be answered yes or no.</li>
           <li>
-            Shake: shake your phone, flick the ball with your finger or the
-            mouse, or press the button.
+            {tr(
+              "Think of a question that can be answered yes or no.",
+              "Pensez à une question à laquelle on répond par oui ou par non."
+            )}
           </li>
           <li>
-            The ball tumbles, then rolls its window up to you, and the die
-            floats up with your answer.
+            {tr(
+              "Shake: shake your phone, flick the ball with your finger or the mouse, or press the button.",
+              "Secouez : secouez votre téléphone, lancez la boule du doigt ou à la souris, ou appuyez sur le bouton."
+            )}
           </li>
           <li>
-            Drag the ball gently to turn it over and look at it from any side.
+            {tr(
+              "The ball tumbles, then rolls its window up to you, and the die floats up with your answer.",
+              "La boule roule, puis tourne sa fenêtre vers vous, et le dé remonte avec votre réponse."
+            )}
+          </li>
+          <li>
+            {tr(
+              "Drag the ball gently to turn it over and look at it from any side.",
+              "Faites glisser la boule doucement pour la retourner et la regarder sous tous les angles."
+            )}
           </li>
         </ol>
         <p className="hint">
-          Twenty answers: ten say yes, five say maybe, five say no. It is a toy,
-          not an oracle, so ask again whenever you like.
+          {tr(
+            "Twenty answers: ten say yes, five say maybe, five say no. It is a toy, not an oracle, so ask again whenever you like.",
+            "Vingt réponses : dix disent oui, cinq peut-être, cinq non. C’est un jouet, pas un oracle, alors redemandez quand vous voulez."
+          )}
         </p>
       </section>
     </div>

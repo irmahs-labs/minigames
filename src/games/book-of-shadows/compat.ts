@@ -1,3 +1,4 @@
+import { inFrench, say } from "./french";
 import { ANIMALS, allies, clash, secretFriend } from "./lunar-zodiac";
 import type { LunarYear, ZodiacElement } from "./lunar-zodiac";
 import { reduce } from "./numerology";
@@ -45,6 +46,33 @@ export const possessive = (name: string): string => {
   }
 
   return trimmed.endsWith("s") ? `${trimmed}'` : `${trimmed}'s`;
+};
+
+/** A planet or a sign's element in French, for the lines built from parts. */
+const FRENCH_ELEMENTS = new Map(
+  Object.entries({
+    air: "air",
+    earth: "terre",
+    fire: "feu",
+    water: "eau",
+  })
+);
+
+const FRENCH_ASPECTS = new Map(
+  Object.entries({
+    conjunction: "en conjonction avec",
+    opposition: "en opposition à",
+    sextile: "en sextile avec",
+    square: "au carré de",
+    trine: "en trigone avec",
+  })
+);
+
+/** "de Sam", or "de l’autre" with no name. */
+const ofName = (name: string) => {
+  const trimmed = name.trim();
+
+  return trimmed === "" ? "de l’autre" : `de ${trimmed}`;
 };
 
 const clamp = (score: number) => Math.round(Math.max(3, Math.min(98, score)));
@@ -171,7 +199,12 @@ const elementPair = (a: number, b: number): ElementPair => {
 };
 
 /** Two birth charts, side by side: the aspects between them and their Suns' elements. */
-export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
+export const chartMatch = (
+  mine: Chart,
+  theirs: Chart,
+  name: string,
+  french = inFrench()
+): Match => {
   const reasons: Reason[] = [];
   let score = 50;
 
@@ -182,13 +215,27 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
   const theirSun = placementOf(theirSunAt).sign;
 
   score += { complementary: 6, different: -4, kindred: 8 }[suns];
+
+  const myElement = FRENCH_ELEMENTS.get(sunSign.element) ?? sunSign.element;
+
+  const theirElement =
+    FRENCH_ELEMENTS.get(theirSun.element) ?? theirSun.element;
+
   reasons.push({
-    text: {
-      complementary: `Your ${sunSign.element} and ${possessive(name)} ${theirSun.element} feed each other.`,
-      different: `Your ${sunSign.element} and ${possessive(name)} ${theirSun.element} speak different languages: worth learning.`,
-      kindred: `You are both ${sunSign.element} signs: you understand each other without words.`,
-    }[suns],
-    title: `${sunSign.name} Sun and ${theirSun.name} Sun`,
+    text: french
+      ? {
+          complementary: `Votre ${myElement} et le ${theirElement} ${ofName(name)} se nourrissent.`,
+          different: `Votre ${myElement} et le ${theirElement} ${ofName(name)} parlent des langues différentes : à apprendre.`,
+          kindred: `Vous êtes tous deux des signes de ${myElement} : vous vous comprenez sans un mot.`,
+        }[suns]
+      : {
+          complementary: `Your ${sunSign.element} and ${possessive(name)} ${theirSun.element} feed each other.`,
+          different: `Your ${sunSign.element} and ${possessive(name)} ${theirSun.element} speak different languages: worth learning.`,
+          kindred: `You are both ${sunSign.element} signs: you understand each other without words.`,
+        }[suns],
+    title: french
+      ? `Soleil en ${say(sunSign.name)} et Soleil en ${say(theirSun.name)}`
+      : `${sunSign.name} Sun and ${theirSun.name} Sun`,
     tone: suns === "different" ? "mixed" : "good",
   });
 
@@ -200,9 +247,12 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
 
     if (aspect) {
       score += aspect.points * weight;
+      const aboutText = say(about);
       reasons.push({
-        text: `${about[0]?.toUpperCase()}${about.slice(1)} ${aspect.verb}.`,
-        title: `Your ${planet} ${aspect.name} ${possessive(name)} ${other}`,
+        text: `${aboutText[0]?.toUpperCase()}${aboutText.slice(1)} ${say(aspect.verb)}.`,
+        title: french
+          ? `Votre ${say(planet)} ${FRENCH_ASPECTS.get(aspect.name) ?? aspect.name} ${say(other)} ${ofName(name)}`
+          : `Your ${planet} ${aspect.name} ${possessive(name)} ${other}`,
         tone: aspect.tone,
       });
     }
@@ -210,7 +260,7 @@ export const chartMatch = (mine: Chart, theirs: Chart, name: string): Match => {
 
   const final = clamp(score);
 
-  return { reasons, score: final, verdict: verdictOf(final) };
+  return { reasons, score: final, verdict: say(verdictOf(final)) };
 };
 
 // ── numerology ──
@@ -267,14 +317,17 @@ export const numberPair = (a: number, b: number): Pairing => {
 export const numbersMatch = (
   mine: Numbers,
   theirs: Numbers,
-  name: string
+  name: string,
+  french = inFrench()
 ): Match => {
   const life = numberPair(mine.lifePath, theirs.lifePath);
 
   const reasons: Reason[] = [
     {
-      text: life.text,
-      title: `Life path ${mine.lifePath} and ${possessive(name)} ${theirs.lifePath}`,
+      text: say(life.text),
+      title: french
+        ? `Chemin de vie ${mine.lifePath} et ${theirs.lifePath} ${ofName(name)}`
+        : `Life path ${mine.lifePath} and ${possessive(name)} ${theirs.lifePath}`,
       tone: life.tone,
     },
   ];
@@ -294,8 +347,8 @@ export const numbersMatch = (
       total += pair.score;
       weight += 1;
       reasons.push({
-        text: pair.text,
-        title: `${label} ${a} and ${b}`,
+        text: say(pair.text),
+        title: french ? `${say(label)} ${a} et ${b}` : `${label} ${a} and ${b}`,
         tone: pair.tone,
       });
     }
@@ -303,7 +356,7 @@ export const numbersMatch = (
 
   const final = clamp(total / weight);
 
-  return { reasons, score: final, verdict: verdictOf(final) };
+  return { reasons, score: final, verdict: say(verdictOf(final)) };
 };
 
 // ── the Lunar zodiac ──
@@ -327,7 +380,11 @@ const CHECKS: Readonly<Record<ZodiacElement, ZodiacElement>> = {
 };
 
 /** Two Lunar zodiac years: the animals first, then their elements. */
-export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
+export const lunarMatch = (
+  mine: LunarYear,
+  theirs: LunarYear,
+  french = inFrench()
+): Match => {
   const a = mine.animal;
   const b = theirs.animal;
   const sum = mod(ANIMALS.indexOf(a) + ANIMALS.indexOf(b), 12);
@@ -373,8 +430,10 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
 
   const reasons: Reason[] = [
     {
-      text: animal.text,
-      title: `${a.emoji} ${a.name} and ${b.emoji} ${b.name}`,
+      text: say(animal.text),
+      title: french
+        ? `${a.emoji} ${say(a.name)} et ${b.emoji} ${say(b.name)}`
+        : `${a.emoji} ${a.name} and ${b.emoji} ${b.name}`,
       tone: animal.tone,
     },
   ];
@@ -382,31 +441,40 @@ export const lunarMatch = (mine: LunarYear, theirs: LunarYear): Match => {
   let { score } = animal;
   const one = mine.element;
   const two = theirs.element;
+  const frOne = say(one);
+  const frTwo = say(two);
+  const both = french ? `${frOne} et ${frTwo}` : `${one} and ${two}`;
 
   if (one === two) {
     score += 4;
     reasons.push({
-      text: `You are both ${one}: steady, if alike.`,
-      title: `${one} and ${two}`,
+      text: french
+        ? `Vous êtes tous deux ${frOne} : stables, quoique semblables.`
+        : `You are both ${one}: steady, if alike.`,
+      title: both,
       tone: "good",
     });
   } else if (FEEDS[one] === two || FEEDS[two] === one) {
     score += 8;
     reasons.push({
-      text: `${one} and ${two} feed each other: a natural flow between you.`,
-      title: `${one} and ${two}`,
+      text: french
+        ? `${frOne} et ${frTwo} se nourrissent : un flux naturel entre vous.`
+        : `${one} and ${two} feed each other: a natural flow between you.`,
+      title: both,
       tone: "good",
     });
   } else if (CHECKS[one] === two || CHECKS[two] === one) {
     score -= 8;
     reasons.push({
-      text: `${one} and ${two} keep each other in check: respect the other's way.`,
-      title: `${one} and ${two}`,
+      text: french
+        ? `${frOne} et ${frTwo} se tiennent en respect : respectez la manière de l’autre.`
+        : `${one} and ${two} keep each other in check: respect the other's way.`,
+      title: both,
       tone: "hard",
     });
   }
 
   const final = clamp(score);
 
-  return { reasons, score: final, verdict: verdictOf(final) };
+  return { reasons, score: final, verdict: say(verdictOf(final)) };
 };

@@ -3,6 +3,7 @@ import { memo } from "react";
 import { cryptoRandom } from "../../lib/random";
 import { daysUntil, nextFestival } from "./buddhist-calendar";
 import { FULL_DAY, formatDay, inDays } from "./format";
+import { say, tr } from "./french";
 import { ELEMENT_LORE, cycleName, lunarYearOf, yearName } from "./lunar-zodiac";
 import { PHASE_LORE, moonNow, phaseOn } from "./moon";
 import { MoonGlyph } from "./moon-glyph";
@@ -22,6 +23,9 @@ import { DAY, dayKey, daysBetween } from "./time";
 import { placementOf } from "./zodiac";
 
 type Sky = ReturnType<typeof workOutSky>;
+
+/** Ends with a full stop, unless the date already does: "12 déc.". */
+const sentence = (text: string) => (text.endsWith(".") ? text : `${text}.`);
 
 const workOutSky = (today: string) => {
   const moment = new Date(`${today}T12:00:00Z`);
@@ -66,6 +70,8 @@ interface TodayProps {
   now: Date;
   timeZone: string;
   southern: boolean;
+  /** The page's language, so the memoized panel turns with it. */
+  language: string;
 }
 
 /**
@@ -90,19 +96,22 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
     >
       <span className="legend">today.log</span>
       <h2 id="today-title" className="display book__title">
-        Today, {formatDay(today, FULL_DAY)}
+        {tr("Today", "Aujourd’hui")}, {formatDay(today, FULL_DAY)}
       </h2>
       <div className="today__grid">
         <div className="today__item">
           <MoonGlyph angle={moon.angle} size={54} southern={southern} />
           <div className="stack">
-            <h3 className="field-label">The Moon</h3>
-            <p className="display today__big">{day.phase}</p>
+            <h3 className="field-label">{tr("The Moon", "La Lune")}</h3>
+            <p className="display today__big">{say(day.phase)}</p>
             <p>
-              {Math.round(moon.illumination * 100)}% lit, in{" "}
+              {tr(
+                `${Math.round(moon.illumination * 100)}% lit, in`,
+                `Éclairée à ${Math.round(moon.illumination * 100)} %, en`
+              )}{" "}
               <SignName longitude={moon.longitude} />.
             </p>
-            <p className="today__lore">{PHASE_LORE[day.phase]}</p>
+            <p className="today__lore">{say(PHASE_LORE[day.phase])}</p>
           </div>
         </div>
         {sabbat ? (
@@ -111,13 +120,15 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
               🕯️
             </span>
             <div className="stack">
-              <h3 className="field-label">Next sabbat</h3>
-              <p className="display today__big">{sabbat.sabbat.name}</p>
+              <h3 className="field-label">
+                {tr("Next sabbat", "Prochain sabbat")}
+              </h3>
+              <p className="display today__big">{say(sabbat.sabbat.name)}</p>
               <p>
                 {formatDay(sabbat.key, { day: "numeric", month: "long" })},{" "}
                 {inDays(daysBetween(today, sabbat.key))}.
               </p>
-              <p className="today__lore">{sabbat.sabbat.also}</p>
+              <p className="today__lore">{say(sabbat.sabbat.also)}</p>
             </div>
           </div>
         ) : null}
@@ -126,16 +137,18 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             {lunar.animal.emoji}
           </span>
           <div className="stack">
-            <h3 className="field-label">Lunar year</h3>
+            <h3 className="field-label">{tr("Lunar year", "Année lunaire")}</h3>
             <p className="display today__big">{yearName(lunar)}</p>
             <p>
-              {cycleName(lunar)}: {lunar.polarity} {lunar.element},{" "}
-              {ELEMENT_LORE[lunar.element]}.
+              {cycleName(lunar)}
+              {tr(": ", " : ")}
+              {lunar.polarity} {say(lunar.element)},{" "}
+              {say(ELEMENT_LORE[lunar.element])}.
             </p>
             {festival ? (
               <p className="today__lore">
-                Next festival: {festival.festival.emoji}{" "}
-                {festival.festival.name},{" "}
+                {tr("Next festival: ", "Prochaine fête : ")}
+                {festival.festival.emoji} {say(festival.festival.name)},{" "}
                 {formatDay(festival.start, { day: "numeric", month: "long" })},{" "}
                 {inDays(daysUntil(festival, today))}.
               </p>
@@ -147,13 +160,20 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             {PLANET_GLYPHS.Sun}
           </span>
           <div className="stack">
-            <h3 className="field-label">The sky</h3>
+            <h3 className="field-label">{tr("The sky", "Le ciel")}</h3>
             <p>
-              The Sun is in <SignName longitude={longitudeOf("Sun", now)} />,
-              the Moon in <SignName longitude={moon.longitude} />.
+              {tr("The Sun is in", "Le Soleil est en")}{" "}
+              <SignName longitude={longitudeOf("Sun", now)} />,{" "}
+              {tr("the Moon in", "la Lune en")}{" "}
+              <SignName longitude={moon.longitude} />.
             </p>
             {sky.now.length === 0 ? (
-              <p>No planet is retrograde.</p>
+              <p>
+                {tr(
+                  "No planet is retrograde.",
+                  "Aucune planète n’est rétrograde."
+                )}
+              </p>
             ) : (
               <ul className="today__list">
                 {sky.now.map((period) => (
@@ -162,12 +182,17 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
                       <span aria-hidden="true" className="glyph">
                         {PLANET_GLYPHS[period.planet]}
                       </span>{" "}
-                      {period.planet} retrograde
+                      {tr(
+                        `${period.planet} retrograde`,
+                        `${say(period.planet)} rétrograde`
+                      )}
                     </strong>{" "}
-                    in {placementOf(period.start.longitude).sign.name}, until{" "}
-                    {formatDay(dayKey(period.end.time, timeZone))}.{" "}
+                    {tr("in", "en")}{" "}
+                    {say(placementOf(period.start.longitude).sign.name)},{" "}
+                    {tr("until", "jusqu’au")}{" "}
+                    {sentence(formatDay(dayKey(period.end.time, timeZone)))}{" "}
                     <span className="today__lore">
-                      {loreFor(period).join(" ")}
+                      {loreFor(period).map(say).join(" ")}
                     </span>
                   </li>
                 ))}
@@ -175,16 +200,24 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
             )}
             {sky.coming ? (
               <p>
-                Coming: {sky.coming.planet} turns retrograde on{" "}
-                {formatDay(dayKey(sky.coming.start.time, timeZone))} in{" "}
-                {placementOf(sky.coming.start.longitude).sign.name}.
+                {tr(
+                  `Coming: ${sky.coming.planet} turns retrograde on`,
+                  `À venir : ${say(sky.coming.planet)} devient rétrograde le`
+                )}{" "}
+                {formatDay(dayKey(sky.coming.start.time, timeZone))}{" "}
+                {tr("in", "en")}{" "}
+                {say(placementOf(sky.coming.start.longitude).sign.name)}.
               </p>
             ) : null}
             {sky.eclipse ? (
               <p>
-                Next eclipse: {sky.eclipse.body === "Sun" ? "solar" : "lunar"},{" "}
-                {formatDay(dayKey(sky.eclipse.peak, timeZone))}, in{" "}
-                {placementOf(sky.eclipse.longitude).sign.name}.
+                {tr("Next eclipse: ", "Prochaine éclipse : ")}
+                {sky.eclipse.body === "Sun"
+                  ? tr("solar", "solaire")
+                  : tr("lunar", "lunaire")}
+                , {formatDay(dayKey(sky.eclipse.peak, timeZone))},{" "}
+                {tr("in", "en")}{" "}
+                {say(placementOf(sky.eclipse.longitude).sign.name)}.
               </p>
             ) : null}
           </div>
@@ -221,7 +254,7 @@ export const DailyCard = ({
     >
       <span className="legend">card-of-the-day.png</span>
       <h2 id="daily-title" className="display book__title">
-        Card of the day
+        {tr("Card of the day", "Carte du jour")}
       </h2>
       <div className="daily__card">
         {drawn ? (
@@ -233,12 +266,19 @@ export const DailyCard = ({
       {drawn ? (
         <div className="stack daily__reading">
           <p className="display today__big">
-            {drawn.card.name}
-            {drawn.reversed ? ", reversed" : ""}
+            {say(drawn.card.name)}
+            {drawn.reversed ? tr(", reversed", ", renversée") : ""}
           </p>
-          <p className="tarot-side__keywords">{reading?.keywords}</p>
-          <p>{reading?.meaning}</p>
-          <p className="hint">Your next card comes at midnight, Paris time.</p>
+          <p className="tarot-side__keywords">
+            {reading ? say(reading.keywords) : null}
+          </p>
+          <p>{reading ? say(reading.meaning) : null}</p>
+          <p className="hint">
+            {tr(
+              "Your next card comes at midnight, Paris time.",
+              "Votre prochaine carte arrive à minuit, heure de Paris."
+            )}
+          </p>
         </div>
       ) : (
         <>
@@ -247,10 +287,13 @@ export const DailyCard = ({
             className="btn btn--primary"
             onClick={() => onPull(pullDailyCard(pull, now, cryptoRandom))}
           >
-            Pull today’s card
+            {tr("Pull today’s card", "Tirer la carte du jour")}
           </button>
           <p className="hint">
-            One card a day: no pulling again until tomorrow.
+            {tr(
+              "One card a day: no pulling again until tomorrow.",
+              "Une carte par jour : pas de nouveau tirage avant demain."
+            )}
           </p>
         </>
       )}

@@ -137,6 +137,8 @@ describe("the book's pages", () => {
       last: { at: "2026-10-29T09:00:00.000Z", name: "Ben C." },
       name: "Autumn Hearth",
       note: "Daechu saenggang-cha, Korea's jujube and ginger tea.",
+      noteFr:
+        "Le daechu saenggang-cha, le thé coréen aux jujubes et au gingembre.",
       others: 2,
       source:
         "https://www.uclahealth.org/simms-mann-center/recipes/jujube-ginger-tea",

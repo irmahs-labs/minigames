@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { tr } from "./french";
 import { searchPlaces } from "./place-search";
 import { localMatches, plain } from "./places";
 import type { Place } from "./places";
@@ -36,21 +37,32 @@ const statusOf = ({
     return `📍 ${profile.lat}, ${profile.lon} · ${profile.timeZone}`;
   }
 
+  const pickIt = tr(
+    "Pick your town from the list to fill in where and when.",
+    "Choisissez votre ville dans la liste pour remplir le lieu et le fuseau."
+  );
+
   if (!wanted) {
-    return "Pick your town from the list to fill in where and when.";
+    return pickIt;
   }
 
   if (search === "searching") {
-    return "Looking for places…";
+    return tr("Looking for places…", "Recherche de lieux…");
   }
 
   if (search === "offline") {
-    return "The search is out of reach: pick from the list, or type the coordinates below.";
+    return tr(
+      "The search is out of reach: pick from the list, or type the coordinates below.",
+      "La recherche est injoignable : choisissez dans la liste, ou tapez les coordonnées ci-dessous."
+    );
   }
 
   return count === 0
-    ? "No town by that name yet: keep typing, or check the spelling."
-    : "Pick your town from the list to fill in where and when.";
+    ? tr(
+        "No town by that name yet: keep typing, or check the spelling.",
+        "Pas encore de ville de ce nom : continuez à taper, ou vérifiez l’orthographe."
+      )
+    : pickIt;
 };
 
 /**
@@ -119,7 +131,7 @@ export const BirthplaceField = ({
   return (
     <div className="stack birthplace">
       <label className="field-label" htmlFor={`${idPrefix}-place`}>
-        Birthplace
+        {tr("Birthplace", "Lieu de naissance")}
       </label>
       <input
         id={`${idPrefix}-place`}
@@ -127,7 +139,7 @@ export const BirthplaceField = ({
         value={query}
         maxLength={MAX_PLACE}
         autoComplete="off"
-        placeholder="Start typing a town"
+        placeholder={tr("Start typing a town", "Commencez à taper une ville")}
         aria-describedby={`${idPrefix}-place-status`}
         onFocus={() => setOpen(true)}
         onKeyDown={(event) => {
@@ -147,7 +159,10 @@ export const BirthplaceField = ({
         }}
       />
       {options.length > 0 ? (
-        <ul className="birthplace__options" aria-label="Places that match">
+        <ul
+          className="birthplace__options"
+          aria-label={tr("Places that match", "Lieux correspondants")}
+        >
           {options.map((place) => (
             <li key={`${place.name}-${place.lat}-${place.lon}`}>
               <button

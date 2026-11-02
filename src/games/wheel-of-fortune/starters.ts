@@ -1,3 +1,5 @@
+import { currentLanguage } from "../../lib/language";
+
 /**
  * The wheels a first visit opens with, as tabs: one empty wheel for names,
  * and the Death wheel. Reset puts a wheel back to its starter's slices.
@@ -33,3 +35,31 @@ export const STARTERS: Record<StarterId, Starter> = {
     slices: ["", "", "", ""],
   },
 };
+
+/** The same starters in French, slice for slice. */
+const FRENCH_STARTERS: Record<StarterId, Starter> = {
+  death: {
+    name: "Fin du monde",
+    slices: [
+      "Chute d’astéroïde",
+      "Supervolcan",
+      "Fumée noire",
+      "Méga-séisme",
+      "Tsunami",
+      "Ère glaciaire",
+      "Éruption solaire",
+      "Peste",
+      "Sécheresse",
+      "Incendie",
+      "Inondation",
+    ],
+  },
+  names: {
+    name: "Prénoms",
+    slices: ["", "", "", ""],
+  },
+};
+
+/** A starter as a new wheel takes it, in the page's language. */
+export const starterFor = (id: StarterId): Starter =>
+  currentLanguage() === "fr" ? FRENCH_STARTERS[id] : STARTERS[id];

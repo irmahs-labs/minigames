@@ -1,10 +1,17 @@
 import { useEffect, useRef } from "react";
 
+import { useCopy } from "../../lib/language";
+
+const COPY = {
+  en: { again: "New game", see: "See the board" },
+  fr: { again: "Nouvelle partie", see: "Voir le plateau" },
+};
+
 interface EndDialogProps {
   open: boolean;
   headline: string;
   note: string;
-  /** The main button's label: "New game" unless given. */
+  /** The main button's label: "New game" (in the page's language) unless given. */
   again?: string;
   onNewGame: () => void;
   onClose: () => void;
@@ -15,11 +22,12 @@ export const EndDialog = ({
   open,
   headline,
   note,
-  again = "New game",
+  again,
   onNewGame,
   onClose,
 }: EndDialogProps) => {
   const ref = useRef<HTMLDialogElement>(null);
+  const t = useCopy(COPY);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -55,10 +63,10 @@ export const EndDialog = ({
             className="btn btn--primary"
             onClick={onNewGame}
           >
-            {again}
+            {again ?? t.again}
           </button>
           <button type="button" className="btn btn--quiet" onClick={onClose}>
-            See the board
+            {t.see}
           </button>
         </div>
       </div>

@@ -1,11 +1,21 @@
 import { useMemo, useState } from "react";
 
 import { FULL_DAY, formatDay, inDays } from "./format";
+import { inFrench, say, tr } from "./french";
 import { PeriodNav } from "./period-nav";
 import { nextSabbat, sabbatsIn, sunPointOf } from "./sabbats";
 import type { SabbatDate } from "./sabbats";
 import { longitudeOf } from "./sky";
 import { dayKey, daysBetween } from "./time";
+
+/** A sabbat's kind in French, with its article. */
+const KINDS_FR = new Map(
+  Object.entries({
+    equinox: "Un équinoxe",
+    "fire festival": "Une fête du feu",
+    solstice: "Un solstice",
+  })
+);
 
 interface SabbatsTabProps {
   now: Date;
@@ -45,7 +55,9 @@ const Wheel = ({
       aria-labelledby="year-wheel-title"
     >
       <title id="year-wheel-title">
-        {`The Wheel of the Year, turned to today${next ? `, with ${next.sabbat.name} next` : ""}`}
+        {inFrench()
+          ? `La Roue de l’année, tournée vers aujourd’hui${next ? `, avec ${say(next.sabbat.name)} à venir` : ""}`
+          : `The Wheel of the Year, turned to today${next ? `, with ${next.sabbat.name} next` : ""}`}
       </title>
       <circle
         r="110"
@@ -83,7 +95,7 @@ const Wheel = ({
               textAnchor="middle"
               className="year-wheel__name"
             >
-              {sabbat.name}
+              {say(sabbat.name)}
             </text>
             <text
               x={label.x}
@@ -159,10 +171,11 @@ export const SabbatsTab = ({
         {next ? (
           <div className="stack">
             <p className="kicker">
-              Next sabbat, {inDays(daysBetween(today, next.key))}
+              {tr("Next sabbat", "Prochain sabbat")},{" "}
+              {inDays(daysBetween(today, next.key))}
             </p>
             <h2 id="next-title" className="display page__title">
-              {next.sabbat.name}
+              {say(next.sabbat.name)}
             </h2>
             <p className="page__sub">{formatDay(next.key, FULL_DAY)}</p>
           </div>
@@ -174,14 +187,16 @@ export const SabbatsTab = ({
           className="switch"
           onClick={() => onSouthern(!southern)}
         >
-          <span>Southern hemisphere</span>
+          <span>{tr("Southern hemisphere", "Hémisphère sud")}</span>
           <span aria-hidden="true" className="switch__track">
             <span className="switch__thumb" />
           </span>
         </button>
         <p className="hint">
-          Below the equator the wheel turns the other way round the calendar:
-          Samhain falls at the start of May.
+          {tr(
+            "Below the equator the wheel turns the other way round the calendar: Samhain falls at the start of May.",
+            "Sous l’équateur, la roue tourne dans l’autre sens du calendrier : Samhain tombe début mai."
+          )}
         </p>
       </section>
 
@@ -193,7 +208,7 @@ export const SabbatsTab = ({
         <PeriodNav
           id="sabbats-title"
           unit="year"
-          title={`The sabbats of ${year}`}
+          title={tr(`The sabbats of ${year}`, `Les sabbats de ${year}`)}
           atCurrent={year === thisYear}
           onStep={(by) => setYear(year + by)}
           onCurrent={() => setYear(thisYear)}
@@ -214,25 +229,32 @@ export const SabbatsTab = ({
                 ) : null}
               </p>
               <h3 className="display sabbat__name">
-                {sabbat.name}
+                {say(sabbat.name)}
                 {sabbat.say ? (
                   <span className="sabbat__say"> ({sabbat.say})</span>
                 ) : null}
               </h3>
               <p className="sabbat__also">
-                {sabbat.kind === "equinox" ? "An" : "A"} {sabbat.kind}; also{" "}
-                {sabbat.also}.
+                {inFrench()
+                  ? `${KINDS_FR.get(sabbat.kind) ?? sabbat.kind} ; aussi ${say(sabbat.also)}.`
+                  : `${sabbat.kind === "equinox" ? "An" : "A"} ${sabbat.kind}; also ${sabbat.also}.`}
                 {astronomical && astronomical !== key
-                  ? ` The Sun is halfway there on ${formatDay(astronomical)}.`
+                  ? tr(
+                      ` The Sun is halfway there on ${formatDay(astronomical)}.`,
+                      ` Le Soleil est à mi-chemin le ${formatDay(astronomical)}.`
+                    )
                   : ""}
               </p>
-              <p>{sabbat.about}</p>
+              <p>{say(sabbat.about)}</p>
               <p>
-                <strong>Celebrate:</strong> {sabbat.rituals}
+                <strong>{tr("Celebrate:", "Célébrer :")}</strong>{" "}
+                {say(sabbat.rituals)}
               </p>
               <p className="sabbat__also">
-                <strong>Colours:</strong> {sabbat.colors}.{" "}
-                <strong>Symbols:</strong> {sabbat.symbols}.
+                <strong>{tr("Colours:", "Couleurs :")}</strong>{" "}
+                {say(sabbat.colors)}.{" "}
+                <strong>{tr("Symbols:", "Symboles :")}</strong>{" "}
+                {say(sabbat.symbols)}.
               </p>
             </li>
           ))}

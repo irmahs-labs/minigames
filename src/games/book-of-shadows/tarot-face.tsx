@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { say } from "./french";
 import type { Suit, TarotCard } from "./tarot";
 
 /** A pentagram in a circle, for the pentacles. */
@@ -103,7 +104,9 @@ export const TarotFace = ({
         {card.suit ? SUIT_MARKS[card.suit] : MAJOR_MARK}
       </g>
       <text x="30" y="87" textAnchor="middle" className="tarot-face__name">
-        {card.name.replace(/^The /u, "")}
+        {say(card.name)
+          .replace(/^The /u, "")
+          .replace(/^(?:Le |La |L’)/u, "")}
       </text>
     </g>
   </svg>

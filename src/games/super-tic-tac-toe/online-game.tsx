@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 
 import { signInUrl } from "../../lib/account";
 import type { Account } from "../../lib/account";
+import { useCopy, useLanguage } from "../../lib/language";
+import { serverWords } from "../../lib/server-words";
 import { BoardView } from "./board-view";
 import { EndDialog } from "./end-dialog";
 import { HowToPlay } from "./how-to-play";
@@ -17,6 +19,100 @@ import type { Game, Player } from "./rules";
 const WARN_MS = 60_000;
 
 type Over = Extract<Online, { phase: "over" }>;
+
+const COPY = {
+  en: {
+    cancel: "Cancel",
+    connecting: "Connecting…",
+    draw: "Draw",
+    expired: "Nobody else looked for a game in five minutes.",
+    full: "Every planet is conquered or full, with no three in a row.",
+    gameOver: "Game over",
+    hasToMove: (who: string, time: string) => `${who} has ${time} to move.`,
+    line: "Three planets in a row.",
+    looking: "Looking for a player…",
+    lost: "The game was lost",
+    lostNote: "The server restarted, and the game ended without a result.",
+    moveWithin: (time: string) => `Move within ${time} or you lose.`,
+    noOne: "No one turned up",
+    nobodyElse: "Nobody else is looking yet.",
+    onLeaderboard: (points: string) => `${points} on the leaderboard.`,
+    online: "Online",
+    peopleLooking: (n: number) => `${n} people looking.`,
+    planets: "The planets",
+    playAgain: "Play again",
+    playOnline: "Play online",
+    playSomeone: "Play someone online",
+    playSomeoneNote:
+      "The first two people looking play each other. Every game counts on the leaderboard.",
+    points: (n: number) => (n === 1 ? "point" : "points"),
+    reconnecting: "Connection lost. Reconnecting…",
+    signIn: "Sign in",
+    signInNote:
+      "Online games are played with your irmahs.dev account, so the leaderboard knows who won. Sign in once with Google; every irmahs.dev app shares it.",
+    signInTitle: "Sign in to play online",
+    stopsIn: (time: string) => `Stops looking in ${time}.`,
+    theirTime: (who: string) => `${who} ran out of time.`,
+    theirTurn: (who: string) => `${who}'s turn`,
+    tryAgain: "Try again",
+    unavailable: "Online play is not available",
+    unavailableNote:
+      "The game server cannot be reached right now. The same-screen game still works.",
+    you: "You",
+    youAre: (player: string) => `You are ${player}`,
+    youLose: "You lose",
+    youWin: "You win! 🎉🎉",
+    yourTime: "You ran out of time.",
+    yourTurn: "Your turn",
+  },
+  fr: {
+    cancel: "Annuler",
+    connecting: "Connexion…",
+    draw: "Match nul",
+    expired: "Personne d’autre n’a cherché de partie en cinq minutes.",
+    full: "Toutes les planètes sont conquises ou pleines, sans trois alignées.",
+    gameOver: "Partie terminée",
+    hasToMove: (who: string, time: string) => `${who} a ${time} pour jouer.`,
+    line: "Trois planètes alignées.",
+    looking: "Recherche d’un joueur…",
+    lost: "La partie a été perdue",
+    lostNote:
+      "Le serveur a redémarré, et la partie s’est terminée sans résultat.",
+    moveWithin: (time: string) => `Jouez dans les ${time} ou vous perdez.`,
+    noOne: "Personne n’est venu",
+    nobodyElse: "Personne d’autre ne cherche pour l’instant.",
+    onLeaderboard: (points: string) => `${points} au classement.`,
+    online: "En ligne",
+    peopleLooking: (n: number) => `${n} personnes cherchent.`,
+    planets: "Les planètes",
+    playAgain: "Rejouer",
+    playOnline: "Jouer en ligne",
+    playSomeone: "Affrontez quelqu’un en ligne",
+    playSomeoneNote:
+      "Les deux premières personnes qui cherchent jouent ensemble. Chaque partie compte au classement.",
+    points: (n: number) => (n <= 1 ? "point" : "points"),
+    reconnecting: "Connexion perdue. Reconnexion…",
+    signIn: "Se connecter",
+    signInNote:
+      "Les parties en ligne se jouent avec votre compte irmahs.dev, pour que le classement sache qui a gagné. Connectez-vous une fois avec Google ; toutes les apps irmahs.dev le partagent.",
+    signInTitle: "Connectez-vous pour jouer en ligne",
+    stopsIn: (time: string) => `Fin de la recherche dans ${time}.`,
+    theirTime: (who: string) => `${who} a dépassé son temps.`,
+    theirTurn: (who: string) => `Au tour de ${who}`,
+    tryAgain: "Réessayer",
+    unavailable: "Le jeu en ligne n’est pas disponible",
+    unavailableNote:
+      "Le serveur de jeu est injoignable pour le moment. Le jeu sur le même écran marche toujours.",
+    you: "Vous",
+    youAre: (player: string) => `Vous êtes ${player}`,
+    youLose: "Vous perdez",
+    youWin: "Vous gagnez ! 🎉🎉",
+    yourTime: "Vous avez dépassé votre temps.",
+    yourTurn: "À vous de jouer",
+  },
+};
+
+type Copy = (typeof COPY)["en"];
 
 /** The time now, ticking every second while `running`. */
 const useNow = (running: boolean) => {
@@ -41,38 +137,39 @@ const useNow = (running: boolean) => {
   return now;
 };
 
-const pointsText = (points: number) => {
+const pointsText = (points: number, t: Copy) => {
   const size = Math.abs(points);
-  const unit = size === 1 ? "point" : "points";
+  const unit = t.points(size);
 
   return points < 0 ? `−${size} ${unit}` : `+${size} ${unit}`;
 };
 
-const resultHeadline = ({ seat, winner }: Over) => {
+const resultHeadline = ({ seat, winner }: Over, t: Copy) => {
   if (winner === null) {
-    return "Draw";
+    return t.draw;
   }
 
-  return winner === seat.you ? "You win! 🎉🎉" : "You lose";
+  return winner === seat.you ? t.youWin : t.youLose;
 };
 
-const resultNote = ({ ending, points, seat, winner }: Over) => {
+const resultNote = ({ ending, points, seat, winner }: Over, t: Copy) => {
   const reasons = {
-    full: "Every planet is conquered or full, with no three in a row.",
-    line: "Three planets in a row.",
-    timeout:
-      winner === seat.you
-        ? `${seat.opponent} ran out of time.`
-        : "You ran out of time.",
+    full: t.full,
+    line: t.line,
+    timeout: winner === seat.you ? t.theirTime(seat.opponent) : t.yourTime,
   };
 
-  return `${reasons[ending]} ${pointsText(points)} on the leaderboard.`;
+  return `${reasons[ending]} ${t.onLeaderboard(pointsText(points, t))}`;
 };
 
-const namesFor = (you: Player, opponent: string): Record<Player, string> =>
+const namesFor = (
+  you: Player,
+  opponent: string,
+  t: Copy
+): Record<Player, string> =>
   you === "pink"
-    ? { pink: "You", purple: opponent }
-    : { pink: opponent, purple: "You" };
+    ? { pink: t.you, purple: opponent }
+    : { pink: opponent, purple: t.you };
 
 interface Log {
   kicker: string;
@@ -94,6 +191,8 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
   const { connection, error, join, leave, move, state } = useOnline();
   const [dismissed, setDismissed] = useState<Online | null>(null);
   const now = useNow(state.phase === "queued" || state.phase === "playing");
+  const language = useLanguage();
+  const t = COPY[language];
 
   const seat =
     state.phase === "playing" || state.phase === "over" ? state.seat : null;
@@ -129,34 +228,32 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
         return {
           action: (
             <button type="button" className="btn" onClick={leave}>
-              Cancel
+              {t.cancel}
             </button>
           ),
-          headline: "Looking for a player…",
-          kicker: "Online",
+          headline: t.looking,
+          kicker: t.online,
           note: `${
-            state.waiting > 1
-              ? `${state.waiting} people looking.`
-              : "Nobody else is looking yet."
-          } Stops looking in ${clock(state.deadline, now)}.`,
+            state.waiting > 1 ? t.peopleLooking(state.waiting) : t.nobodyElse
+          } ${t.stopsIn(clock(state.deadline, now))}`,
         };
       }
 
       case "expired": {
         return {
-          action: playButton("Try again"),
-          headline: "No one turned up",
-          kicker: "Online",
-          note: "Nobody else looked for a game in five minutes.",
+          action: playButton(t.tryAgain),
+          headline: t.noOne,
+          kicker: t.online,
+          note: t.expired,
         };
       }
 
       case "lost": {
         return {
-          action: playButton("Play online"),
-          headline: "The game was lost",
-          kicker: "Online",
-          note: "The server restarted, and the game ended without a result.",
+          action: playButton(t.playOnline),
+          headline: t.lost,
+          kicker: t.online,
+          note: t.lostNote,
         };
       }
 
@@ -165,31 +262,31 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
         const left = state.deadline - now;
 
         const hurry = myTurn
-          ? `Move within ${clock(state.deadline, now)} or you lose.`
-          : `${opponent} has ${clock(state.deadline, now)} to move.`;
+          ? t.moveWithin(clock(state.deadline, now))
+          : t.hasToMove(opponent, clock(state.deadline, now));
 
         return {
-          headline: myTurn ? "Your turn" : `${opponent}'s turn`,
-          kicker: `You are ${playerLabel(you)}`,
-          note: `${describe(game)}${left <= WARN_MS ? ` ${hurry}` : ""}`,
+          headline: myTurn ? t.yourTurn : t.theirTurn(opponent),
+          kicker: t.youAre(playerLabel(you, language)),
+          note: `${describe(game, language)}${left <= WARN_MS ? ` ${hurry}` : ""}`,
         };
       }
 
       case "over": {
         return {
-          action: playButton("Play again"),
-          headline: resultHeadline(state),
-          kicker: "Game over",
-          note: resultNote(state),
+          action: playButton(t.playAgain),
+          headline: resultHeadline(state, t),
+          kicker: t.gameOver,
+          note: resultNote(state, t),
         };
       }
 
       default: {
         return {
-          action: playButton("Play online"),
-          headline: "Play someone online",
-          kicker: "Online",
-          note: "The first two people looking play each other. Every game counts on the leaderboard.",
+          action: playButton(t.playOnline),
+          headline: t.playSomeone,
+          kicker: t.online,
+          note: t.playSomeoneNote,
         };
       }
     }
@@ -198,7 +295,7 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
   return (
     <>
       <div className="layout">
-        <section aria-label="The planets" className="panel panel--system">
+        <section aria-label={t.planets} className="panel panel--system">
           <span className="legend">solar.sys</span>
           <BoardView
             game={game}
@@ -224,16 +321,16 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
           {seat ? (
             <PlanetScore
               game={game}
-              names={namesFor(seat.you, seat.opponent)}
+              names={namesFor(seat.you, seat.opponent, t)}
             />
           ) : null}
 
           {log.action ? <div>{log.action}</div> : null}
 
           <p className="hint" aria-live="polite">
-            {connection === "closed" ? "Connection lost. Reconnecting…" : ""}
-            {connection === "connecting" ? "Connecting…" : ""}
-            {connection === "open" && error ? error : ""}
+            {connection === "closed" ? t.reconnecting : ""}
+            {connection === "connecting" ? t.connecting : ""}
+            {connection === "open" && error ? serverWords(error, language) : ""}
           </p>
 
           <HowToPlay />
@@ -243,9 +340,9 @@ const OnlinePlay = ({ onFinished }: { onFinished: () => void }) => {
       {state.phase === "over" ? (
         <EndDialog
           open={dismissed !== state}
-          headline={resultHeadline(state)}
-          note={resultNote(state)}
-          again="Play again"
+          headline={resultHeadline(state, t)}
+          note={resultNote(state, t)}
+          again={t.playAgain}
           onNewGame={join}
           onClose={() => setDismissed(state)}
         />
@@ -266,14 +363,13 @@ interface OnlineGameProps {
  * to their irmahs.dev account, which is how the leaderboard knows them.
  */
 export const OnlineGame = ({ account, onFinished }: OnlineGameProps) => {
+  const t = useCopy(COPY);
+
   if (account === undefined) {
     return (
       <Notice>
-        <h2 className="display turn">Online play is not available</h2>
-        <p className="turn__note">
-          The game server cannot be reached right now. The same-screen game
-          still works.
-        </p>
+        <h2 className="display turn">{t.unavailable}</h2>
+        <p className="turn__note">{t.unavailableNote}</p>
       </Notice>
     );
   }
@@ -281,15 +377,11 @@ export const OnlineGame = ({ account, onFinished }: OnlineGameProps) => {
   if (account === null) {
     return (
       <Notice>
-        <h2 className="display turn">Sign in to play online</h2>
-        <p className="turn__note">
-          Online games are played with your irmahs.dev account, so the
-          leaderboard knows who won. Sign in once with Google; every irmahs.dev
-          app shares it.
-        </p>
+        <h2 className="display turn">{t.signInTitle}</h2>
+        <p className="turn__note">{t.signInNote}</p>
         <div>
           <a href={signInUrl()} className="btn btn--primary">
-            Sign in
+            {t.signIn}
           </a>
         </div>
       </Notice>

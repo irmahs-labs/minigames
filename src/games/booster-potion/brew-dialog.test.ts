@@ -10,6 +10,7 @@ const page: FoundPage = {
   last: null,
   name: "Autumn Hearth",
   note: "",
+  noteFr: "",
   others: 0,
   source: "https://example.com",
   state: "found",

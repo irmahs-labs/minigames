@@ -1,5 +1,22 @@
 import { useEffect, useRef } from "react";
 
+import { useCopy } from "../../lib/language";
+
+const COPY = {
+  en: {
+    again: "Spin again",
+    close: "Close",
+    landed: "The wheel landed on",
+    remove: "Remove from wheel",
+  },
+  fr: {
+    again: "Relancer",
+    close: "Fermer",
+    landed: "La roue s’est arrêtée sur",
+    remove: "Retirer de la roue",
+  },
+};
+
 interface ResultDialogProps {
   /** The winning slice; the dialog is open while it is set. */
   winner: string | null;
@@ -18,6 +35,7 @@ export const ResultDialog = ({
   onRemove,
 }: ResultDialogProps) => {
   const ref = useRef<HTMLDialogElement>(null);
+  const t = useCopy(COPY);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -43,7 +61,7 @@ export const ResultDialog = ({
     >
       <div className="panel result__panel">
         <span className="legend">result.log</span>
-        <p className="kicker">The wheel landed on</p>
+        <p className="kicker">{t.landed}</p>
         <h2 id="result-title" className="result__winner display">
           {winner}
         </h2>
@@ -53,15 +71,15 @@ export const ResultDialog = ({
             className="btn btn--primary"
             onClick={onSpinAgain}
           >
-            Spin again
+            {t.again}
           </button>
           {canRemove ? (
             <button type="button" className="btn" onClick={onRemove}>
-              Remove from wheel
+              {t.remove}
             </button>
           ) : null}
           <button type="button" className="btn btn--quiet" onClick={onClose}>
-            Close
+            {t.close}
           </button>
         </div>
       </div>
