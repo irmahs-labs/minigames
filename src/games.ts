@@ -20,6 +20,8 @@ interface Game {
   blurb: Record<Language, string>;
   /** The card's filename, on its pill, with a real extension: "booster-potion.exe". */
   legend: string;
+  /** Whether the pages under /<slug>/ are its own too, as each quiz is. */
+  nested?: boolean;
   Screen: LazyExoticComponent<ComponentType<GameProps>>;
 }
 
@@ -63,5 +65,16 @@ export const GAMES: readonly Game[] = [
     legend: "book-of-shadows.exe",
     name: { en: "Book of Shadows", fr: "Livre des ombres" },
     slug: "book-of-shadows",
+  },
+  {
+    Screen: lazy(() => import("./games/quizzes/quizzes")),
+    blurb: {
+      en: "Personality quizzes, starting with the big one: what type of witch are you?",
+      fr: "Des quiz de personnalité, à commencer par le grand : quel type de sorcière êtes-vous ?",
+    },
+    legend: "quizzes.exe",
+    name: { en: "Quizzes", fr: "Quiz" },
+    nested: true,
+    slug: "quizzes",
   },
 ];

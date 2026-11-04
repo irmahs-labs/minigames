@@ -53,6 +53,8 @@ Booster Potion can also be played solo: **My own grimoire** keeps a grimoire of 
 - **Tarot**: all 78 cards of a Rider–Waite–Smith deck, each read upright and reversed. **Draw a card** at the top, or choose one a step at a time (major or minor arcana; for a minor card the suit; the card; then upright or reversed), and read it. A guide explains how to read them: the arcana, the suits and their elements, the numbers, the court cards.
 - **Magic 8 Ball**: ask a yes-or-no question and shake. On a phone, shake the phone itself (an iPhone asks once for motion access); anywhere, flick the ball with a finger or the mouse, or press **Shake the ball**. The ball is drawn in 3D: drag it to turn it and look at it from any side. Shaken, it tumbles, rolls its window up to you, and the die floats up with one of the classic twenty answers.
 
+**Quizzes.** Personality quizzes, each at its own address under `/quizzes`. The first is **What type of witch are you?**: twelve questions, four answers each, and sixteen witches (green, hedge, kitchen, cottage, sea, fire, storm, moon, cosmic, crystal, fairy, love, chaos, grey, eclectic and tech). Each answer gives 2 points to the witch it describes best and 1 to another it leans towards, and every witch is the best fit of three answers and the lean of three more. The witch with the most points is yours; on a tie, the first alphabetically by its English name. The result shows a pie of your mix, biggest first: up to eight slices, the rest folded into "Others", with a legend that names every witch and its share. Take it again as often as you like; the last result is kept in the browser and shown when you come back.
+
 ## The sticky board
 
 Under the games, the hub has a **sticky board**: anyone signed in to their irmahs.dev account can stick a note on it, in lemon, matcha, strawberry, taro, blue or white, for everyone to read. Notes are up to 200 characters and never show who wrote them. Each comes down a day after it went up, and the server deletes it, with who wrote it, within the hour after. Everyone can have 5 notes up at a time.
@@ -63,7 +65,7 @@ Mini Games admins can take a note down before then. An admin is anyone the accou
 
 ## Where things are kept
 
-The Wheel of Fortune, the same-screen game and the Book of Shadows (both people's birth details and the card of the day included) keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
+The Wheel of Fortune, the same-screen game, the Book of Shadows (both people's birth details and the card of the day included) and the quizzes' last results keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
 
 ## Develop
 

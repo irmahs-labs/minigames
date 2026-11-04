@@ -55,6 +55,8 @@ The site reads in English or French. The choice is `src/lib/language.ts`: kept i
 2. Add an entry to `GAMES` in `src/games.ts`. The hub lists it and `/<slug>` routes to it; it loads only when opened.
 3. Keep its rules (spinning, scoring, state changes) in plain functions next to it with Vitest tests, apart from the React code.
 
+A game marked `nested` in `GAMES` also owns the pages under `/<slug>/`. Quizzes is one: each quiz is a `Quiz` (`src/games/quizzes/quiz.ts`) in `QUIZZES` (`all-quizzes.ts`), at `/quizzes/<slug>`, its answers giving points to its results; the most points wins, a tie going to the first result alphabetically by its English name. Its last result is kept in `localStorage`, one key per quiz.
+
 ## Names
 
 The name people see is `APP_NAME` in `src/lib/brand.ts`. The image, the network alias, the database and the server folder are all `minigames` (`/srv/minigames`).
