@@ -51,7 +51,11 @@ const PageAt = ({ path }: { path: string }): ReactNode => {
     return <Hub />;
   }
 
-  const game = GAMES.find((entry) => `/${entry.slug}` === path);
+  const game = GAMES.find(
+    (entry) =>
+      path === `/${entry.slug}` ||
+      (entry.nested === true && path.startsWith(`/${entry.slug}/`))
+  );
 
   if (!game) {
     return <NotFound />;

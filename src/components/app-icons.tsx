@@ -132,3 +132,37 @@ export const BookOfShadowsIcon = () => (
     />
   </svg>
 );
+
+/** A cream card with a question mark on it. */
+export const QuizzesIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <rect
+      x="11"
+      y="8"
+      width="18"
+      height="24"
+      rx="3"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M16.5 16.5a3.5 3.5 0 1 1 5 3.2c-1 .5-1.5 1.2-1.5 2.3v.5"
+      fill="none"
+      stroke="#2f3b34"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <circle cx="20" cy="26.5" r="1.3" fill="#2f3b34" />
+  </svg>
+);
