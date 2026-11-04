@@ -22,26 +22,17 @@ export const WITCH_QUIZ: Quiz = {
   questions: [
     {
       answers: [
-        answer(
-          "Gardening, hands in the soil",
-          "Jardiner, les mains dans la terre",
-          { fairy: 1, green: 2 }
-        ),
-        answer(
-          "Baking with the kettle on",
-          "Faire un gâteau, la bouilloire sur le feu",
-          { cottage: 1, kitchen: 2 }
-        ),
-        answer(
-          "A walk on the beach, rain or shine",
-          "Une balade sur la plage, qu’il pleuve ou qu’il vente",
-          { sea: 2, storm: 1 }
-        ),
-        answer("Tinkering with an old radio", "Bricoler une vieille radio", {
+        answer("Gardening", "Jardiner", { fairy: 1, green: 2 }),
+        answer("Baking", "Faire de la pâtisserie", { cottage: 1, kitchen: 2 }),
+        answer("A walk on the beach", "Une balade sur la plage", {
+          sea: 2,
+          storm: 1,
+        }),
+        answer("Tinkering", "Bricoler", {
           eclectic: 1,
           tech: 2,
         }),
-        answer("Reading in bed till noon", "Lire au lit jusqu’à midi", {
+        answer("Reading in bed", "Lire au lit", {
           moon: 2,
         }),
         answer("Playing with your pets", "Jouer avec vos animaux", {
@@ -60,11 +51,7 @@ export const WITCH_QUIZ: Quiz = {
           crystal: 2,
           moon: 1,
         }),
-        answer(
-          "A candle you carved yourself",
-          "Une bougie gravée de vos mains",
-          { fire: 2, hedge: 1 }
-        ),
+        answer("A carved candle", "Une bougie gravée", { fire: 2, hedge: 1 }),
         answer("Your birth chart", "Votre thème astral", {
           cosmic: 2,
           love: 1,
@@ -77,11 +64,7 @@ export const WITCH_QUIZ: Quiz = {
           grey: 1,
           storm: 2,
         }),
-        answer(
-          "Fresh bread and dried herbs",
-          "Du pain frais et des herbes séchées",
-          { green: 1, kitchen: 2 }
-        ),
+        answer("Dried herbs", "Des herbes séchées", { green: 1, kitchen: 2 }),
       ],
       prompt: {
         en: "What would you keep on your altar?",
@@ -128,35 +111,18 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer(
-          "A thunderstorm: beautiful and dangerous at once",
-          "Un orage : beau et dangereux à la fois",
-          { grey: 1, storm: 2 }
-        ),
-        answer(
-          "A misty morning in the woods",
-          "Un matin de brume dans les bois",
-          {
-            fairy: 1,
-            hedge: 2,
-          }
-        ),
-        answer(
-          "A clear night under a full moon",
-          "Une nuit claire sous la pleine lune",
-          { cosmic: 1, moon: 2 }
-        ),
-        answer(
-          "Rain on the window, and a blanket",
-          "La pluie à la fenêtre, et un plaid",
-          { cottage: 2, love: 1 }
-        ),
-        answer(
-          "Snow, every flake a tiny crystal",
-          "La neige, chaque flocon un petit cristal",
-          { crystal: 2, sea: 1 }
-        ),
-        answer("A clear, sunny day", "Une belle journée de soleil", {
+        answer("A thunderstorm", "Un orage", { grey: 1, storm: 2 }),
+        answer("A misty morning", "Un matin de brume", {
+          fairy: 1,
+          hedge: 2,
+        }),
+        answer("A clear night", "Une nuit claire", { cosmic: 1, moon: 2 }),
+        answer("Rain on the window", "La pluie à la fenêtre", {
+          cottage: 2,
+          love: 1,
+        }),
+        answer("Snow", "La neige", { crystal: 2, sea: 1 }),
+        answer("A sunny day", "Une journée ensoleillée", {
           eclectic: 1,
           fire: 2,
         }),
@@ -168,29 +134,27 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer("One to make anything grow", "Un sort pour tout faire pousser", {
-          green: 2,
-          kitchen: 1,
-        }),
         answer(
-          "A glamour to feel unstoppable",
-          "Un charme pour vous sentir irrésistible",
-          { fire: 1, love: 2 }
+          "One to make plants grow",
+          "Un sort pour faire pousser les plantes",
+          {
+            green: 2,
+            kitchen: 1,
+          }
         ),
+        answer("A love spell", "Un sort d’amour", { fire: 1, love: 2 }),
         answer(
           "One nobody has ever tried",
           "Un sort que personne n’a jamais tenté",
           { chaos: 2, eclectic: 1 }
         ),
-        answer("A charm to mend anything", "Un charme pour tout réparer", {
+        answer("A mending charm", "Un charme de réparation", {
           grey: 1,
           tech: 2,
         }),
-        answer(
-          "One to call the wind and rain",
-          "Un sort pour appeler le vent et la pluie",
-          { storm: 2 }
-        ),
+        answer("One to call the wind", "Un sort pour appeler le vent", {
+          storm: 2,
+        }),
         answer("One to talk to animals", "Un sort pour parler aux animaux", {
           hedge: 2,
         }),
@@ -202,35 +166,27 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer("By a crackling fire", "Près d’un feu qui crépite", {
+        answer("By the fire", "Près du feu", {
           cottage: 2,
           fire: 1,
         }),
-        answer(
-          "In a lighthouse by the sea",
-          "Dans un phare au bord de la mer",
-          { moon: 1, sea: 2 }
-        ),
-        answer(
-          "In an observatory, under the stars",
-          "Dans un observatoire, sous les étoiles",
-          { cosmic: 2, tech: 1 }
-        ),
-        answer(
-          "In a mossy fairy glade",
-          "Dans une clairière moussue, chez les fées",
-          { fairy: 2, green: 1 }
-        ),
-        answer(
-          "In a cave of glittering crystals",
-          "Dans une grotte de cristaux scintillants",
-          { crystal: 2, grey: 1 }
-        ),
-        answer(
-          "In a crooked house where nothing matches",
-          "Dans une maison biscornue où rien n’est assorti",
-          { chaos: 2, eclectic: 1 }
-        ),
+        answer("In a lighthouse", "Dans un phare", { moon: 1, sea: 2 }),
+        answer("In an observatory", "Dans un observatoire", {
+          cosmic: 2,
+          tech: 1,
+        }),
+        answer("In a fairy glade", "Dans une clairière enchantée", {
+          fairy: 2,
+          green: 1,
+        }),
+        answer("In a crystal cave", "Dans une grotte de cristal", {
+          crystal: 2,
+          grey: 1,
+        }),
+        answer("In a crooked house", "Dans une maison biscornue", {
+          chaos: 2,
+          eclectic: 1,
+        }),
       ],
       prompt: {
         en: "Where do you feel most at home?",
@@ -239,28 +195,20 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer("Old wisdom, passed down", "Une sagesse ancienne, transmise", {
+        answer("Old wisdom", "Une sagesse ancienne", {
           hedge: 2,
           kitchen: 1,
         }),
-        answer("Suggestions, at best", "Des suggestions, au mieux", {
+        answer("Suggestions", "Des suggestions", {
           chaos: 2,
           storm: 1,
         }),
-        answer(
-          "Take what works, tinker with the rest",
-          "On prend ce qui marche, on bricole le reste",
-          { eclectic: 2, tech: 1 }
-        ),
+        answer("Pick and mix", "À la carte", { eclectic: 2, tech: 1 }),
         answer("All about balance", "Une question d’équilibre", {
           cosmic: 1,
           grey: 2,
         }),
-        answer(
-          "Like the tides: always changing",
-          "Comme les marées : toujours changeantes",
-          { moon: 2, sea: 1 }
-        ),
+        answer("Like the tides", "Comme les marées", { moon: 2, sea: 1 }),
         answer("Kindness first", "La gentillesse d’abord", { love: 2 }),
       ],
       prompt: {
@@ -278,21 +226,13 @@ export const WITCH_QUIZ: Quiz = {
           crystal: 2,
           grey: 1,
         }),
-        answer(
-          "A toolbox of spare parts",
-          "Une boîte à outils pleine de pièces détachées",
-          { chaos: 1, tech: 2 }
-        ),
-        answer("A silver scrying bowl", "Un bol d’argent pour la divination", {
+        answer("A toolbox", "Une boîte à outils", { chaos: 1, tech: 2 }),
+        answer("A scrying bowl", "Un bol de divination", {
           moon: 2,
           sea: 1,
         }),
-        answer(
-          "A broom to sweep out bad luck",
-          "Un balai pour chasser la malchance",
-          { cottage: 2, hedge: 1 }
-        ),
-        answer("A brass astrolabe", "Un astrolabe en laiton", { cosmic: 2 }),
+        answer("A broom", "Un balai", { cottage: 2, hedge: 1 }),
+        answer("A telescope", "Un télescope", { cosmic: 2 }),
       ],
       prompt: {
         en: "Pick a tool.",
@@ -302,7 +242,7 @@ export const WITCH_QUIZ: Quiz = {
     {
       answers: [
         answer("At the full moon", "À la pleine lune", { crystal: 1, moon: 2 }),
-        answer("In the middle of a storm", "En pleine tempête", {
+        answer("In a storm", "Dans la tempête", {
           sea: 1,
           storm: 2,
         }),
@@ -314,7 +254,7 @@ export const WITCH_QUIZ: Quiz = {
           cosmic: 2,
           eclectic: 1,
         }),
-        answer("At dawn, in the garden", "À l’aube, au jardin", {
+        answer("At dawn", "À l’aube", {
           fairy: 2,
           green: 1,
         }),
@@ -331,11 +271,11 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer("Shells and sea glass", "Des coquillages et du verre de mer", {
+        answer("Shells", "Des coquillages", {
           fairy: 1,
           sea: 2,
         }),
-        answer("Old family remedies", "De vieux remèdes de famille", {
+        answer("Old remedies", "De vieux remèdes", {
           cottage: 1,
           hedge: 2,
         }),
@@ -343,19 +283,15 @@ export const WITCH_QUIZ: Quiz = {
           eclectic: 2,
           tech: 1,
         }),
-        answer("Rose quartz hearts", "Des cœurs en quartz rose", {
+        answer("Rose quartz", "Du quartz rose", {
           crystal: 2,
           love: 1,
         }),
-        answer("Jars of homemade jam", "Des pots de confiture maison", {
+        answer("Recipes", "Des recettes", {
           green: 1,
           kitchen: 2,
         }),
-        answer(
-          "Candles in every colour",
-          "Des bougies de toutes les couleurs",
-          { cosmic: 1, fire: 2 }
-        ),
+        answer("Candles", "Des bougies", { cosmic: 1, fire: 2 }),
       ],
       prompt: {
         en: "What do you collect?",
@@ -364,36 +300,15 @@ export const WITCH_QUIZ: Quiz = {
     },
     {
       answers: [
-        answer(
-          "A toad from the garden pond",
-          "Un crapaud de la mare du jardin",
-          { green: 2, hedge: 1 }
-        ),
-        answer(
-          "A black cat who judges everyone",
-          "Un chat noir qui juge tout le monde",
-          { fire: 1, grey: 2 }
-        ),
-        answer(
-          "A raven who steals shiny things",
-          "Un corbeau qui vole tout ce qui brille",
-          { chaos: 1, storm: 2 }
-        ),
-        answer(
-          "A moth drawn to the moon",
-          "Un papillon de nuit attiré par la lune",
-          { fairy: 2, moon: 1 }
-        ),
-        answer(
-          "A clockwork owl you built",
-          "Une chouette mécanique faite de vos mains",
-          { cosmic: 1, tech: 2 }
-        ),
-        answer(
-          "A seal who visits at high tide",
-          "Un phoque qui vient à marée haute",
-          { sea: 2 }
-        ),
+        answer("A toad", "Un crapaud", { green: 2, hedge: 1 }),
+        answer("A black cat", "Un chat noir", { fire: 1, grey: 2 }),
+        answer("A raven", "Un corbeau", { chaos: 1, storm: 2 }),
+        answer("A moth", "Un papillon de nuit", { fairy: 2, moon: 1 }),
+        answer("A clockwork owl", "Une chouette mécanique", {
+          cosmic: 1,
+          tech: 2,
+        }),
+        answer("A seal", "Un phoque", { sea: 2 }),
       ],
       prompt: {
         en: "Your familiar is…",
