@@ -29,7 +29,7 @@ npm test          # vitest
 npm run build     # the site in dist/, the server in dist-server/
 ```
 
-`server/scores.test.ts`, `server/potions.test.ts` and `server/notes.test.ts` run only with `TEST_DATABASE_URL` set (after `npm run db:up`, `postgres://minigames:minigames@localhost:5434/minigames`); the Database workflow runs them in CI.
+`server/scores.test.ts`, `server/potions.test.ts` and `server/notes.test.ts` run only with `TEST_DATABASE_URL` set (after `npm run db:up`, `postgres://minigames@localhost:5434/minigames`); the Database workflow runs them in CI.
 
 The PostToolUse hook in `.claude/hooks/ultracite.sh` runs Ultracite and the typecheck on every file you edit.
 

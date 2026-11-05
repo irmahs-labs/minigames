@@ -4,15 +4,17 @@
 #   npm run db:new -- <name>    create db/migrations/<timestamp>_<name>.sql
 #   npm run db:reset            delete the local database and rebuild it
 #
-# The credentials are for this local container only; production has its own
-# (compose.prod.yaml). Port 5434, so it runs beside the account service's
+# There is no password: this database is for this machine only; production
+# has its own credentials (compose.prod.yaml). Port 5434, so it runs beside the account service's
 # database on 5433 and Pantry Spinner's on 5432.
 services:
   db:
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: minigames
-      POSTGRES_PASSWORD: minigames
+      # No password: Postgres is only reachable from this machine (127.0.0.1)
+      # and the containers beside it, so it lets the local user straight in.
+      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: minigames
     ports:
       - "127.0.0.1:${DB_PORT-5434}:5432"
@@ -28,7 +30,7 @@ services:
     image: ghcr.io/amacneil/dbmate:2
     profiles: [tools]
     environment:
-      DATABASE_URL: postgres://minigames:minigames@db:5432/minigames?sslmode=disable
+      DATABASE_URL: postgres://minigames@db:5432/minigames?sslmode=disable
       DBMATE_MIGRATIONS_DIR: /db/migrations
       DBMATE_NO_DUMP_SCHEMA: "true"
     volumes:
