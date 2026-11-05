@@ -1,9 +1,9 @@
 import type { Answer, Quiz } from "./quiz";
 
 /**
- * What type of witch are you? Sixteen kinds of witch and sixteen questions of
+ * What type of witch are you? Sixteen kinds of witch and thirty-two questions of
  * six answers. Each answer gives 2 points to the witch it describes best, and
- * most give 1 to another it leans towards. Every witch is worth 17 points over
+ * most give 1 to another it leans towards. Every witch is worth 35 points over
  * all the answers and never twice in one question, so each has the same
  * chance and can come out on top.
  */
@@ -15,8 +15,8 @@ const answer = (
 
 export const WITCH_QUIZ: Quiz = {
   blurb: {
-    en: "Sixteen questions, sixteen kinds of witch. Find out which one you are, and how much of the others.",
-    fr: "Seize questions, seize types de sorcière. Découvrez lequel est le vôtre, et ce que vous avez des autres.",
+    en: "Thirty-two questions, sixteen kinds of witch. Find out which one you are, and how much of the others.",
+    fr: "Trente-deux questions, seize types de sorcière. Découvrez lequel est le vôtre, et ce que vous avez des autres.",
   },
   legend: "which-witch.txt",
   questions: [
@@ -725,6 +725,613 @@ export const WITCH_QUIZ: Quiz = {
       prompt: {
         en: "Your ideal evening?",
         fr: "Votre soirée idéale ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A wild daisy from the meadow",
+          "Une marguerite sauvage des prés",
+          { cottage: 1, green: 2 }
+        ),
+        answer(
+          "A deep red rose in a glass vase",
+          "Une rose rouge foncé dans un vase en verre",
+          { crystal: 1, love: 2 }
+        ),
+        answer(
+          "A white moonflower that opens at night",
+          "Une fleur de lune blanche qui s’ouvre la nuit",
+          { moon: 2, sea: 1 }
+        ),
+        answer(
+          "A sprig of hawthorn from the hedgerow",
+          "Un brin d’aubépine cueilli dans la haie",
+          { hedge: 2, kitchen: 1 }
+        ),
+        answer(
+          "A bluebell from an enchanted wood",
+          "Une jacinthe d’une forêt enchantée",
+          { cosmic: 1, fairy: 2 }
+        ),
+        answer(
+          "A bright sunflower turning to the sun",
+          "Un tournesol éclatant tourné vers le soleil",
+          { eclectic: 1, fire: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a flower.",
+        fr: "Choisissez une fleur.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A warm loaf of homemade bread wrapped in cloth",
+          "Une miche de pain maison encore chaude, enveloppée dans un torchon",
+          { green: 1, kitchen: 2 }
+        ),
+        answer(
+          "A polished moonstone on a silk ribbon",
+          "Une pierre de lune polie sur un ruban de soie",
+          { crystal: 2, love: 1 }
+        ),
+        answer(
+          "A handmade lamp built from old parts",
+          "Une lampe faite main avec de vieilles pièces",
+          { fire: 1, tech: 2 }
+        ),
+        answer(
+          "A knitted blanket for cold nights",
+          "Une couverture tricotée pour les nuits froides",
+          { cottage: 2, hedge: 1 }
+        ),
+        answer(
+          "A framed star map of their birthday",
+          "Une carte du ciel encadrée du jour de sa naissance",
+          { cosmic: 2, moon: 1 }
+        ),
+        answer(
+          "A mystery box of little treasures",
+          "Une boîte mystère pleine de petits trésors",
+          { chaos: 1, eclectic: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a gift to give.",
+        fr: "Choisissez un cadeau à offrir.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A wild, windy autumn with storms rolling in",
+          "Un automne sauvage et venteux, plein d’orages",
+          { hedge: 1, storm: 2 }
+        ),
+        answer(
+          "A fresh, blooming spring in the garden",
+          "Un printemps frais et fleuri au jardin",
+          { green: 2, kitchen: 1 }
+        ),
+        answer(
+          "A hot, golden summer under a blazing sun",
+          "Un été chaud et doré sous un soleil de plomb",
+          { eclectic: 1, fire: 2 }
+        ),
+        answer(
+          "A snowy winter by a warm stove",
+          "Un hiver enneigé près d’un poêle bien chaud",
+          { cottage: 2, crystal: 1 }
+        ),
+        answer(
+          "The quiet days between two seasons",
+          "Les jours calmes entre deux saisons",
+          { grey: 2, moon: 1 }
+        ),
+        answer(
+          "Long summer evenings by a warm sea",
+          "De longues soirées d’été au bord d’une mer tiède",
+          { fairy: 1, sea: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Your favourite season?",
+        fr: "Votre saison préférée ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A soft silver grey, like morning mist",
+          "Un gris argenté et doux, comme la brume du matin",
+          { grey: 2, storm: 1 }
+        ),
+        answer(
+          "A rosy pink, like a first blush",
+          "Un rose tendre, comme une première rougeur",
+          { cottage: 1, love: 2 }
+        ),
+        answer(
+          "A deep midnight blue, scattered with stars",
+          "Un bleu nuit profond, semé d’étoiles",
+          { cosmic: 2, tech: 1 }
+        ),
+        answer(
+          "A pale sea-glass green, like the shallows",
+          "Un vert d’eau pâle, comme les hauts-fonds",
+          { fairy: 1, sea: 2 }
+        ),
+        answer(
+          "Every colour at once, splashed everywhere",
+          "Toutes les couleurs à la fois, éclaboussées partout",
+          { chaos: 2, fire: 1 }
+        ),
+        answer(
+          "A shimmering violet, like amethyst",
+          "Un violet chatoyant, comme l’améthyste",
+          { crystal: 2, moon: 1 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a colour.",
+        fr: "Choisissez une couleur.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "An old folk song sung around the fire",
+          "Une vieille chanson populaire chantée autour du feu",
+          { hedge: 2, kitchen: 1 }
+        ),
+        answer(
+          "Loud, thunderous drums that shake the floor",
+          "De gros tambours qui font trembler le sol comme le tonnerre",
+          { chaos: 1, storm: 2 }
+        ),
+        answer(
+          "A tinkling tune from a music box",
+          "Un air cristallin de boîte à musique",
+          { fairy: 2, moon: 1 }
+        ),
+        answer(
+          "A crackly record on a turntable you fixed",
+          "Un vinyle qui grésille sur une platine que vous avez réparée",
+          { cottage: 1, tech: 2 }
+        ),
+        answer(
+          "A fiery flamenco guitar on a summer night",
+          "Une guitare flamenca enflammée par une nuit d’été",
+          { fire: 2, love: 1 }
+        ),
+        answer(
+          "A playlist of every genre at once",
+          "Une playlist de tous les genres à la fois",
+          { cosmic: 1, eclectic: 2 }
+        ),
+      ],
+      prompt: {
+        en: "What music do you love?",
+        fr: "Quelle musique aimez-vous ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Under a loose floorboard in the hallway",
+          "Sous une latte disjointe du couloir",
+          { cottage: 2, grey: 1 }
+        ),
+        answer(
+          "In a different messy pile every week",
+          "Dans une pile en désordre, différente chaque semaine",
+          { chaos: 2, storm: 1 }
+        ),
+        answer(
+          "In a waterproof chest buried on the beach",
+          "Dans un coffre étanche enterré sur la plage",
+          { moon: 1, sea: 2 }
+        ),
+        answer(
+          "In the hollow of an old oak tree",
+          "Dans le creux d’un vieux chêne",
+          { fairy: 2, hedge: 1 }
+        ),
+        answer(
+          "Behind a secret panel you built yourself",
+          "Derrière un panneau secret que vous avez construit",
+          { cosmic: 1, tech: 2 }
+        ),
+        answer(
+          "Tucked between the recipe books in the kitchen",
+          "Glissé entre les livres de recettes dans la cuisine",
+          { green: 1, kitchen: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Where do you hide your spellbook?",
+        fr: "Où cachez-vous votre grimoire ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A warm cinnamon bun fresh from the oven",
+          "Une brioche à la cannelle tout juste sortie du four",
+          { fire: 1, kitchen: 2 }
+        ),
+        answer(
+          "Sweet wild berries from the bushes",
+          "Des baies sauvages et sucrées cueillies dans les buissons",
+          { fairy: 2, hedge: 1 }
+        ),
+        answer(
+          "Chocolate-dipped strawberries for two",
+          "Des fraises enrobées de chocolat pour deux",
+          { crystal: 1, love: 2 }
+        ),
+        answer("Salty chips by the harbour", "Des frites salées sur le port", {
+          eclectic: 1,
+          sea: 2,
+        }),
+        answer(
+          "A strange mix of whatever’s in the fridge",
+          "Un drôle de mélange de ce qu’il y a dans le frigo",
+          { chaos: 2, tech: 1 }
+        ),
+        answer(
+          "Crunchy carrots straight from the garden",
+          "Des carottes croquantes tout droit du potager",
+          { green: 2, grey: 1 }
+        ),
+      ],
+      prompt: {
+        en: "Your favourite snack?",
+        fr: "Votre en-cas préféré ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A calm voice that settles any argument",
+          "Une voix calme qui apaise toutes les disputes",
+          { cottage: 1, grey: 2 }
+        ),
+        answer(
+          "A wild temper that changes the weather",
+          "Un tempérament sauvage qui change la météo",
+          { fire: 1, storm: 2 }
+        ),
+        answer(
+          "Healing hands that soothe any ache",
+          "Des mains guérisseuses qui apaisent toutes les douleurs",
+          { crystal: 2, kitchen: 1 }
+        ),
+        answer(
+          "A sixth sense for ghosts and spirits",
+          "Un sixième sens pour les fantômes et les esprits",
+          { hedge: 2, sea: 1 }
+        ),
+        answer(
+          "Vivid dreams that come true",
+          "Des rêves si vifs qu’ils se réalisent",
+          { fairy: 1, moon: 2 }
+        ),
+        answer(
+          "A quick mind that learns anything",
+          "Un esprit vif qui apprend tout",
+          { chaos: 1, eclectic: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a superpower.",
+        fr: "Choisissez un super-pouvoir.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Smoky cedarwood that crackles as it burns",
+          "Du cèdre fumé qui crépite en brûlant",
+          { fire: 2, storm: 1 }
+        ),
+        answer(
+          "Sweet vanilla with a hint of rose",
+          "Une douce vanille avec une touche de rose",
+          { crystal: 1, love: 2 }
+        ),
+        answer(
+          "Fresh pine from a snowy forest",
+          "Du pin frais d’une forêt enneigée",
+          { fairy: 1, green: 2 }
+        ),
+        answer(
+          "Warm apple pie with cinnamon",
+          "Une tarte aux pommes tiède à la cannelle",
+          { eclectic: 1, kitchen: 2 }
+        ),
+        answer(
+          "Soft jasmine that blooms at night",
+          "Un jasmin doux qui fleurit la nuit",
+          { moon: 2, sea: 1 }
+        ),
+        answer(
+          "Ancient frankincense from faraway lands",
+          "Un encens ancien venu de terres lointaines",
+          { cosmic: 2, grey: 1 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a candle scent.",
+        fr: "Choisissez un parfum de bougie.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Writing last night’s dreams in a journal",
+          "Noter les rêves de la nuit dans un carnet",
+          { fairy: 1, moon: 2 }
+        ),
+        answer(
+          "Lighting a little candle on the kitchen table",
+          "Allumer une petite bougie sur la table de la cuisine",
+          { fire: 2, love: 1 }
+        ),
+        answer(
+          "Watering thirsty plants on the windowsill",
+          "Arroser les plantes assoiffées sur le rebord de la fenêtre",
+          { cottage: 1, green: 2 }
+        ),
+        answer(
+          "Reading your daily horoscope over breakfast",
+          "Lire votre horoscope du jour au petit-déjeuner",
+          { cosmic: 2, kitchen: 1 }
+        ),
+        answer(
+          "Fixing the squeaky coffee machine in the kitchen",
+          "Réparer la machine à café qui grince dans la cuisine",
+          { eclectic: 1, tech: 2 }
+        ),
+        answer(
+          "Hitting snooze five times in a warm bed",
+          "Repousser le réveil cinq fois dans un lit bien chaud",
+          { chaos: 2, storm: 1 }
+        ),
+      ],
+      prompt: {
+        en: "How do you start your day?",
+        fr: "Comment commencez-vous la journée ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A thatched cottage with roses round the door",
+          "Une chaumière avec des roses autour de la porte",
+          { cottage: 2, green: 1 }
+        ),
+        answer(
+          "A wooden cabin on stilts above the sea",
+          "Une cabane en bois sur pilotis au-dessus de la mer",
+          { cosmic: 1, sea: 2 }
+        ),
+        answer(
+          "A secret treehouse high in the branches",
+          "Une cabane secrète perchée dans les branches",
+          { fairy: 2, tech: 1 }
+        ),
+        answer(
+          "A tall stone tower on a windswept cliff",
+          "Une haute tour de pierre sur une falaise battue par les vents",
+          { grey: 1, storm: 2 }
+        ),
+        answer(
+          "A colourful houseboat full of odd finds",
+          "Une péniche colorée pleine de trouvailles insolites",
+          { chaos: 1, eclectic: 2 }
+        ),
+        answer(
+          "A little hut at the edge of the woods",
+          "Une petite hutte à l’orée des bois",
+          { hedge: 2, kitchen: 1 }
+        ),
+      ],
+      prompt: {
+        en: "Your dream house?",
+        fr: "La maison de vos rêves ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A battered book of old folk tales",
+          "Un vieux livre de contes populaires tout abîmé",
+          { hedge: 2, moon: 1 }
+        ),
+        answer(
+          "A stained cookbook full of handwritten notes",
+          "Un livre de cuisine taché, plein de notes manuscrites",
+          { green: 1, kitchen: 2 }
+        ),
+        answer(
+          "A thick atlas of the night sky",
+          "Un épais atlas du ciel nocturne",
+          { cosmic: 2, storm: 1 }
+        ),
+        answer(
+          "A dog-eared romance novel",
+          "Un roman d’amour aux pages cornées",
+          { fire: 1, love: 2 }
+        ),
+        answer(
+          "A dusty grimoire of light and dark magic",
+          "Un grimoire poussiéreux de magie blanche et noire",
+          { crystal: 1, grey: 2 }
+        ),
+        answer(
+          "A greasy repair manual for old machines",
+          "Un manuel de réparation graisseux pour vieilles machines",
+          { chaos: 1, tech: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a book.",
+        fr: "Choisissez un livre.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Shouting into the wind on a hilltop",
+          "Crier dans le vent au sommet d’une colline",
+          { sea: 1, storm: 2 }
+        ),
+        answer(
+          "Tidying the whole house from top to bottom",
+          "Ranger toute la maison de fond en comble",
+          { cottage: 2, tech: 1 }
+        ),
+        answer(
+          "Holding a cool stone in your palm",
+          "Serrer une pierre fraîche dans votre paume",
+          { crystal: 2, green: 1 }
+        ),
+        answer(
+          "Crying it out under the night sky",
+          "Pleurer un bon coup sous le ciel nocturne",
+          { love: 1, moon: 2 }
+        ),
+        answer(
+          "Dyeing your hair a wild new colour",
+          "Teindre vos cheveux d’une nouvelle couleur folle",
+          { chaos: 2, eclectic: 1 }
+        ),
+        answer(
+          "Sitting quietly with the feeling until it passes",
+          "Rester tranquillement avec ce que vous ressentez, jusqu’à ce que ça passe",
+          { grey: 2, hedge: 1 }
+        ),
+      ],
+      prompt: {
+        en: "How do you get through a bad day?",
+        fr: "Comment traversez-vous une mauvaise journée ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A chunky quartz ring on your thumb",
+          "Une grosse bague en quartz au pouce",
+          { crystal: 2, grey: 1 }
+        ),
+        answer(
+          "A silver crescent pendant on a fine chain",
+          "Un pendentif croissant de lune en argent sur une fine chaîne",
+          { moon: 2, sea: 1 }
+        ),
+        answer(
+          "A heart-shaped locket with a photo inside",
+          "Un médaillon en forme de cœur avec une photo à l’intérieur",
+          { cottage: 1, love: 2 }
+        ),
+        answer(
+          "A tiny watch you rebuilt yourself",
+          "Une petite montre que vous avez remontée vous-même",
+          { cosmic: 1, tech: 2 }
+        ),
+        answer(
+          "A stack of mismatched bracelets from everywhere",
+          "Une pile de bracelets dépareillés venus de partout",
+          { eclectic: 2, storm: 1 }
+        ),
+        answer(
+          "A dainty crown of fresh flowers",
+          "Une délicate couronne de fleurs fraîches",
+          { fairy: 2, green: 1 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a piece of jewellery.",
+        fr: "Choisissez un bijou.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Rolling thunder in the distance",
+          "Le tonnerre qui gronde au loin",
+          { chaos: 1, storm: 2 }
+        ),
+        answer(
+          "Big waves crashing on the rocks",
+          "De grosses vagues qui se brisent sur les rochers",
+          { crystal: 1, sea: 2 }
+        ),
+        answer(
+          "A crackling fire on a cold night",
+          "Un feu qui crépite par une nuit froide",
+          { fire: 2, love: 1 }
+        ),
+        answer(
+          "A kettle whistling in the kitchen",
+          "Une bouilloire qui siffle dans la cuisine",
+          { cottage: 2, tech: 1 }
+        ),
+        answer(
+          "Sweet birdsong in the garden at dawn",
+          "Un doux chant d’oiseaux au jardin à l’aube",
+          { green: 2, hedge: 1 }
+        ),
+        answer(
+          "Deep silence in a sleeping house",
+          "Un silence profond dans une maison endormie",
+          { cosmic: 1, grey: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Your favourite sound?",
+        fr: "Votre son préféré ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A long trip to the stars and back",
+          "Un long voyage jusqu’aux étoiles, aller et retour",
+          { cosmic: 2, tech: 1 }
+        ),
+        answer(
+          "A whole world with no rules at all",
+          "Un monde entier sans aucune règle",
+          { chaos: 2, sea: 1 }
+        ),
+        answer(
+          "A secret cave of crystals all your own",
+          "Une grotte secrète de cristaux rien qu’à vous",
+          { crystal: 2, fairy: 1 }
+        ),
+        answer(
+          "A big table full of the people you love",
+          "Une grande table remplie des gens que vous aimez",
+          { kitchen: 2, love: 1 }
+        ),
+        answer(
+          "A little bit of everything, please",
+          "Un peu de tout, s’il vous plaît",
+          { eclectic: 2, fire: 1 }
+        ),
+        answer(
+          "A quiet talk with your ancestors",
+          "Une conversation tranquille avec vos ancêtres",
+          { grey: 1, hedge: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Make a wish.",
+        fr: "Faites un vœu.",
       },
     },
   ],
