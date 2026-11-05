@@ -50,9 +50,9 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       - name: The leaderboard's, the recipe book's and the sticky board's queries against the migrated database
-        run: npx vitest run server/scores.test.ts server/potions.test.ts server/notes.test.ts
+        run: npm test -- server/scores.test.ts server/potions.test.ts server/notes.test.ts
         env:
-          TEST_DATABASE_URL: postgres://minigames:minigames@localhost:5434/minigames
+          TEST_DATABASE_URL: postgres://minigames@localhost:5434/minigames

@@ -8,7 +8,7 @@ import { GAMES } from "./games";
 import { Hub } from "./hub";
 import { APP_NAME } from "./lib/brand";
 import { useCopy, useLanguage } from "./lib/language";
-import { Link, usePath } from "./lib/router";
+import { Link, usePath, withoutTrailingSlashes } from "./lib/router";
 
 const NOT_FOUND = {
   en: {
@@ -75,7 +75,7 @@ const PageAt = ({ path }: { path: string }): ReactNode => {
 /** Every page, and the footer under it. */
 export const App = () => {
   // "/wheel-of-fortune/" and "/wheel-of-fortune" are the same page.
-  const path = usePath().replace(/\/+$/u, "") || "/";
+  const path = withoutTrailingSlashes(usePath()) || "/";
 
   return (
     <>
