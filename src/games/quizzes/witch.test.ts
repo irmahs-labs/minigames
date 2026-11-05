@@ -18,8 +18,8 @@ describe("what type of witch are you?", () => {
     expect(ids).toHaveLength(16);
   });
 
-  it("has twelve questions of six answers, each in English and French", () => {
-    expect(WITCH_QUIZ.questions).toHaveLength(12);
+  it("has sixteen questions of six answers, each in English and French", () => {
+    expect(WITCH_QUIZ.questions).toHaveLength(16);
 
     for (const question of WITCH_QUIZ.questions) {
       expect(question.answers).toHaveLength(6);
@@ -51,13 +51,13 @@ describe("what type of witch are you?", () => {
     }
   });
 
-  it("is fair: every witch is worth 13 points over all the answers", () => {
+  it("is fair: every witch is worth 17 points over all the answers", () => {
     for (const id of ids) {
       const worth = WITCH_QUIZ.questions.flatMap((question) =>
         question.answers.map((answer) => answer.points[id] ?? 0)
       );
 
-      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(13);
+      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(17);
     }
   });
 

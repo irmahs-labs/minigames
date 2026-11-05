@@ -1,9 +1,9 @@
 import type { Answer, Quiz } from "./quiz";
 
 /**
- * What type of witch are you? Sixteen kinds of witch and twelve questions of
+ * What type of witch are you? Sixteen kinds of witch and sixteen questions of
  * six answers. Each answer gives 2 points to the witch it describes best, and
- * most give 1 to another it leans towards. Every witch is worth 13 points over
+ * most give 1 to another it leans towards. Every witch is worth 17 points over
  * all the answers and never twice in one question, so each has the same
  * chance and can come out on top.
  */
@@ -15,8 +15,8 @@ const answer = (
 
 export const WITCH_QUIZ: Quiz = {
   blurb: {
-    en: "Twelve questions, sixteen kinds of witch. Find out which one you are, and how much of the others.",
-    fr: "Douze questions, seize types de sorcière. Découvrez lequel est le vôtre, et ce que vous avez des autres.",
+    en: "Sixteen questions, sixteen kinds of witch. Find out which one you are, and how much of the others.",
+    fr: "Seize questions, seize types de sorcière. Découvrez lequel est le vôtre, et ce que vous avez des autres.",
   },
   legend: "which-witch.txt",
   questions: [
@@ -573,6 +573,158 @@ export const WITCH_QUIZ: Quiz = {
       prompt: {
         en: "With one spell, you’d change the world by…",
         fr: "D’un seul sort, vous changeriez le monde…",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A steaming mug of chamomile from the garden",
+          "Une tasse fumante de camomille du jardin",
+          { green: 2 }
+        ),
+        answer(
+          "A salty sea-breeze cocktail on the beach",
+          "Un cocktail salé à la brise marine sur la plage",
+          { sea: 2, storm: 1 }
+        ),
+        answer(
+          "A cold glass of moon water from the windowsill",
+          "Un verre frais d’eau de lune du rebord de la fenêtre",
+          { crystal: 1, moon: 2 }
+        ),
+        answer(
+          "A fizzy lemonade that sparkles like stardust",
+          "Une limonade pétillante qui scintille comme de la poussière d’étoiles",
+          { cosmic: 2, fairy: 1 }
+        ),
+        answer(
+          "A strong black coffee with no sugar",
+          "Un café noir bien serré, sans sucre",
+          { grey: 2 }
+        ),
+        answer(
+          "A strange potion nobody can name",
+          "Une potion étrange que personne ne sait nommer",
+          { chaos: 1, eclectic: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Pick a drink.",
+        fr: "Choisissez une boisson.",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "A homemade biscuit wrapped for later",
+          "Un biscuit maison emballé pour plus tard",
+          { kitchen: 2 }
+        ),
+        answer(
+          "A lucky acorn from the woods",
+          "Un gland porte-bonheur ramassé dans les bois",
+          { hedge: 2 }
+        ),
+        answer(
+          "A battered box of matches and a candle stub",
+          "Une vieille boîte d’allumettes et un bout de bougie",
+          { fire: 2, grey: 1 }
+        ),
+        answer(
+          "A tiny screwdriver set for emergencies",
+          "Un petit jeu de tournevis pour les urgences",
+          { chaos: 1, tech: 2 }
+        ),
+        answer(
+          "A white feather caught in the wind",
+          "Une plume blanche emportée par le vent",
+          { fairy: 1, storm: 2 }
+        ),
+        answer(
+          "A messy jumble of everything and nothing",
+          "Un fouillis de tout et de rien",
+          { eclectic: 2 }
+        ),
+      ],
+      prompt: {
+        en: "What’s in your bag?",
+        fr: "Qu’y a-t-il dans votre sac ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Renting a cosy cottage in the countryside",
+          "Louer un cottage douillet à la campagne",
+          { cottage: 2, green: 1 }
+        ),
+        answer(
+          "Sailing a little boat around the islands",
+          "Naviguer sur un petit bateau autour des îles",
+          { sea: 2, storm: 1 }
+        ),
+        answer(
+          "Chasing the northern lights in Iceland",
+          "Chasser les aurores boréales en Islande",
+          { cosmic: 2, crystal: 1 }
+        ),
+        answer(
+          "Cooking fresh pasta with your love in Italy",
+          "Cuisiner des pâtes fraîches avec votre amour en Italie",
+          { kitchen: 1, love: 2 }
+        ),
+        answer(
+          "Watching glowing volcanoes in Hawaii",
+          "Admirer des volcans incandescents à Hawaï",
+          { chaos: 1, fire: 2 }
+        ),
+        answer(
+          "Camping by a moonlit lake in Finland",
+          "Camper au bord d’un lac au clair de lune en Finlande",
+          { grey: 1, moon: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Your dream holiday?",
+        fr: "Vos vacances de rêve ?",
+      },
+    },
+    {
+      answers: [
+        answer(
+          "Knitting a warm scarf by the fire",
+          "Tricoter une écharpe bien chaude au coin du feu",
+          { cottage: 2 }
+        ),
+        answer(
+          "Telling spooky stories around a campfire",
+          "Raconter des histoires qui font peur autour d’un feu de camp",
+          { hedge: 2 }
+        ),
+        answer(
+          "Hosting a cosy dinner for your friends",
+          "Organiser un dîner douillet pour vos amis",
+          { kitchen: 1, love: 2 }
+        ),
+        answer(
+          "Arranging shiny crystals on the windowsill",
+          "Disposer de jolis cristaux sur le rebord de la fenêtre",
+          { crystal: 2 }
+        ),
+        answer(
+          "Leaving sweet honey out for the fairies",
+          "Laisser du miel doux pour les fées",
+          { fairy: 2, green: 1 }
+        ),
+        answer(
+          "Building a clockwork toy at the kitchen table",
+          "Construire un jouet mécanique sur la table de la cuisine",
+          { chaos: 1, tech: 2 }
+        ),
+      ],
+      prompt: {
+        en: "Your ideal evening?",
+        fr: "Votre soirée idéale ?",
       },
     },
   ],
