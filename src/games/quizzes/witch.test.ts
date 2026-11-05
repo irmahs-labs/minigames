@@ -18,11 +18,11 @@ describe("what type of witch are you?", () => {
     expect(ids).toHaveLength(16);
   });
 
-  it("has twelve questions of four answers, each in English and French", () => {
-    expect(WITCH_QUIZ.questions).toHaveLength(12);
+  it("has thirty-two questions of six answers, each in English and French", () => {
+    expect(WITCH_QUIZ.questions).toHaveLength(32);
 
     for (const question of WITCH_QUIZ.questions) {
-      expect(question.answers).toHaveLength(4);
+      expect(question.answers).toHaveLength(6);
       expect(question.prompt.fr).not.toBe(question.prompt.en);
 
       for (const answer of question.answers) {
@@ -51,13 +51,24 @@ describe("what type of witch are you?", () => {
     }
   });
 
-  it("is fair: every witch is worth 2 in three answers and 1 in three more", () => {
+  it("is fair: every witch is worth 35 points over all the answers", () => {
     for (const id of ids) {
       const worth = WITCH_QUIZ.questions.flatMap((question) =>
-        question.answers.flatMap((answer) => answer.points[id] ?? [])
+        question.answers.map((answer) => answer.points[id] ?? 0)
       );
 
-      expect(worth.toSorted()).toEqual([1, 1, 1, 2, 2, 2]);
+      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(35);
+    }
+  });
+
+  it("gives 2 points to one witch an answer, and 1 to at most one more", () => {
+    for (const question of WITCH_QUIZ.questions) {
+      for (const answer of question.answers) {
+        expect(Object.values(answer.points).toSorted()).toSatisfy(
+          (points: number[]) =>
+            points.join(",") === "2" || points.join(",") === "1,2"
+        );
+      }
     }
   });
 
