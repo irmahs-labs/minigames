@@ -67,6 +67,16 @@ export const GAMES: readonly Game[] = [
     slug: "book-of-shadows",
   },
   {
+    Screen: lazy(() => import("./games/spell-creator/spell-creator")),
+    blurb: {
+      en: "Write two rhyming lines and cast them as a spell: the better the rhyme, the more powerful the spell.",
+      fr: "Écrivez deux vers qui riment et lancez-les comme un sort : plus la rime est belle, plus le sort est puissant. En anglais uniquement.",
+    },
+    legend: "spell-creator.exe",
+    name: { en: "Spell Creator", fr: "Créateur de sorts" },
+    slug: "spell-creator",
+  },
+  {
     Screen: lazy(() => import("./games/quizzes/quizzes")),
     blurb: {
       en: "Personality quizzes, starting with the big one: what type of witch are you?",
