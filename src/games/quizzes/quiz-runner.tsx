@@ -167,7 +167,7 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
     <section className="panel quiz quiz--result">
       <span className="legend">result.log</span>
       <div className="quiz__verdict">
-        <p className="kicker">{t.youAre}</p>
+        <p className="kicker">{quiz.verdict?.[language] ?? t.youAre}</p>
         <h2 ref={heading} tabIndex={-1} className="display quiz__title">
           {result?.name[language]}
         </h2>

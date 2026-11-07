@@ -52,7 +52,8 @@ const QuizList = () => {
                 <p className="game-card__blurb">{quiz.blurb[language]}</p>
                 {result ? (
                   <p className="quiz-card__result">
-                    {t.you} <strong>{result.name[language]}</strong>
+                    {quiz.verdict?.[language] ?? t.you}{" "}
+                    <strong>{result.name[language]}</strong>
                   </p>
                 ) : null}
                 <span className="game-card__play">
