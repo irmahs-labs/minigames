@@ -166,3 +166,34 @@ export const QuizzesIcon = () => (
     <circle cx="20" cy="26.5" r="1.3" fill="#2f3b34" />
   </svg>
 );
+
+/** A wand with a sparkle at its tip. */
+export const SpellCreatorIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M10 30L22.5 17.5"
+      stroke="#2f3b34"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
+    <path
+      d="M26 7l1.7 5.3L33 14l-5.3 1.7L26 21l-1.7-5.3L19 14l5.3-1.7z"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.3"
+      strokeLinejoin="round"
+    />
+    <circle cx="12.5" cy="12" r="1.6" fill="#2f3b34" />
+    <circle cx="29" cy="28" r="1.6" fill="#2f3b34" />
+  </svg>
+);

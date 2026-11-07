@@ -49,6 +49,8 @@ The server (`server/`, Hono on Node) serves the built site, `/api`, and `/ws`, t
 
 The site reads in English or French. The choice is `src/lib/language.ts`: kept in localStorage and in a `lang` cookie on `irmahs.dev` that every irmahs.dev app reads and writes, so one pick carries across the apps; the header's EN/FR pill (`src/components/language-toggle.tsx`) switches it. Every string a visitor sees has both versions, in a `COPY = { en, fr }` object beside the component that shows it (`useCopy(COPY)`), and a game's `name` and `blurb` in `GAMES` are `{ en, fr }`. The server's refusals stay English sentences and `src/lib/server-words.ts` gives each its French. Booster Potion's notes are `noteFr` beside `note` in the server-only recipes; its ingredients and clues are read back in French from `pantry-fr.ts`. The Book of Shadows' data stays in English, and `french.ts` (one file per topic in `french/`) gives each line its French through `say`; its own words use `tr(english, french)`.
 
+Spell Creator (`src/games/spell-creator/`) is the one game in English only, because its spells rhyme in English: its own words are English, marked `lang="en"`, and in French a note says so; its `GAMES` entry and the way back to the hub are still in both. It hears words through the CMU Pronouncing Dictionary (the `cmu-pronouncing-dictionary` package), which `vite.config.ts` packs at build time into the `virtual:pronunciations` module (`pronunciations.ts`); only the game loads it (`dictionary.ts`). The tiers are `spell.ts`, the rhymes `rhyme.ts`.
+
 ## Adding a game
 
 1. Put it in its own folder, `src/games/<slug>/`, with a default-exported screen component, its words in English and French.

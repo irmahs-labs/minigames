@@ -2689,3 +2689,169 @@ a:hover {
     transition: none;
   }
 }
+
+/* ── spell creator ── */
+.spell-main {
+  flex: 999 1 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+.spell-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 24px 22px;
+}
+.spell-form {
+  gap: 10px;
+}
+.spell-form__text {
+  min-height: 132px;
+  padding: 10px 12px;
+  font: 400 16px/1.5 var(--body);
+  color: var(--text);
+  resize: vertical;
+}
+/* A tier's letter: the four that work are accent, S the strongest of all,
+   a weak spell raised, and a failed one danger. */
+.spell-tier {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border: var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 40px/1 var(--display);
+}
+.spell-tier--small {
+  width: 32px;
+  height: 32px;
+  border-width: var(--stroke-base);
+  border-radius: var(--radius-lg);
+  font-size: 17px;
+}
+.spell-tier--s {
+  background: var(--strong);
+  color: var(--on-strong);
+}
+.spell-tier--d,
+.spell-tier--e {
+  background: var(--raised);
+  color: var(--text);
+}
+.spell-tier--f {
+  background: var(--danger);
+  color: var(--ink);
+}
+.spell-result {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.spell-result__name {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+}
+.spell-result__effect {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.spell-power {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.spell-power__value {
+  min-width: 3.5em;
+  text-align: right;
+  font: 700 14px/1 var(--body);
+  font-variant-numeric: tabular-nums;
+}
+.spell-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14.5px;
+}
+.spell-check {
+  display: flex;
+  gap: 8px;
+}
+.spell-check__mark {
+  flex: none;
+  width: 1.2em;
+  font-weight: 700;
+}
+.spell-check--miss {
+  color: var(--text-muted);
+}
+.spell-couplets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.spell-couplet {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: var(--stroke-base) solid var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--raised);
+}
+.spell-couplet__verse {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.spell-couplet__count {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.spell-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.spell-tiers__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.spell-tiers__try {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 700 13px/1.4 var(--body);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.spell-tiers__try:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
