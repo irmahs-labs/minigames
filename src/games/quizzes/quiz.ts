@@ -34,6 +34,8 @@ export interface Quiz {
   /** Every result by its id; the ids are the keys of an answer's points. */
   results: Readonly<Record<string, QuizResult>>;
   questions: readonly Question[];
+  /** The words before its result, if not "You are a": "Verdict:". */
+  verdict?: Words;
 }
 
 /** Points per result id, as the answers add them up. */
