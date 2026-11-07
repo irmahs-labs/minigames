@@ -23,17 +23,19 @@ const MAX_SHARED = 35;
 /** Plain words only: no "read(1)" variants, no numbers or punctuation. */
 const PLAIN_WORD = /^[a-z][a-z']*$/u;
 
+const alphabetical = (a: string, b: string) => a.localeCompare(b, "en");
+
 /** Packs `dictionary` (word → "K AE1 T") into the text described above. */
 export const packPronunciations = (
   dictionary: Readonly<Record<string, string>>
 ) => {
   const words = Object.keys(dictionary)
     .filter((word) => PLAIN_WORD.test(word))
-    .toSorted();
+    .toSorted(alphabetical);
 
   const phonemes = [
     ...new Set(words.flatMap((word) => dictionary[word]?.split(" ") ?? [])),
-  ].toSorted();
+  ].toSorted(alphabetical);
 
   const codes = new Map(
     phonemes.map((phoneme, i) => [

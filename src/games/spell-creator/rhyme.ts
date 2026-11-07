@@ -121,9 +121,11 @@ const consonantLikeness = (a: string, b: string) => {
   let manner = 0;
 
   if (mannerA !== mannerB) {
-    manner = NEAR_MANNERS.has([mannerA, mannerB].toSorted().join(":"))
-      ? 0.2
-      : 0.4;
+    const near =
+      NEAR_MANNERS.has(`${mannerA}:${mannerB}`) ||
+      NEAR_MANNERS.has(`${mannerB}:${mannerA}`);
+
+    manner = near ? 0.2 : 0.4;
   }
 
   const voice = voicedA === voicedB ? 0 : 0.2;
