@@ -1,7 +1,7 @@
 import type { Language } from "../../lib/language";
 import { festivalsIn } from "../book-of-shadows/buddhist-calendar";
 import type { FestivalId } from "../book-of-shadows/buddhist-calendar";
-import { sabbatsIn } from "../book-of-shadows/sabbats";
+import { SABBATS, sabbatsIn } from "../book-of-shadows/sabbats";
 import type { SabbatId } from "../book-of-shadows/sabbats";
 import { keyOf, localTimeZone } from "../book-of-shadows/time";
 import {
@@ -221,6 +221,110 @@ const ORTHODOX = [
 ];
 
 const HINDU = ["IN", "NP", "MU", "FJ", "GY", "TT", "SR"];
+
+// ── Festivals kept the same way, from a table ──
+
+/** Cambodia's own festivals, from its Buddhist calendar: emoji, name, script, what it is. */
+const CAMBODIAN = {
+  "bon-om-touk": [
+    "🛶",
+    "Bon Om Touk",
+    "បុណ្យអុំទូក",
+    "The Water Festival: boat races on the river as the Tonlé Sap turns, lit boats and moon-worship.",
+    "La fête des eaux : courses de pirogues quand le Tonlé Sap s’inverse, bateaux illuminés et salut à la lune.",
+  ],
+  "pchum-ben": [
+    "🍙",
+    "Pchum Ben",
+    "ភ្ជុំបិណ្ឌ",
+    "Ancestors’ Day, the end of fifteen days of offerings: rice balls are taken to the pagoda for the dead.",
+    "La fête des ancêtres, au bout de quinze jours d’offrandes : on porte des boulettes de riz à la pagode pour les morts.",
+  ],
+  "royal-ploughing": [
+    "🐂",
+    "Chrat Preah Neangkol",
+    "ច្រត់ព្រះនង្គ័ល",
+    "The royal oxen plough the first furrow and choose what to eat, foretelling the year’s harvest.",
+    "Les bœufs royaux tracent le premier sillon et choisissent leur repas, présageant la récolte de l’année.",
+  ],
+} as const satisfies Partial<
+  Record<FestivalId, readonly [string, string, string, string, string]>
+>;
+
+const cambodian = (): Festival[] =>
+  (["royal-ploughing", "pchum-ben", "bon-om-touk"] as const).map((id) => {
+    const [emoji, name, script, en, fr] = CAMBODIAN[id];
+
+    return {
+      about: words(en, fr),
+      countries: ["KH"],
+      emoji,
+      group: "southeast-asia",
+      id,
+      name: words(name),
+      script,
+      spans: khmer(id),
+    };
+  });
+
+/** The Wheel of the Year, the Book of Shadows' sabbats: emoji, and what each is. */
+const WHEEL = {
+  beltane: [
+    "🌸",
+    "May Day’s fire festival: the maypole, flowers and bonfires.",
+    "La fête du feu du 1er mai : le mât de mai, des fleurs et des feux de joie.",
+  ],
+  imbolc: [
+    "🕯️",
+    "The fire festival halfway to spring: Brigid’s crosses and candles for the returning light.",
+    "La fête du feu à mi-chemin du printemps : croix de Brigid et bougies pour la lumière qui revient.",
+  ],
+  litha: [
+    "☀️",
+    "Midsummer, the longest day: the Sun at its height.",
+    "Le solstice d’été, le jour le plus long : le Soleil à son zénith.",
+  ],
+  lughnasadh: [
+    "🍞",
+    "The first harvest: the first loaf baked from the new grain.",
+    "La première moisson : le premier pain cuit avec le grain nouveau.",
+  ],
+  mabon: [
+    "🍎",
+    "The autumn equinox: the second harvest, and thanks given for it.",
+    "L’équinoxe d’automne : la deuxième moisson, et merci pour elle.",
+  ],
+  ostara: [
+    "🌱",
+    "The spring equinox: day and night in balance, eggs and seeds.",
+    "L’équinoxe de printemps : le jour et la nuit à égalité, œufs et graines.",
+  ],
+  samhain: [
+    "🎃",
+    "The witch’s new year, when the veil between the worlds is thinnest.",
+    "Le Nouvel An des sorcières, quand le voile entre les mondes est le plus mince.",
+  ],
+  yule: [
+    "🌲",
+    "The longest night, and the Sun’s rebirth: evergreens and the Yule log.",
+    "La nuit la plus longue, et la renaissance du Soleil : sapins et bûche de Yule.",
+  ],
+} as const satisfies Record<SabbatId, readonly [string, string, string]>;
+
+const wheel = (): Festival[] =>
+  SABBATS.map(({ id, name }) => {
+    const [emoji, en, fr] = WHEEL[id];
+
+    return {
+      about: words(en, fr),
+      countries: [],
+      emoji,
+      group: "wheel",
+      id,
+      name: words(name),
+      spans: sabbat(id),
+    };
+  });
 
 // ── The festivals ──
 
@@ -495,45 +599,6 @@ export const FESTIVALS: readonly Festival[] = [
     ],
     name: words("Meak Bochea"),
     spans: khmer("meak-bochea"),
-  },
-  {
-    about: words(
-      "The royal oxen plough the first furrow and choose what to eat, foretelling the year’s harvest.",
-      "Les bœufs royaux tracent le premier sillon et choisissent leur repas, présageant la récolte de l’année."
-    ),
-    countries: ["KH"],
-    emoji: "🐂",
-    group: "southeast-asia",
-    id: "royal-ploughing",
-    name: words("Chrat Preah Neangkol"),
-    script: "ច្រត់ព្រះនង្គ័ល",
-    spans: khmer("royal-ploughing"),
-  },
-  {
-    about: words(
-      "Ancestors’ Day, the end of fifteen days of offerings: rice balls are taken to the pagoda for the dead.",
-      "La fête des ancêtres, au bout de quinze jours d’offrandes : on porte des boulettes de riz à la pagode pour les morts."
-    ),
-    countries: ["KH"],
-    emoji: "🍙",
-    group: "southeast-asia",
-    id: "pchum-ben",
-    name: words("Pchum Ben"),
-    script: "ភ្ជុំបិណ្ឌ",
-    spans: khmer("pchum-ben"),
-  },
-  {
-    about: words(
-      "The Water Festival: boat races on the river as the Tonlé Sap turns, lit boats and moon-worship.",
-      "La fête des eaux : courses de pirogues quand le Tonlé Sap s’inverse, bateaux illuminés et salut à la lune."
-    ),
-    countries: ["KH"],
-    emoji: "🛶",
-    group: "southeast-asia",
-    id: "bon-om-touk",
-    name: words("Bon Om Touk"),
-    script: "បុណ្យអុំទូក",
-    spans: khmer("bon-om-touk"),
   },
   {
     about: words(
@@ -1468,104 +1533,8 @@ export const FESTIVALS: readonly Festival[] = [
     name: words("Kwanzaa"),
     spans: fixed(12, 26, 7),
   },
-
-  // The Wheel of the Year
-  {
-    about: words(
-      "The fire festival halfway to spring: Brigid’s crosses and candles for the returning light.",
-      "La fête du feu à mi-chemin du printemps : croix de Brigid et bougies pour la lumière qui revient."
-    ),
-    countries: [],
-    emoji: "🕯️",
-    group: "wheel",
-    id: "imbolc",
-    name: words("Imbolc"),
-    spans: sabbat("imbolc"),
-  },
-  {
-    about: words(
-      "The spring equinox: day and night in balance, eggs and seeds.",
-      "L’équinoxe de printemps : le jour et la nuit à égalité, œufs et graines."
-    ),
-    countries: [],
-    emoji: "🌱",
-    group: "wheel",
-    id: "ostara",
-    name: words("Ostara"),
-    spans: sabbat("ostara"),
-  },
-  {
-    about: words(
-      "May Day’s fire festival: the maypole, flowers and bonfires.",
-      "La fête du feu du 1er mai : le mât de mai, des fleurs et des feux de joie."
-    ),
-    countries: [],
-    emoji: "🌸",
-    group: "wheel",
-    id: "beltane",
-    name: words("Beltane"),
-    spans: sabbat("beltane"),
-  },
-  {
-    about: words(
-      "Midsummer, the longest day: the Sun at its height.",
-      "Le solstice d’été, le jour le plus long : le Soleil à son zénith."
-    ),
-    countries: [],
-    emoji: "☀️",
-    group: "wheel",
-    id: "litha",
-    name: words("Litha"),
-    spans: sabbat("litha"),
-  },
-  {
-    about: words(
-      "The first harvest: the first loaf baked from the new grain.",
-      "La première moisson : le premier pain cuit avec le grain nouveau."
-    ),
-    countries: [],
-    emoji: "🍞",
-    group: "wheel",
-    id: "lughnasadh",
-    name: words("Lughnasadh"),
-    spans: sabbat("lughnasadh"),
-  },
-  {
-    about: words(
-      "The autumn equinox: the second harvest, and thanks given for it.",
-      "L’équinoxe d’automne : la deuxième moisson, et merci pour elle."
-    ),
-    countries: [],
-    emoji: "🍎",
-    group: "wheel",
-    id: "mabon",
-    name: words("Mabon"),
-    spans: sabbat("mabon"),
-  },
-  {
-    about: words(
-      "The witch’s new year, when the veil between the worlds is thinnest.",
-      "Le Nouvel An des sorcières, quand le voile entre les mondes est le plus mince."
-    ),
-    countries: [],
-    emoji: "🎃",
-    group: "wheel",
-    id: "samhain",
-    name: words("Samhain"),
-    spans: sabbat("samhain"),
-  },
-  {
-    about: words(
-      "The longest night, and the Sun’s rebirth: evergreens and the Yule log.",
-      "La nuit la plus longue, et la renaissance du Soleil : sapins et bûche de Yule."
-    ),
-    countries: [],
-    emoji: "🌲",
-    group: "wheel",
-    id: "yule",
-    name: words("Yule"),
-    spans: sabbat("yule"),
-  },
+  ...cambodian(),
+  ...wheel(),
 ];
 
 /** A festival on its days of one year. */
