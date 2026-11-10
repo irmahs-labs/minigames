@@ -197,3 +197,37 @@ export const SpellCreatorIcon = () => (
     <circle cx="29" cy="28" r="1.6" fill="#2f3b34" />
   </svg>
 );
+
+/** A page of a calendar with a crescent moon on it. */
+export const CalendarIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <rect
+      x="9"
+      y="10"
+      width="22"
+      height="21"
+      rx="3"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+    />
+    <path d="M9 16h22" stroke="#2f3b34" strokeWidth="1.5" />
+    <path
+      d="M15 7.5v5M25 7.5v5"
+      stroke="#2f3b34"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path d="M22.5 19.5a5 5 0 1 0 0 9.2a4 4 0 0 1 0-9.2z" fill="#2f3b34" />
+  </svg>
+);

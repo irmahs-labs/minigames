@@ -67,6 +67,16 @@ export const GAMES: readonly Game[] = [
     slug: "book-of-shadows",
   },
   {
+    Screen: lazy(() => import("./games/calendar/calendar")),
+    blurb: {
+      en: "Add the calendars you want, from moon phases to Diwali, Día de los Muertos and Bon Om Touk, and see their days month by month.",
+      fr: "Ajoutez les calendriers de votre choix, des phases de la lune à Divali, Día de los Muertos et Bon Om Touk, et voyez leurs jours mois par mois.",
+    },
+    legend: "calendar.exe",
+    name: { en: "Calendar", fr: "Calendrier" },
+    slug: "calendar",
+  },
+  {
     Screen: lazy(() => import("./games/spell-creator/spell-creator")),
     blurb: {
       en: "Write two rhyming lines and cast them as a spell: the better the rhyme, the more powerful the spell.",
