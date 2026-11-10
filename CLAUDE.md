@@ -59,6 +59,8 @@ Spell Creator (`src/games/spell-creator/`) is the one game in English only, beca
 
 A game marked `nested` in `GAMES` also owns the pages under `/<slug>/`. Quizzes is one: each quiz is a `Quiz` (`src/games/quizzes/quiz.ts`) in `QUIZZES` (`all-quizzes.ts`), at `/quizzes/<slug>`, its answers giving points to its results; the most points wins, a tie going to the first result alphabetically by its English name. Its last result is kept in `localStorage`, one key per quiz.
 
+Festival Calendar (`src/games/festival-calendar/`) shows a month of the calendars a visitor adds (kept in `localStorage`): the Moon's phases, and festivals in groups, by region (East Asian, Latin American…) or by faith (Islamic, Jewish, Christian). Each festival is one entry in `FESTIVALS` (`festivals.ts`), named as it is said where it is kept, with each country's own name for a shared one and its countries as ISO codes of UN member states. Its days come from the browser's own calendars through Intl (Chinese, Islamic Umm al-Qura, Hebrew, Persian, Ethiopian: `dates.ts`), the Easter computus, the Hindu lunisolar calendar worked out with astronomy-engine for India (`hindu.ts`), and the Book of Shadows' own moon and Buddhist calendar, which it imports. The Book of Shadows' moon calendar no longer marks festivals: they are the Festival Calendar's.
+
 ## Names
 
 The name people see is `APP_NAME` in `src/lib/brand.ts`. The image, the network alias, the database and the server folder are all `minigames` (`/srv/minigames`).

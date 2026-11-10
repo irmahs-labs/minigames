@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
 
-import {
-  LUNAR_MONTHS,
-  festivalOn,
-  festivalsIn,
-  lunarDateName,
-  lunarDateOf,
-} from "./buddhist-calendar";
+import { LUNAR_MONTHS, lunarDateName, lunarDateOf } from "./buddhist-calendar";
 import type { LunarDate } from "./buddhist-calendar";
 import {
   formatClock,
@@ -166,18 +160,6 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
     [shown]
   );
 
-  const first = keyOf(shown.year, shown.month, 1);
-
-  const last = keyOf(
-    shown.year,
-    shown.month,
-    daysInMonth(shown.year, shown.month)
-  );
-
-  const festivals = festivalsIn(shown.year).filter(
-    ({ start, end }) => start <= last && end >= first
-  );
-
   // Monday is 0: how many blank cells come before the 1st.
   const lead = (weekdayOf(keyOf(shown.year, shown.month, 1)) + 6) % 7;
   const exact = days.filter((day) => day.exact);
@@ -220,7 +202,6 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
         ))}
         {days.map((day, i) => {
           const date = lunar[i];
-          const festival = festivalOn(day.key);
 
           return (
             <li
@@ -244,12 +225,6 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
               <span className={day.exact ? "moon-cal__phase" : "sr-only"}>
                 {say(day.phase)}
               </span>
-              {festival ? (
-                <span className="moon-cal__festival" title={say(festival.name)}>
-                  <span aria-hidden="true">{festival.emoji}</span>
-                  <span className="sr-only">{say(festival.name)}</span>
-                </span>
-              ) : null}
               {date ? (
                 <span
                   className={
@@ -292,23 +267,6 @@ const MoonCalendar = ({ now, timeZone, southern }: MoonTabProps) => {
           </li>
         ))}
       </ul>
-      {festivals.length > 0 ? (
-        <ul className="phase-list">
-          {festivals.map(({ festival, start, end }) => (
-            <li key={festival.id}>
-              <span aria-hidden="true" className="moon-cal__festival">
-                {festival.emoji}
-              </span>
-              <span>
-                <strong>{say(festival.name)}</strong>{" "}
-                {start === end
-                  ? formatDay(start, SHORT_WEEKDAY)
-                  : `${formatDay(start, SHORT_WEEKDAY)} ${tr("to", "au")} ${formatDay(end, SHORT_WEEKDAY)}`}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
       <p className="hint">
         {tr(
           `Times are in your time zone, ${timeZone}. The small numbers are the days of the Buddhist lunar month, as Cambodia counts them: up from the new moon, then down from the full. ☸ marks the holy days, Thngai Sel.`,
