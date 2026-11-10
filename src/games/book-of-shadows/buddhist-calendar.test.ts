@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  daysUntil,
-  festivalOn,
-  festivalsIn,
-  lunarDateName,
-  lunarDateOf,
-  nextFestival,
-} from "./buddhist-calendar";
+import { festivalsIn, lunarDateName, lunarDateOf } from "./buddhist-calendar";
 import type { FestivalId } from "./buddhist-calendar";
 
 const daysOf = (year: number, id: FestivalId) => {
@@ -84,28 +77,5 @@ describe("festivalsIn", () => {
     expect(year.map((entry) => entry.start)).toEqual(
       year.map((entry) => entry.start).toSorted()
     );
-  });
-});
-
-describe("festivalOn", () => {
-  it("finds the festival on any of its days", () => {
-    expect(festivalOn("2024-10-01")?.name).toBe("Pchum Ben");
-    expect(festivalOn("2024-10-03")?.name).toBe("Pchum Ben");
-    expect(festivalOn("2024-10-04")).toBeNull();
-  });
-});
-
-describe("nextFestival", () => {
-  it("looks into next year when this one's are past", () => {
-    expect(nextFestival("2026-10-27")?.start).toBe("2026-11-23");
-    expect(nextFestival("2026-12-01")?.festival.id).toBe("lunar-new-year");
-  });
-
-  it("keeps a festival under way", () => {
-    const now = nextFestival("2025-09-22");
-
-    expect(now?.festival.id).toBe("pchum-ben");
-    expect(now && daysUntil(now, "2025-09-22")).toBe(0);
-    expect(now && daysUntil(now, "2025-09-01")).toBe(20);
   });
 });

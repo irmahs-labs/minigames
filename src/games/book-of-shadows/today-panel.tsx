@@ -1,7 +1,6 @@
 import { memo } from "react";
 
 import { cryptoRandom } from "../../lib/random";
-import { daysUntil, nextFestival } from "./buddhist-calendar";
 import { FULL_DAY, formatDay, inDays } from "./format";
 import { say, tr } from "./french";
 import { ELEMENT_LORE, cycleName, lunarYearOf, yearName } from "./lunar-zodiac";
@@ -75,8 +74,8 @@ interface TodayProps {
 }
 
 /**
- * Today, at a glance: the Moon, the next sabbat, the lunar year and its
- * next festival, and the sky (where the lights are, what is retrograde,
+ * Today, at a glance: the Moon, the next sabbat, the lunar year, and the
+ * sky (where the lights are, what is retrograde,
  * what is coming).
  */
 const Today = ({ now, timeZone, southern }: TodayProps) => {
@@ -85,7 +84,6 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
   const moon = moonNow(now);
   const sabbat = nextSabbat(today, southern, timeZone);
   const lunar = lunarYearOf(today);
-  const festival = nextFestival(today);
 
   const sky = skyOn(today);
 
@@ -145,14 +143,6 @@ const Today = ({ now, timeZone, southern }: TodayProps) => {
               {lunar.polarity} {say(lunar.element)},{" "}
               {say(ELEMENT_LORE[lunar.element])}.
             </p>
-            {festival ? (
-              <p className="today__lore">
-                {tr("Next festival: ", "Prochaine fête : ")}
-                {festival.festival.emoji} {say(festival.festival.name)},{" "}
-                {formatDay(festival.start, { day: "numeric", month: "long" })},{" "}
-                {inDays(daysUntil(festival, today))}.
-              </p>
-            ) : null}
           </div>
         </div>
         <div className="today__item today__item--sky">

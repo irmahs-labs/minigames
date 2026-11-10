@@ -248,24 +248,3 @@ export const festivalsIn = (year: number): readonly FestivalDays[] => {
 
   return found;
 };
-
-/** The festival under way on a day, if any. */
-export const festivalOn = (key: string): Festival | null =>
-  festivalsIn(Number(key.slice(0, 4))).find(
-    ({ start, end }) => start <= key && key <= end
-  )?.festival ?? null;
-
-/** The next festival from `today`, or the one under way. */
-export const nextFestival = (today: string): FestivalDays | null => {
-  const year = Number(today.slice(0, 4));
-
-  return (
-    [...festivalsIn(year), ...festivalsIn(year + 1)].find(
-      ({ end }) => end >= today
-    ) ?? null
-  );
-};
-
-/** Days until a festival: 0 once it has begun, until its last day. */
-export const daysUntil = ({ start }: FestivalDays, today: string): number =>
-  Math.max(0, daysBetween(today, start));
