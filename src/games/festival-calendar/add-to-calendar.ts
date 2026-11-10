@@ -1,12 +1,15 @@
+import { parseDay } from "../book-of-shadows/time";
 import { shift } from "./dates";
+import { FESTIVALS } from "./festivals";
 import type { Occasion, Words } from "./festivals";
 
 /**
  * A festival's days as an event for the visitor's own calendar: once, all
  * day, from its first day to its last, never repeating (a lunar festival
- * moves from year to year). On an iPhone the event opens straight in
- * Calendar, on Android in Google Calendar, which can't read an .ics file,
- * and elsewhere it downloads as one.
+ * moves from year to year). On an iPhone the server sends it as an .ics,
+ * which Safari opens in Calendar (it ignores an .ics made in the page), on
+ * Android Google Calendar takes it from a link (its app can't read an .ics),
+ * and elsewhere it downloads as an .ics made in the page.
  */
 
 export interface CalendarEvent {
@@ -33,6 +36,38 @@ export const eventOf = (
     : `${festival.emoji} ${festival.name[language]}`,
   uid: `${festival.id}-${start}@minigames.irmahs.dev`,
 });
+
+/** The years a festival can be asked for, so a request can't make the server work out any year at all. */
+const FIRST_YEAR = 2000;
+const LAST_YEAR = 2100;
+
+/**
+ * A festival on the days that start on `start`, or null when it has none
+ * then: for the server, which takes only these two and works out the rest,
+ * so nobody can have it send a calendar event of their own making.
+ */
+export const occasionOf = (id: string, start: string): Occasion | null => {
+  const festival = FESTIVALS.find((entry) => entry.id === id);
+  const day = parseDay(start);
+
+  if (!festival || !day || day.year < FIRST_YEAR || day.year > LAST_YEAR) {
+    return null;
+  }
+
+  const span = festival.spans(day.year).find((entry) => entry.start === start);
+
+  return span ? { ...span, festival } : null;
+};
+
+/** Where the server sends a festival's .ics: "/api/festival-calendar/diwali/2026-11-08.ics?lang=en". */
+export const icsPathOf = (
+  { festival, start }: Occasion,
+  language: keyof Words
+) => `/api/festival-calendar/${festival.id}/${start}.ics?lang=${language}`;
+
+/** The .ics file's name: "diwali-2026-11-08.ics". */
+export const fileNameOf = ({ festival, start }: Occasion) =>
+  `${festival.id}-${start}.ics`;
 
 /** "2026-11-08" → "20261108", as calendars write an all-day date. */
 const compact = (key: string) => key.replaceAll("-", "");
@@ -138,9 +173,10 @@ export const addWayFor = (userAgent: string, touchPoints: number): AddWay => {
   return "file";
 };
 
-/** Adds the event to this device's calendar, the way that suits it. */
-export const addToCalendar = (event: CalendarEvent) => {
+/** Adds a festival's days to this device's calendar, the way that suits it. */
+export const addToCalendar = (occasion: Occasion, language: keyof Words) => {
   const way = addWayFor(navigator.userAgent, navigator.maxTouchPoints);
+  const event = eventOf(occasion, language);
 
   if (way === "android") {
     window.open(googleCalendarUrl(event), "_blank", "noopener");
@@ -148,20 +184,21 @@ export const addToCalendar = (event: CalendarEvent) => {
     return;
   }
 
-  const ics = icsOf(event, new Date());
-
   if (way === "ios") {
-    // Safari on iOS opens an .ics it is sent to in Calendar, ready to add.
-    window.location.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+    // Safari opens an .ics from a real address in Calendar, ready to add.
+    window.location.assign(icsPathOf(occasion, language));
 
     return;
   }
 
   const link = document.createElement("a");
-  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+
+  const url = URL.createObjectURL(
+    new Blob([icsOf(event, new Date())], { type: "text/calendar" })
+  );
 
   link.href = url;
-  link.download = `${event.uid.split("@")[0]}.ics`;
+  link.download = fileNameOf(occasion);
   link.click();
   // Not at once: the download has to start first.
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);

@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   addWayFor,
   eventOf,
+  fileNameOf,
   folded,
   googleCalendarUrl,
   icsOf,
+  icsPathOf,
+  occasionOf,
 } from "./add-to-calendar";
 import { FESTIVALS } from "./festivals";
 import type { Festival } from "./festivals";
@@ -112,5 +115,24 @@ describe("addWayFor", () => {
     ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", 0, "file"],
   ] as const)("sends %s (%i touch points) the %s way", (agent, touch, way) => {
     expect(addWayFor(agent, touch)).toBe(way);
+  });
+});
+
+describe("occasionOf", () => {
+  it("finds a festival from its id and first day, with its last", () => {
+    const found = occasionOf("hanukkah", "2026-12-05");
+
+    expect(found?.end).toBe("2026-12-12");
+    expect(found && fileNameOf(found)).toBe("hanukkah-2026-12-05.ics");
+    expect(found && icsPathOf(found, "fr")).toBe(
+      "/api/festival-calendar/hanukkah/2026-12-05.ics?lang=fr"
+    );
+  });
+
+  it("knows nothing of a festival that isn't, or of a day it doesn't start on", () => {
+    expect(occasionOf("atlantis-day", "2026-11-08")).toBeNull();
+    expect(occasionOf("diwali", "2026-11-09")).toBeNull();
+    expect(occasionOf("diwali", "not a day")).toBeNull();
+    expect(occasionOf("christmas", "3025-12-25")).toBeNull();
   });
 });

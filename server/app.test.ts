@@ -350,6 +350,41 @@ describe("/api", () => {
   });
 });
 
+describe("/api/festival-calendar", () => {
+  it("sends a festival's days as an .ics an iPhone opens in Calendar", async () => {
+    const response = await fetch(
+      `http://${base}/api/festival-calendar/diwali/2026-11-08.ics?lang=fr`
+    );
+
+    const ics = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe(
+      "text/calendar; charset=utf-8"
+    );
+    expect(response.headers.get("content-disposition")).toBe(
+      'inline; filename="diwali-2026-11-08.ics"'
+    );
+    expect(ics).toContain("DTSTART;VALUE=DATE:20261108");
+    expect(ics).toContain("DTEND;VALUE=DATE:20261109");
+    expect(ics).toContain("SUMMARY:🪔 Divali दिवाली");
+  });
+
+  it("sends nothing for a festival or a day it doesn't have", async () => {
+    const responses = await Promise.all(
+      [
+        "atlantis-day/2026-11-08.ics",
+        "diwali/2026-11-09.ics",
+        "diwali/tomorrow.ics",
+      ].map((path) => fetch(`http://${base}/api/festival-calendar/${path}`))
+    );
+
+    expect(responses.map((response) => response.status)).toEqual([
+      404, 404, 404,
+    ]);
+  });
+});
+
 /** The classic ginger shot: Ember's Embrace. */
 const GINGER_SHOT = [
   { name: "Apple" },
