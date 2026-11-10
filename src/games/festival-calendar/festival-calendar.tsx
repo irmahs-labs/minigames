@@ -21,6 +21,7 @@ import {
   wallTimeAt,
   weekdayOf,
 } from "../book-of-shadows/time";
+import { addToCalendar, eventOf } from "./add-to-calendar";
 import { occasionsIn } from "./festivals";
 import type { GroupId, Occasion } from "./festivals";
 import {
@@ -34,6 +35,8 @@ import type { CalendarId } from "./groups";
 
 const COPY = {
   en: {
+    add: "add to calendar",
+    addLabel: (name: string) => `Add ${name} to your calendar`,
     allGames: "all games",
     around: "Around the world",
     calendars: "Your calendars",
@@ -48,6 +51,8 @@ const COPY = {
     weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   },
   fr: {
+    add: "ajouter à l’agenda",
+    addLabel: (name: string) => `Ajouter ${name} à votre agenda`,
     allGames: "tous les jeux",
     around: "Dans le monde entier",
     calendars: "Vos calendriers",
@@ -189,6 +194,17 @@ const OccasionItem = ({ occasion }: { occasion: Occasion }) => {
         {festival.note ? (
           <p className="hint">{festival.note[language]}</p>
         ) : null}
+        <div>
+          <button
+            type="button"
+            className="btn btn--quiet occasion__add"
+            aria-label={t.addLabel(festival.name[language])}
+            onClick={() => addToCalendar(eventOf(occasion, language))}
+          >
+            <Icon name="calendar" size={18} />
+            {t.add}
+          </button>
+        </div>
       </div>
     </li>
   );
