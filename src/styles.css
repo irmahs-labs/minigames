@@ -2957,3 +2957,9 @@ a:hover {
 .occasion__countries summary {
   cursor: pointer;
 }
+.occasion__add {
+  margin-top: 4px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13.5px;
+}

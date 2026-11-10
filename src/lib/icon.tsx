@@ -1,6 +1,11 @@
 /** Line icons on a 24 × 24 grid, drawn in the surrounding text colour. */
 const GLYPHS = {
   back: ["M15 18l-6-6 6-6"],
+  calendar: [
+    "M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
+    "M4 10h16M8 3v4M16 3v4",
+    "M12 13v5M9.5 15.5h5",
+  ],
   close: ["M6 6l12 12M18 6L6 18"],
   leaf: ["M5 19c0-8 5-13 14-14-1 9-6 14-14 14z", "M5 19l7-7"],
   moon: ["M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"],
