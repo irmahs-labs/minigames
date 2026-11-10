@@ -198,6 +198,11 @@ export const createApp = ({
 
     const language = c.req.query("lang") === "fr" ? "fr" : "en";
 
+    // Unlike the rest of /api, this may be kept: it is the same for everyone,
+    // and Safari on an iPhone has to keep the file to hand it to Calendar,
+    // saying it "cannot download this file" when told to store nothing.
+    c.header("cache-control", "public, max-age=86400");
+
     return c.body(icsOf(eventOf(occasion, language), new Date()), 200, {
       "content-disposition": `inline; filename="${fileNameOf(occasion)}"`,
       "content-type": "text/calendar; charset=utf-8",
