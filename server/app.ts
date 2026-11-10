@@ -25,6 +25,12 @@ import {
 import { isValidSelection } from "../src/games/booster-potion/rules";
 import type { Selection } from "../src/games/booster-potion/rules";
 import {
+  eventOf,
+  fileNameOf,
+  icsOf,
+  occasionOf,
+} from "../src/games/festival-calendar/add-to-calendar";
+import {
   clientMessage,
   parseMessage,
 } from "../src/games/super-tic-tac-toe/online/protocol";
@@ -176,6 +182,25 @@ export const createApp = ({
 
     return c.json({
       account: account ? { name: shortName(account.name) } : null,
+    });
+  });
+
+  // A festival's days as an .ics, for an iPhone: Safari opens one from a
+  // real address in Calendar. Only a festival and its first day are taken;
+  // the server works out the rest, so the event is always one of ours.
+  app.get("/api/festival-calendar/:id/:file", (c) => {
+    const start = c.req.param("file").replace(/\.ics$/u, "");
+    const occasion = occasionOf(c.req.param("id"), start);
+
+    if (!occasion) {
+      return c.text("There is no such festival on that day.", 404);
+    }
+
+    const language = c.req.query("lang") === "fr" ? "fr" : "en";
+
+    return c.body(icsOf(eventOf(occasion, language), new Date()), 200, {
+      "content-disposition": `inline; filename="${fileNameOf(occasion)}"`,
+      "content-type": "text/calendar; charset=utf-8",
     });
   });
 

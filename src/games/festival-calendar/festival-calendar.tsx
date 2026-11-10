@@ -21,7 +21,7 @@ import {
   wallTimeAt,
   weekdayOf,
 } from "../book-of-shadows/time";
-import { addToCalendar, eventOf } from "./add-to-calendar";
+import { addToCalendar } from "./add-to-calendar";
 import { occasionsIn } from "./festivals";
 import type { GroupId, Occasion } from "./festivals";
 import {
@@ -199,7 +199,7 @@ const OccasionItem = ({ occasion }: { occasion: Occasion }) => {
             type="button"
             className="btn btn--quiet occasion__add"
             aria-label={t.addLabel(festival.name[language])}
-            onClick={() => addToCalendar(eventOf(occasion, language))}
+            onClick={() => addToCalendar(occasion, language)}
           >
             <Icon name="calendar" size={18} />
             {t.add}
