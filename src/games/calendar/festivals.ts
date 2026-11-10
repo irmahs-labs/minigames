@@ -1,9 +1,7 @@
 import type { Language } from "../../lib/language";
 import { festivalsIn } from "../book-of-shadows/buddhist-calendar";
 import type { FestivalId } from "../book-of-shadows/buddhist-calendar";
-import { SABBATS, sabbatsIn } from "../book-of-shadows/sabbats";
-import type { SabbatId } from "../book-of-shadows/sabbats";
-import { keyOf, localTimeZone } from "../book-of-shadows/time";
+import { keyOf } from "../book-of-shadows/time";
 import {
   daysOf,
   easter,
@@ -40,8 +38,7 @@ export type GroupId =
   | "christian"
   | "latin-america"
   | "nowruz"
-  | "africa"
-  | "wheel";
+  | "africa";
 
 /** What a country calls a festival it shares: "Seollal", 설날, in Korea. */
 export interface LocalName {
@@ -142,11 +139,6 @@ const ramadan = (year: number) =>
 
     return eid ? [{ end: shift(eid, -1), start }] : [];
   });
-
-const sabbat = (id: SabbatId) => (year: number) =>
-  sabbatsIn(year, false, localTimeZone())
-    .filter((entry) => entry.sabbat.id === id)
-    .map((entry) => spanOf(entry.key));
 
 // ── Who keeps them ──
 
@@ -264,65 +256,6 @@ const cambodian = (): Festival[] =>
       name: words(name),
       script,
       spans: khmer(id),
-    };
-  });
-
-/** The Wheel of the Year, the Book of Shadows' sabbats: emoji, and what each is. */
-const WHEEL = {
-  beltane: [
-    "🌸",
-    "May Day’s fire festival: the maypole, flowers and bonfires.",
-    "La fête du feu du 1er mai : le mât de mai, des fleurs et des feux de joie.",
-  ],
-  imbolc: [
-    "🕯️",
-    "The fire festival halfway to spring: Brigid’s crosses and candles for the returning light.",
-    "La fête du feu à mi-chemin du printemps : croix de Brigid et bougies pour la lumière qui revient.",
-  ],
-  litha: [
-    "☀️",
-    "Midsummer, the longest day: the Sun at its height.",
-    "Le solstice d’été, le jour le plus long : le Soleil à son zénith.",
-  ],
-  lughnasadh: [
-    "🍞",
-    "The first harvest: the first loaf baked from the new grain.",
-    "La première moisson : le premier pain cuit avec le grain nouveau.",
-  ],
-  mabon: [
-    "🍎",
-    "The autumn equinox: the second harvest, and thanks given for it.",
-    "L’équinoxe d’automne : la deuxième moisson, et merci pour elle.",
-  ],
-  ostara: [
-    "🌱",
-    "The spring equinox: day and night in balance, eggs and seeds.",
-    "L’équinoxe de printemps : le jour et la nuit à égalité, œufs et graines.",
-  ],
-  samhain: [
-    "🎃",
-    "The witch’s new year, when the veil between the worlds is thinnest.",
-    "Le Nouvel An des sorcières, quand le voile entre les mondes est le plus mince.",
-  ],
-  yule: [
-    "🌲",
-    "The longest night, and the Sun’s rebirth: evergreens and the Yule log.",
-    "La nuit la plus longue, et la renaissance du Soleil : sapins et bûche de Yule.",
-  ],
-} as const satisfies Record<SabbatId, readonly [string, string, string]>;
-
-const wheel = (): Festival[] =>
-  SABBATS.map(({ id, name }) => {
-    const [emoji, en, fr] = WHEEL[id];
-
-    return {
-      about: words(en, fr),
-      countries: [],
-      emoji,
-      group: "wheel",
-      id,
-      name: words(name),
-      spans: sabbat(id),
     };
   });
 
@@ -1534,7 +1467,6 @@ export const FESTIVALS: readonly Festival[] = [
     spans: fixed(12, 26, 7),
   },
   ...cambodian(),
-  ...wheel(),
 ];
 
 /** A festival on its days of one year. */

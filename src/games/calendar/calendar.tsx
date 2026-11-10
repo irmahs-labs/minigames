@@ -87,13 +87,6 @@ const NOTES = new Map<CalendarId, Record<Language, string>>([
       fr: "Les dates hindoues sont calculées pour l’Inde d’après le Soleil et la Lune, et peuvent varier d’un jour selon la région.",
     },
   ],
-  [
-    "wheel",
-    {
-      en: "The Wheel of the Year as kept in the northern hemisphere.",
-      fr: "La Roue de l’année telle qu’on la vit dans l’hémisphère nord.",
-    },
-  ],
 ]);
 
 /** "Sat 10 Oct". */

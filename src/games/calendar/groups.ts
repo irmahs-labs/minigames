@@ -55,11 +55,6 @@ export const CALENDARS: readonly CalendarKind[] = [
     name: { en: "Persian & Nowruz", fr: "Perse et Norouz" },
   },
   { emoji: "🌍", id: "africa", name: { en: "African", fr: "Afrique" } },
-  {
-    emoji: "🌾",
-    id: "wheel",
-    name: { en: "Wheel of the Year", fr: "Roue de l’année" },
-  },
 ];
 
 const IDS = CALENDARS.map((calendar) => calendar.id);
