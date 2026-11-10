@@ -365,6 +365,8 @@ describe("/api/festival-calendar", () => {
     expect(response.headers.get("content-disposition")).toBe(
       'inline; filename="diwali-2026-11-08.ics"'
     );
+    // Safari has to keep the file to open it in Calendar.
+    expect(response.headers.get("cache-control")).toBe("public, max-age=86400");
     expect(ics).toContain("DTSTART;VALUE=DATE:20261108");
     expect(ics).toContain("DTEND;VALUE=DATE:20261109");
     expect(ics).toContain("SUMMARY:🪔 Divali दिवाली");
