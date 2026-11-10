@@ -65,7 +65,7 @@ const isCalendarId = (id: string): id is CalendarId =>
 /** What a new visitor starts with: just the Moon, and the rest to add. */
 export const DEFAULT_CALENDARS: readonly CalendarId[] = ["moon"];
 
-const KEY = "minigames:calendar:v1";
+const KEY = "minigames:festival-calendar:v1";
 
 /** The calendars a visitor added, as saved: unknown ids from an older version are dropped. */
 const savedSchema = z.object({ calendars: z.array(z.string()) });

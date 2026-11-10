@@ -33,13 +33,13 @@ describe("the calendars", () => {
 
   it("drops what it doesn't know, and falls back on anything unreadable", () => {
     window.localStorage.setItem(
-      "minigames:calendar:v1",
+      "minigames:festival-calendar:v1",
       JSON.stringify({ calendars: ["jewish", "atlantis"] })
     );
 
     expect(loadCalendars()).toEqual(["jewish"]);
 
-    window.localStorage.setItem("minigames:calendar:v1", "{not json");
+    window.localStorage.setItem("minigames:festival-calendar:v1", "{not json");
 
     expect(loadCalendars()).toEqual(DEFAULT_CALENDARS);
   });

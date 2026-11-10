@@ -199,7 +199,7 @@ export const SpellCreatorIcon = () => (
 );
 
 /** A page of a calendar with a crescent moon on it. */
-export const CalendarIcon = () => (
+export const FestivalCalendarIcon = () => (
   <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
     <rect
       x="3"

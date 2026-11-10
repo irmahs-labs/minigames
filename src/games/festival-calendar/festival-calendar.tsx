@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { CalendarIcon } from "../../components/app-icons";
+import { FestivalCalendarIcon } from "../../components/app-icons";
 import { Header } from "../../components/header";
 import type { GameProps } from "../../games";
 import { Icon } from "../../lib/icon";
@@ -279,8 +279,8 @@ const MonthGrid = ({
   );
 };
 
-/** The Calendar: a month of moons and the festivals of the calendars added. */
-const Calendar = ({ name }: GameProps) => {
+/** The Festival Calendar: a month of moons and the festivals of the calendars added. */
+const FestivalCalendar = ({ name }: GameProps) => {
   const t = useCopy(COPY);
   const language = useLanguage();
   const [chosen, setChosen] = useState<CalendarId[]>(loadCalendars);
@@ -334,7 +334,11 @@ const Calendar = ({ name }: GameProps) => {
 
   return (
     <>
-      <Header icon={<CalendarIcon />} name={name} href="/calendar">
+      <Header
+        icon={<FestivalCalendarIcon />}
+        name={name}
+        href="/festival-calendar"
+      >
         <Link href="/" className="btn">
           <Icon name="back" size={16} />
           {t.allGames}
@@ -445,4 +449,4 @@ const Calendar = ({ name }: GameProps) => {
   );
 };
 
-export default Calendar;
+export default FestivalCalendar;
