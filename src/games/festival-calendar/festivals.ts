@@ -2,6 +2,7 @@ import type { Language } from "../../lib/language";
 import { festivalsIn } from "../book-of-shadows/buddhist-calendar";
 import type { FestivalId } from "../book-of-shadows/buddhist-calendar";
 import { keyOf } from "../book-of-shadows/time";
+import { chineseDaysOf } from "./chinese";
 import {
   daysOf,
   easter,
@@ -79,8 +80,11 @@ const onCalendar =
   (year: number) =>
     daysOf(system, year, months, day).map((start) => spanOf(start, days));
 
-const chinese = (month: number, day: number, days = 1) =>
-  onCalendar("chinese", [String(month)], day, days);
+/** A day of a Chinese month, worked out from the Sun and the Moon (chinese.ts). */
+const chinese =
+  (month: number, day: number, days = 1) =>
+  (year: number) =>
+    chineseDaysOf(year, month, day).map((start) => spanOf(start, days));
 
 const islamic = (month: number, day: number, days = 1) =>
   onCalendar("islamic-umalqura", [String(month)], day, days);

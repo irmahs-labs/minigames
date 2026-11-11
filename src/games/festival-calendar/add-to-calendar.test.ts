@@ -129,9 +129,17 @@ describe("occasionOf", () => {
     );
   });
 
-  it("knows nothing of a festival that isn't, or of a day it doesn't start on", () => {
+  it("takes a start a day or two off, as the visitor's device showed it", () => {
+    expect(occasionOf("diwali", "2026-11-09")).toMatchObject({
+      end: "2026-11-09",
+      start: "2026-11-09",
+    });
+    expect(occasionOf("hanukkah", "2026-12-04")?.end).toBe("2026-12-11");
+  });
+
+  it("knows nothing of a festival that isn't, or of a day far from it", () => {
     expect(occasionOf("atlantis-day", "2026-11-08")).toBeNull();
-    expect(occasionOf("diwali", "2026-11-09")).toBeNull();
+    expect(occasionOf("diwali", "2026-11-12")).toBeNull();
     expect(occasionOf("diwali", "not a day")).toBeNull();
     expect(occasionOf("christmas", "3025-12-25")).toBeNull();
   });

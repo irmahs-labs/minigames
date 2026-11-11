@@ -376,7 +376,7 @@ describe("/api/festival-calendar", () => {
     const responses = await Promise.all(
       [
         "atlantis-day/2026-11-08.ics",
-        "diwali/2026-11-09.ics",
+        "diwali/2026-11-14.ics",
         "diwali/tomorrow.ics",
       ].map((path) => fetch(`http://${base}/api/festival-calendar/${path}`))
     );
