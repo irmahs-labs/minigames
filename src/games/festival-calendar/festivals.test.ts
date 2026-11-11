@@ -10,12 +10,21 @@ const startsOf = (id: string, year: number) =>
     .map((span) => span.start);
 
 describe("the festivals' days", () => {
-  // Dates as published: by China, Saudi Arabia (Umm al-Qura), the Hebrew
+  // Dates as published: by China (the Hong Kong Observatory), Saudi Arabia (Umm al-Qura), the Hebrew
   // calendar, Iran, Ethiopia, India's panchangs and Cambodia's government.
   it.each([
     ["lunar-new-year", 2025, "2025-01-29"],
     ["lunar-new-year", 2026, "2026-02-17"],
     ["lantern-festival", 2026, "2026-03-03"],
+    // The new moon is at 23:56 in Beijing: Intl's calendar says the 7th.
+    ["lunar-new-year", 2027, "2027-02-06"],
+    ["lantern-festival", 2027, "2027-02-20"],
+    ["lunar-new-year", 2030, "2030-02-03"],
+    ["dragon-boat", 2026, "2026-06-19"],
+    ["dragon-boat", 2027, "2027-06-09"],
+    ["mid-autumn", 2027, "2027-09-15"],
+    ["qixi", 2025, "2025-08-29"],
+    ["ghost-festival", 2025, "2025-09-06"],
     ["qingming", 2025, "2025-04-04"],
     ["qingming", 2026, "2026-04-05"],
     ["dragon-boat", 2025, "2025-05-31"],

@@ -3,9 +3,10 @@ import { SearchSunLongitude } from "astronomy-engine";
 import { DAY, keyOf, parseDay } from "../book-of-shadows/time";
 
 /**
- * The days festivals fall on, in the Gregorian calendar. The Chinese,
- * Korean, Islamic, Hebrew, Persian and Ethiopian calendars come from the
- * browser's own (Intl, the ICU calendars); Easter from the computus.
+ * The days festivals fall on, in the Gregorian calendar. The Islamic,
+ * Hebrew, Persian and Ethiopian calendars come from the browser's own
+ * (Intl, the ICU calendars); Easter from the computus. The Chinese calendar
+ * is worked out from the Sun and the Moon instead (chinese.ts).
  */
 
 /** A festival's days in a year, `end` included: "2026-02-17". */
@@ -16,8 +17,6 @@ export interface Span {
 
 /** The calendars Intl converts to. */
 export type CalendarSystem =
-  | "chinese"
-  | "dangi"
   | "islamic-umalqura"
   | "hebrew"
   | "persian"

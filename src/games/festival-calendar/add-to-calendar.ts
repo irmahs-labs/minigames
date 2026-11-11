@@ -1,4 +1,4 @@
-import { parseDay } from "../book-of-shadows/time";
+import { daysBetween, parseDay } from "../book-of-shadows/time";
 import { shift } from "./dates";
 import { FESTIVALS } from "./festivals";
 import type { Occasion, Words } from "./festivals";
@@ -41,10 +41,16 @@ export const eventOf = (
 const FIRST_YEAR = 2000;
 const LAST_YEAR = 2100;
 
+/** How far a device's date for a festival may be from the server's, in days. */
+const LEEWAY = 2;
+
 /**
  * A festival on the days that start on `start`, or null when it has none
- * then: for the server, which takes only these two and works out the rest,
- * so nobody can have it send a calendar event of their own making.
+ * then: for the server, which takes only these two and checks them against
+ * the days it works out itself, so nobody can have it send a calendar event
+ * of their own making. A start a day or two from the server's is still
+ * taken, as the visitor saw it, with the festival's own length: a device
+ * whose calendars differ by a day still adds what it showed.
  */
 export const occasionOf = (id: string, start: string): Occasion | null => {
   const festival = FESTIVALS.find((entry) => entry.id === id);
@@ -54,9 +60,17 @@ export const occasionOf = (id: string, start: string): Occasion | null => {
     return null;
   }
 
-  const span = festival.spans(day.year).find((entry) => entry.start === start);
+  const span = [day.year - 1, day.year, day.year + 1]
+    .flatMap((year) => festival.spans(year))
+    .find((entry) => Math.abs(daysBetween(entry.start, start)) <= LEEWAY);
 
-  return span ? { ...span, festival } : null;
+  return span
+    ? {
+        end: shift(start, daysBetween(span.start, span.end)),
+        festival,
+        start,
+      }
+    : null;
 };
 
 /** Where the server sends a festival's .ics: "/api/festival-calendar/diwali/2026-11-08.ics?lang=en". */
