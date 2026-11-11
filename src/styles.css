@@ -1296,6 +1296,13 @@ a:hover {
 .month-nav .btn {
   margin-left: auto;
 }
+/* A month's name sits in a box as wide as the longest ("September 2026",
+   "septembre 2026"), so the arrows either side stay put from month to month. */
+.month-nav__title--month {
+  flex: none;
+  width: 7.6em;
+  text-align: center;
+}
 .moon-glyph {
   flex: none;
 }

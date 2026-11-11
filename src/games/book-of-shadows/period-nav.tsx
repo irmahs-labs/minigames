@@ -45,7 +45,11 @@ export const PeriodNav = ({
     >
       ‹
     </button>
-    <h2 id={id} className="display book__title" aria-live="polite">
+    <h2
+      id={id}
+      className={`display book__title month-nav__title--${unit}`}
+      aria-live="polite"
+    >
       {title}
     </h2>
     <button
