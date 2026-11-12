@@ -13,17 +13,13 @@ const COPY = {
   en: {
     allGames: "all games",
     allQuizzes: "all quizzes",
-    see: "see your result",
     sub: "a few questions, and the truth about you",
-    take: "take the quiz",
     you: "You are a",
   },
   fr: {
     allGames: "tous les jeux",
     allQuizzes: "tous les quiz",
-    see: "voir votre résultat",
     sub: "quelques questions, et la vérité sur vous",
-    take: "faire le quiz",
     you: "Vous êtes une",
   },
 };
@@ -48,6 +44,7 @@ const QuizList = () => {
                 <span className="legend">{quiz.legend}</span>
                 <h2 className="display game-card__name">
                   {quiz.title[language]}
+                  <Icon name="arrow" size={20} />
                 </h2>
                 <p className="game-card__blurb">{quiz.blurb[language]}</p>
                 {result ? (
@@ -56,9 +53,6 @@ const QuizList = () => {
                     <strong>{result.name[language]}</strong>
                   </p>
                 ) : null}
-                <span className="game-card__play">
-                  {result ? t.see : t.take}
-                </span>
               </Link>
             </li>
           );

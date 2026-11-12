@@ -122,7 +122,7 @@ export const WheelView = ({
         </svg>
       </div>
       <div aria-hidden="true" className="wheel__hub">
-        <Icon name="leaf" size={34} weight={2} />
+        <Icon name="leaf" size={34} />
       </div>
     </div>
   );

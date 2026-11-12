@@ -280,7 +280,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
                     }
                     onClick={() => dispatch({ index: i, type: "remove" })}
                   >
-                    <Icon name="close" size={16} weight={3} />
+                    <Icon name="close" size={16} />
                   </button>
                 </li>
               ))}

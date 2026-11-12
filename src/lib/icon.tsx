@@ -1,5 +1,9 @@
-/** Line icons on a 24 × 24 grid, drawn in the surrounding text colour. */
+/**
+ * Cute Matcha's screen icons: a 24 × 24 grid at 2px with round caps, drawn
+ * in the surrounding text colour.
+ */
 const GLYPHS = {
+  arrow: ["M5 12h14M13 6l6 6-6 6"],
   back: ["M15 18l-6-6 6-6"],
   calendar: [
     "M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
@@ -22,7 +26,7 @@ interface IconProps {
   weight?: number;
 }
 
-export const Icon = ({ name, size = 22, weight = 2.4 }: IconProps) => (
+export const Icon = ({ name, size = 22, weight = 2 }: IconProps) => (
   <svg
     aria-hidden="true"
     width={size}
