@@ -2,8 +2,8 @@
    Colours are role tokens named by job (tokens.json in the design system),
    so one rule is right in both themes; <html data-theme> picks the set.
    Fredoka sets titles and Nunito Sans everything else; panels are flat with
-   2px outlines, and only the one action to press next carries the hard
-   shadow. */
+   2px outlines, and only the one action to press next is yellow (pop) and
+   carries the hard shadow. */
 :root {
   --ground: #f3f1c8;
   --panel: #f7f8de;
@@ -11,11 +11,15 @@
   --raised: #fffdf0;
   --raised-hover: #e8e1bd;
   --text: #2f3b34;
-  --text-muted: #3f6b30;
+  --text-muted: #335a26;
   --outline: #2f3b34;
   --accent: #d4dd9c;
   --accent-soft: #afc584;
   --on-accent: #2f3b34;
+  /* The one accent: a pastel butter yellow, for the call to action only */
+  --pop: #ffd968;
+  --pop-hover: #f5c94a;
+  --on-pop: #2f3b34;
   --strong: #3b4a42;
   --on-strong: #fff3cf;
   --selected: #afc584;
@@ -65,8 +69,10 @@
   --stroke-base: 1.5px;
   --stroke-panel: 2px;
   --line: var(--stroke-panel) solid var(--outline);
-  --radius-panel: 11px;
-  --radius-lg: 9px;
+  /* Concentric corners: a 20px panel padded 12px holds 8px fields */
+  --radius-panel: 20px;
+  --radius-field: 8px;
+  --space-group: 24px;
   --radius-pill: 999px;
 
   /* Fredoka sets titles and panel names, Nunito Sans everything else. */
@@ -76,24 +82,27 @@
 :root[data-theme="dark"] {
   /* Dark Matcha: a mid-tone matcha page, cards a step lighter, and the header,
      buttons and fields a darker well. Outlines and shadows stay near-black. */
-  --ground: #46574b;
-  --panel: #52645a;
+  --ground: #405045;
+  --panel: #4b5c51;
   --header: #2f3d34;
   --raised: #2f3d34;
   --raised-hover: #3a4a3f;
   --text: #f3f1c8;
-  --text-muted: #d4e396;
+  --text-muted: #dbe8a6;
   --outline: #0f1411;
   --accent: #c9d68f;
   --accent-soft: #9eb27a;
   --on-accent: #0f1411;
+  --pop: #ffe08a;
+  --pop-hover: #ffd666;
+  --on-pop: #0f1411;
   --strong: #1c2420;
   --on-strong: #f3f1c8;
   --selected: #c9d68f;
   --on-selected: #0f1411;
   --grid: #2f3b34;
   --pattern-dot: #b8d97000;
-  --pattern-line: #4d5f52;
+  --pattern-line: #4a5b4f;
   --focus: #c2d8f5;
   --danger: #f6a49d;
   --series-1: #3987e5;
@@ -215,6 +224,7 @@ a:hover {
   display: block;
   margin: 0;
   font: 600 24px/1.1 var(--display);
+  text-wrap: balance;
 }
 .app-header__by {
   display: block;
@@ -292,6 +302,7 @@ a:hover {
   margin: 0;
   font-size: 40px;
   line-height: 1.05;
+  text-wrap: balance;
 }
 .page__sub {
   margin: 0;
@@ -310,7 +321,7 @@ a:hover {
   position: absolute;
   top: -12px;
   left: 16px;
-  padding: 2px 12px;
+  padding: 3px 12px 1px;
   border-radius: var(--radius-pill);
   background: var(--strong);
   color: var(--on-strong);
@@ -342,20 +353,25 @@ a:hover {
   background: var(--panel);
   color: var(--text);
 }
-/* Only the one action to press next carries the hard shadow. */
-.btn--primary,
-.btn--primary:not(:disabled):hover {
-  background: var(--accent);
-  color: var(--on-accent);
+/* Only the one action to press next is yellow, 48px tall, on the hard
+   shadow it sinks into when pressed. */
+.btn--primary {
+  min-height: 48px;
+  background: var(--pop);
+  color: var(--on-pop);
   box-shadow: var(--shadow-hard);
+  transition:
+    background 0.15s,
+    transform 0.08s,
+    box-shadow 0.08s;
 }
 .btn--primary:not(:disabled):hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #0f1411;
+  background: var(--pop-hover);
+  color: var(--on-pop);
 }
 .btn--primary:not(:disabled):active {
-  transform: translate(3px, 3px);
-  box-shadow: 0 0 0 var(--outline);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #0f1411;
 }
 .btn--quiet {
   background: transparent;
@@ -434,9 +450,9 @@ a:hover {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   height: 100%;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
   background: var(--panel);
   border: var(--line);
   border-radius: var(--radius-panel);
@@ -444,46 +460,44 @@ a:hover {
   color: var(--text);
   text-decoration: none;
   transition:
-    transform 0.12s,
-    box-shadow 0.12s,
-    background 0.12s;
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .game-card:hover,
 .game-card:focus-visible {
   color: var(--text);
   background: var(--raised-hover);
   transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 #0f1411;
+  box-shadow: 5px 5px 0 #0f1411;
 }
+/* The name with an arrow at the end of its row: the whole card is the link */
 .game-card__name {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 0;
   font-size: 28px;
   line-height: 1.1;
+  text-wrap: balance;
+}
+.game-card__name svg {
+  flex: none;
 }
 .game-card__blurb {
   margin: 0;
   flex: 1;
   font-size: 15px;
   line-height: 1.45;
+  color: var(--text-muted);
+  text-wrap: pretty;
 }
-.game-card__play {
-  align-self: flex-start;
-  margin-top: 8px;
-  padding: 6px 18px;
-  border: var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-weight: 700;
-}
-/* The foot of every page: small and quiet, under a hairline. */
+/* Cute Matcha's Footer: where to find more apps, on a small paper pill. */
 .site-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   width: fit-content;
   margin: 8px auto 32px;
-  padding: 6px 14px 6px 10px;
+  padding: 6px 14px;
   border: var(--line);
   border-radius: 999px;
   background-color: var(--panel);
@@ -491,7 +505,8 @@ a:hover {
   font-size: 14px;
 }
 .site-foot a {
-  color: inherit;
+  color: var(--text);
+  font-weight: 700;
   text-decoration: none;
 }
 .site-foot a:hover {
@@ -502,7 +517,7 @@ a:hover {
   flex-direction: column;
   align-items: flex-start;
   gap: 14px;
-  padding: 40px 28px 28px;
+  padding: 16px 12px 12px;
 }
 
 /* ── wheel of fortune ── */
@@ -512,7 +527,7 @@ a:hover {
   flex-wrap: wrap;
   align-self: flex-start;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   overflow: hidden;
   background: var(--raised);
 }
@@ -563,7 +578,7 @@ a:hover {
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  padding: 44px 24px 24px;
+  padding: 16px 12px 12px;
 }
 .panel--slices {
   flex: 1 1 340px;
@@ -571,7 +586,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 
 .wheel {
@@ -687,7 +702,7 @@ a:hover {
   min-height: 44px;
   padding: 0 12px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font-size: 15px;
 }
@@ -762,7 +777,7 @@ a:hover {
   overflow: visible;
 }
 .result__panel {
-  padding: 34px 26px 24px;
+  padding: 16px 12px 12px;
 }
 .result::backdrop {
   background: rgb(15 20 17 / 0.7);
@@ -785,7 +800,7 @@ a:hover {
   min-width: 0;
   display: flex;
   justify-content: center;
-  padding: 36px 20px 20px;
+  padding: 16px 12px 12px;
 }
 .panel--log {
   flex: 1 1 300px;
@@ -793,7 +808,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .system {
   width: min(620px, 100%);
@@ -811,7 +826,7 @@ a:hover {
   gap: 6px;
   padding: 8px;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--panel);
   transition: opacity 0.15s;
 }
@@ -924,7 +939,7 @@ a:hover {
   gap: 12px;
   padding: 8px 14px;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   color: var(--on-accent);
   font-weight: 700;
 }
@@ -965,13 +980,13 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .panel--board {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .board {
   width: 100%;
@@ -1028,7 +1043,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .shelf {
   min-width: 0;
@@ -1071,7 +1086,7 @@ a:hover {
   width: max-content;
   max-width: 220px;
   padding: 6px 10px;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--strong);
   color: var(--on-strong);
   font: 600 13px/1.35 var(--body);
@@ -1104,7 +1119,7 @@ a:hover {
   min-height: 44px;
   padding: 8px 12px;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -1163,7 +1178,7 @@ a:hover {
   gap: 4px;
   padding: 12px 14px;
   border: var(--stroke-base) dashed var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   color: var(--text-muted);
 }
 .recipe-card--found {
@@ -1251,7 +1266,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .book__title {
   margin: 0;
@@ -1351,7 +1366,7 @@ a:hover {
   gap: 2px;
   padding: 12px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--accent-soft);
   color: var(--on-accent);
 }
@@ -1471,7 +1486,7 @@ a:hover {
   gap: 4px;
   padding: 6px 2px;
   border: var(--stroke-base) solid transparent;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   text-align: center;
 }
@@ -1558,7 +1573,7 @@ a:hover {
   gap: 6px;
   padding: 14px 16px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font-size: 14px;
   line-height: 1.45;
@@ -1603,7 +1618,7 @@ a:hover {
   gap: 4px;
   padding: 12px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .retrograde--now {
@@ -1673,7 +1688,7 @@ a:hover {
   gap: 4px;
   padding: 14px 16px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .number-card p {
@@ -1746,7 +1761,7 @@ a:hover {
   gap: 4px;
   padding: 12px 14px;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--accent-soft);
   color: var(--on-accent);
   font-size: 15px;
@@ -1804,7 +1819,7 @@ a:hover {
   max-height: 260px;
   overflow-y: auto;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .birthplace__options li + li {
@@ -1845,7 +1860,7 @@ a:hover {
   gap: 12px;
   padding: 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font-size: 14px;
   line-height: 1.45;
@@ -1919,7 +1934,7 @@ a:hover {
   gap: 10px;
   padding: 10px 12px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font-size: 14px;
   line-height: 1.45;
@@ -1953,7 +1968,7 @@ a:hover {
   gap: 12px;
   padding: 10px 12px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   text-align: left;
 }
@@ -2003,7 +2018,7 @@ a:hover {
   gap: 12px;
   padding: 10px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .stem--marked {
@@ -2047,7 +2062,7 @@ a:hover {
   gap: 2px;
   padding: 12px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .animal p {
@@ -2165,7 +2180,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 28px 22px 18px;
+  padding: 16px 12px 12px;
 }
 .stickies__head {
   display: flex;
@@ -2266,7 +2281,7 @@ a:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .corkboard {
@@ -2388,7 +2403,7 @@ a:hover {
   flex-direction: column;
   gap: 16px;
   max-width: 760px;
-  padding: 34px 28px 24px;
+  padding: 16px 12px 12px;
 }
 .quiz--result {
   flex-direction: row;
@@ -2454,7 +2469,7 @@ a:hover {
   min-height: 52px;
   padding: 10px 16px 10px 10px;
   border: var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
   font: 600 15px/1.35 var(--body);
   text-align: left;
@@ -2709,7 +2724,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 24px 22px;
+  padding: 16px 12px 12px;
 }
 .spell-form {
   gap: 10px;
@@ -2739,7 +2754,7 @@ a:hover {
   width: 32px;
   height: 32px;
   border-width: var(--stroke-base);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   font-size: 17px;
 }
 .spell-tier--s {
@@ -2816,7 +2831,7 @@ a:hover {
   gap: 4px;
   padding: 12px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .spell-couplet__verse {
@@ -2868,7 +2883,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 30px 22px 22px;
+  padding: 16px 12px 12px;
 }
 .cal-kinds {
   display: flex;
@@ -2912,7 +2927,7 @@ a:hover {
   gap: 12px;
   padding: 12px 14px;
   border: var(--stroke-base) solid var(--outline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   background: var(--raised);
 }
 .occasion__emoji {
@@ -2969,4 +2984,38 @@ a:hover {
   min-height: 36px;
   padding: 0 12px;
   font-size: 13.5px;
+}
+
+/* The account pill while the session is asked for: a skeleton of its exact
+   size, so nothing moves when the answer comes. */
+.account--loading {
+  pointer-events: none;
+}
+.account--loading .account__icon {
+  background: var(--raised-hover);
+}
+.account__bar {
+  width: 56px;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--raised-hover);
+  animation: account-pulse 1.2s ease-in-out infinite;
+}
+@keyframes account-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (max-width: 600px) {
+  .account__bar {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account__bar {
+    animation: none;
+  }
+  .btn--primary:not(:disabled):active {
+    transform: none;
+  }
 }

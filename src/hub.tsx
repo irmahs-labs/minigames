@@ -5,6 +5,7 @@ import { MiniGamesIcon } from "./components/app-icons";
 import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { APP_NAME } from "./lib/brand";
+import { Icon } from "./lib/icon";
 import { useLanguage } from "./lib/language";
 import { Link } from "./lib/router";
 
@@ -36,11 +37,9 @@ export const Hub = () => {
                   <span className="legend">{game.legend}</span>
                   <h2 className="display game-card__name">
                     {game.name[language]}
+                    <Icon name="arrow" size={20} />
                   </h2>
                   <p className="game-card__blurb">{game.blurb[language]}</p>
-                  <span className="game-card__play">
-                    {french ? "jouer" : "play"}
-                  </span>
                 </Link>
               </li>
             ))}
