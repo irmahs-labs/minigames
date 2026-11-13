@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { WebSocketServer } from "ws";
 
 import { createApp } from "./app";
 import { connect } from "./db";
@@ -65,7 +66,7 @@ const lobby = createLobby({
   },
 });
 
-const { app, injectWebSocket } = createApp({
+const { app } = createApp({
   appOrigin: env.appOrigin,
   isAdmin: askAdminAccess(env.authUrl),
   lobby,
@@ -113,8 +114,14 @@ if (env.staticDir) {
   app.get("*", serveStatic({ path: "index.html", root }));
 }
 
-const server = serve({ fetch: app.fetch, port: env.port }, (info) => {
-  console.log(`minigames listening on :${info.port}`);
-});
-
-injectWebSocket(server);
+// The Node server upgrades /ws itself, given a WebSocket server to hand to
+serve(
+  {
+    fetch: app.fetch,
+    port: env.port,
+    websocket: { server: new WebSocketServer({ noServer: true }) },
+  },
+  (info) => {
+    console.log(`minigames listening on :${info.port}`);
+  }
+);

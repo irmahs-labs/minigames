@@ -1,5 +1,6 @@
-import { createNodeWebSocket } from "@hono/node-ws";
+import { upgradeWebSocket } from "@hono/node-server";
 import { Hono } from "hono";
+import { WebSocket } from "ws";
 
 import { noteRequest, voteRequest } from "../src/board/api";
 import type { Board, Note, NoteRequest } from "../src/board/api";
@@ -162,7 +163,6 @@ export const createApp = ({
   const app = new Hono<{ Variables: Variables }>();
   const brews = createLimiter({ max: BREWS_PER_MINUTE, windowMs: 60_000 });
   const votes = createLimiter({ max: VOTES_PER_MINUTE, windowMs: 60_000 });
-  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
   app.get("/healthz", (c) => c.text("ok"));
 
@@ -548,12 +548,18 @@ export const createApp = ({
         },
         onOpen: (_event, socket) => {
           client.send = (message) => socket.send(JSON.stringify(message));
-          heartbeat = setInterval(() => socket.raw?.ping(), HEARTBEAT_MS);
+          // The ping is ws's own, so only a ws socket is asked for one
+          const { raw } = socket;
+          heartbeat = setInterval(() => {
+            if (raw instanceof WebSocket) {
+              raw.ping();
+            }
+          }, HEARTBEAT_MS);
           lobby.connect(account, client);
         },
       };
     })
   );
 
-  return { app, injectWebSocket };
+  return { app };
 };
