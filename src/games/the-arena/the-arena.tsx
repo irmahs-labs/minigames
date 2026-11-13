@@ -50,8 +50,7 @@ const COPY = {
     },
     placings: "Placings",
     playAgain: "play again",
-    removeDistrict: (n: number) => `Remove district ${n}`,
-    removePlace: (name: string) => `Remove ${name}`,
+    remove: "Remove",
     rules: "Rules",
     skip: "skip to the end",
     start: "start the games",
@@ -60,9 +59,7 @@ const COPY = {
     togetherHint:
       "The games end when everyone left is from the same district, and they win together.",
     victor: "The victor",
-    victorOf: (district: string) => `Victor, ${district}`,
     victors: "The victors",
-    victorsOf: (district: string) => `Victors together, ${district}`,
     yourCast: "The cast",
   },
   fr: {
@@ -91,8 +88,7 @@ const COPY = {
     },
     placings: "Classement",
     playAgain: "rejouer",
-    removeDistrict: (n: number) => `Retirer le district ${n}`,
-    removePlace: (name: string) => `Retirer ${name}`,
+    remove: "Retirer",
     rules: "Règles",
     skip: "aller à la fin",
     start: "lancer les jeux",
@@ -101,9 +97,7 @@ const COPY = {
     togetherHint:
       "Les jeux s’arrêtent quand tous les survivants viennent du même district, qui gagnent ensemble.",
     victor: "Victoire",
-    victorOf: (district: string) => `Victoire, ${district}`,
     victors: "Victoire à plusieurs",
-    victorsOf: (district: string) => `Victoire partagée, ${district}`,
     yourCast: "Les concurrents",
   },
 };
@@ -186,7 +180,7 @@ const Setup = ({
                   <button
                     type="button"
                     className="icon-btn"
-                    aria-label={t.removeDistrict(d + 1)}
+                    aria-label={`${t.remove} ${t.district(d + 1)}`}
                     onClick={() =>
                       dispatch({ district: d, type: "removeDistrict" })
                     }
@@ -218,7 +212,7 @@ const Setup = ({
                     <button
                       type="button"
                       className="icon-btn"
-                      aria-label={t.removePlace(name || t.contestant(p + 1))}
+                      aria-label={`${t.remove} ${name || t.contestant(p + 1)}`}
                       onClick={() =>
                         dispatch({ district: d, place: p, type: "removePlace" })
                       }
@@ -456,7 +450,7 @@ const TheArena = ({ name }: GameProps) => {
         >
           <span className="legend">victor.log</span>
           <p className="kicker">
-            {victors.length > 1 ? t.victorsOf(district) : t.victorOf(district)}
+            {victors.length > 1 ? t.victors : t.victor}, {district}
           </p>
           <h2
             ref={heading}
