@@ -77,6 +77,16 @@ export const GAMES: readonly Game[] = [
     slug: "festival-calendar",
   },
   {
+    Screen: lazy(() => import("./games/the-arena/the-arena")),
+    blurb: {
+      en: "Put your friends in districts, send them into the arena, and follow them day by day until one is left standing.",
+      fr: "Répartissez vos amis en districts, envoyez-les dans l’arène, et suivez-les jour après jour jusqu’au dernier debout.",
+    },
+    legend: "the-arena.exe",
+    name: { en: "The Arena", fr: "L’Arène" },
+    slug: "the-arena",
+  },
+  {
     Screen: lazy(() => import("./games/spell-creator/spell-creator")),
     blurb: {
       en: "Write two rhyming lines and cast them as a spell: the better the rhyme, the more powerful the spell.",
