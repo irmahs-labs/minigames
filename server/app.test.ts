@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 
 import { serve } from "@hono/node-server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { WebSocket } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 import type { Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY } from "../src/board/rules";
@@ -203,7 +203,7 @@ const notes = {
 
 const askedFor: (string | null)[] = [];
 
-const { app, injectWebSocket } = createApp({
+const { app } = createApp({
   appOrigin: ORIGIN,
   // Ana is on Alma Housila's list in the account service's APP_ACCESS.
   isAdmin: (cookie) => Promise.resolve(cookie === "session=ana"),
@@ -218,9 +218,11 @@ const { app, injectWebSocket } = createApp({
   whoIs,
 });
 
-const server = serve({ fetch: app.fetch, port: 0 });
-
-injectWebSocket(server);
+const server = serve({
+  fetch: app.fetch,
+  port: 0,
+  websocket: { server: new WebSocketServer({ noServer: true }) },
+});
 
 let base = "";
 
