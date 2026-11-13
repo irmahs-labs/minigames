@@ -231,3 +231,35 @@ export const FestivalCalendarIcon = () => (
     <path d="M22.5 19.5a5 5 0 1 0 0 9.2a4 4 0 0 1 0-9.2z" fill="#2f3b34" />
   </svg>
 );
+
+/** A ring of an arena, with a flame burning in the middle. */
+export const ArenaIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <ellipse
+      cx="20"
+      cy="29"
+      rx="12"
+      ry="4.5"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M20 8c3.5 4 6.5 7.5 6.5 12.5a6.5 6.5 0 0 1-13 0c0-3 1.5-5 3-6.5 0 2.5 1 4 2.5 4.5-1-4 .5-7.5 1-10.5z"
+      fill="#ffd968"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
