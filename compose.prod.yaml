@@ -45,7 +45,7 @@ services:
     image: minigames
     restart: unless-stopped
     environment:
-      APP_URL: https://minigames.irmahs.dev
+      APP_URL: https://playground.irmahs.dev
       AUTH_INTERNAL_URL: http://auth:3001
       DATABASE_URL: postgres://minigames:${POSTGRES_PASSWORD_URL:?set in .env}@db:5432/minigames
     depends_on:

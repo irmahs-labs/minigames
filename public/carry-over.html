@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Served at the old address, minigames.irmahs.dev, for the move to
+     playground.irmahs.dev (src/lib/carry-over.ts). In the new address's
+     hidden frame, it posts this browser's saved games, theme and language
+     to that address and no other; opened on its own, it goes there. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Irma’s Playground</title>
+    <script>
+      (function () {
+        var NEW_ORIGIN = "https://playground.irmahs.dev";
+
+        if (window.parent === window) {
+          window.location.replace(NEW_ORIGIN + "/");
+          return;
+        }
+
+        var entries = {};
+
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+
+            if (
+              key &&
+              (key.indexOf("minigames:") === 0 ||
+                key === "theme" ||
+                key === "lang")
+            ) {
+              entries[key] = localStorage.getItem(key);
+            }
+          }
+        } catch (e) {}
+
+        window.parent.postMessage(
+          { type: "carry-over", entries: entries },
+          NEW_ORIGIN
+        );
+      })();
+    </script>
+  </head>
+</html>

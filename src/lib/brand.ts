@@ -3,4 +3,4 @@
  * where vite.config.ts writes it into index.html at build time. Renaming the
  * site is this one line.
  */
-export const APP_NAME = "Mini Games";
+export const APP_NAME = "Irma’s Playground";

@@ -56,7 +56,7 @@ export const askAccountService =
 
 /**
  * The app whose list in the account service's APP_ACCESS secret makes
- * someone a Mini Games admin. It reuses Alma Housila's list, Irma's own,
+ * someone an admin here. It reuses Alma Housila's list, Irma's own,
  * so the secret needs no entry of its own: whoever may open Alma Housila
  * may take notes down here.
  */
@@ -65,7 +65,7 @@ export const ADMIN_APP = "alma-housila";
 export type IsAdmin = (cookie: string | undefined) => Promise<boolean>;
 
 /**
- * Whether the visitor is a Mini Games admin, asked of the account service the
+ * Whether the visitor is an admin here, asked of the account service the
  * way Caddy asks before opening a private app (`GET /api/access/:app`). Only
  * a 204 says yes, given when their Google-verified email is listed for
  * ADMIN_APP; signed out it redirects to sign in, which is not followed, and

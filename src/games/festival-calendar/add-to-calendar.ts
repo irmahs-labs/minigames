@@ -34,6 +34,8 @@ export const eventOf = (
   title: festival.script
     ? `${festival.emoji} ${festival.name[language]} ${festival.script}`
     : `${festival.emoji} ${festival.name[language]}`,
+  // Its old address on purpose: the id is in people's calendars already, and
+  // a new one would add the festival twice.
   uid: `${festival.id}-${start}@minigames.irmahs.dev`,
 });
 
@@ -134,7 +136,7 @@ export const icsOf = (event: CalendarEvent, now: Date): string =>
   [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Irma HS//Mini Games Festival Calendar//EN",
+    "PRODID:-//Irma HS//Irma’s Playground Festival Calendar//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

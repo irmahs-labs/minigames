@@ -2,7 +2,7 @@
  * The 40 × 40 app icons, drawn flat in Cute Matcha's Light Matcha colours,
  * the same in both themes: an icon is also a favicon. Each has a 1.5px
  * `text` rim, which disappears in Light Matcha and turns cream in Dark
- * Matcha, so its edge reads on either header. The Mini Games die is also
+ * Matcha, so its edge reads on either header. The Playground die is also
  * public/favicon.svg.
  */
 export const MiniGamesIcon = ({ size = 40 }: { size?: number }) => (

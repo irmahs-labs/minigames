@@ -1,6 +1,6 @@
-# Mini Games
+# Irma’s Playground
 
-Small games to play in the browser, at [minigames.irmahs.dev](https://minigames.irmahs.dev).
+Small games to play in the browser, at [playground.irmahs.dev](https://playground.irmahs.dev). It was Mini Games, at minigames.irmahs.dev, which now redirects here; a visitor's saved games come along on their first visit (`src/lib/carry-over.ts`).
 
 ## Games
 
@@ -61,7 +61,7 @@ Under the games, the hub has a **sticky board**: anyone signed in to their irmah
 
 On a wide screen the notes hang in the empty margins either side of the games, starting in columns against them, newest first; on a narrower window or a phone they sit on a corkboard under the games instead. Anyone can drag them about, within the margins or on the corkboard: with the mouse, by the tape on top on a touch screen, or with the arrow keys on the tape. Where you put the notes is kept in your browser (`localStorage`), so only you see your arrangement. Anyone signed in can give a note a thumbs up or down, one each per note, which they can change or take back; everyone sees the counts, never who voted.
 
-Mini Games admins can take a note down before then. An admin is anyone the account service lets into Alma Housila: its `alma-housila` list in the `APP_ACCESS` secret (in irmahs-labs/auth) is reused, so the secret needs nothing new. The server asks the account service's `GET /api/access/alma-housila` with the visitor's cookie, and only a yes counts. Adding someone to Alma Housila makes them a Mini Games admin too.
+Admins can take a note down before then. An admin is anyone the account service lets into Alma Housila: its `alma-housila` list in the `APP_ACCESS` secret (in irmahs-labs/auth) is reused, so the secret needs nothing new. The server asks the account service's `GET /api/access/alma-housila` with the visitor's cookie, and only a yes counts. Adding someone to Alma Housila makes them an admin here too.
 
 ## Where things are kept
 
@@ -90,7 +90,7 @@ The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built
 
 ## Deploy
 
-Merging to `main` deploys. The workflow SSHes to the irmahs.dev server and resets `/srv/minigames` to `main`; there, with `compose.prod.yaml`, Postgres starts, pending migrations run, and the site is rebuilt and started. It joins the shared `proxy` network as `minigames`, where it also reaches the account service as `auth:3001`. Caddy in [irmahs-labs/proxy](https://github.com/irmahs-labs/proxy) serves it at minigames.irmahs.dev, WebSockets included.
+Merging to `main` deploys. The workflow SSHes to the irmahs.dev server and resets `/srv/minigames` to `main`; there, with `compose.prod.yaml`, Postgres starts, pending migrations run, and the site is rebuilt and started. It joins the shared `proxy` network as `minigames`, where it also reaches the account service as `auth:3001`. Caddy in [irmahs-labs/proxy](https://github.com/irmahs-labs/proxy) serves it at playground.irmahs.dev, WebSockets included, and redirects minigames.irmahs.dev there.
 
 Secrets (Settings → Secrets and variables → Actions):
 
@@ -103,7 +103,7 @@ Secrets (Settings → Secrets and variables → Actions):
 
 1. Cloudflare: `A` and `AAAA` records for `minigames` pointing at the server, **DNS only**.
 2. On the server, as the admin user: `sudo mkdir /srv/minigames && sudo chown deploy:deploy /srv/minigames`.
-3. Merge the `minigames.irmahs.dev` block in irmahs-labs/proxy's `caddy/Caddyfile`.
+3. Merge the `playground.irmahs.dev` block in irmahs-labs/proxy's `caddy/Caddyfile`.
 4. Add the `MINIGAMES_POSTGRES_PASSWORD` secret above.
 5. Merge here; the deploy clones the repo into `/srv/minigames` and starts the database and the site.
 

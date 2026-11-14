@@ -4,8 +4,8 @@ import { accountUrl, firstName } from "./session";
 
 describe("accountUrl", () => {
   it("sends people to the account page, set to bring them back", () => {
-    expect(accountUrl("https://minigames.irmahs.dev/wheel-of-fortune")).toBe(
-      "https://auth.irmahs.dev/sign-in?redirect=https%3A%2F%2Fminigames.irmahs.dev%2Fwheel-of-fortune"
+    expect(accountUrl("https://playground.irmahs.dev/wheel-of-fortune")).toBe(
+      "https://auth.irmahs.dev/sign-in?redirect=https%3A%2F%2Fplayground.irmahs.dev%2Fwheel-of-fortune"
     );
   });
 });

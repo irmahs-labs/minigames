@@ -33,7 +33,7 @@ const note = z.object({
 
 /** GET /api/board: every note up now, newest first. */
 export const board = z.object({
-  /** The reader is a Mini Games admin, who can take notes down. */
+  /** The reader is an admin, who can take notes down. */
   admin: z.boolean(),
   /** How many more notes the reader can stick today; null when signed out. */
   left: z.nullable(z.int()),
