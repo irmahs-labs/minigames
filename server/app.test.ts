@@ -266,43 +266,6 @@ describe("/api", () => {
   });
 });
 
-describe("/api/festival-calendar", () => {
-  it("sends a festival's days as an .ics an iPhone opens in Calendar", async () => {
-    const response = await fetch(
-      `http://${base}/api/festival-calendar/diwali/2026-11-08.ics?lang=fr`
-    );
-
-    const ics = await response.text();
-
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toBe(
-      "text/calendar; charset=utf-8"
-    );
-    expect(response.headers.get("content-disposition")).toBe(
-      'inline; filename="diwali-2026-11-08.ics"'
-    );
-    // Safari has to keep the file to open it in Calendar.
-    expect(response.headers.get("cache-control")).toBe("public, max-age=86400");
-    expect(ics).toContain("DTSTART;VALUE=DATE:20261108");
-    expect(ics).toContain("DTEND;VALUE=DATE:20261109");
-    expect(ics).toContain("SUMMARY:🪔 Divali दिवाली");
-  });
-
-  it("sends nothing for a festival or a day it doesn't have", async () => {
-    const responses = await Promise.all(
-      [
-        "atlantis-day/2026-11-08.ics",
-        "diwali/2026-11-14.ics",
-        "diwali/tomorrow.ics",
-      ].map((path) => fetch(`http://${base}/api/festival-calendar/${path}`))
-    );
-
-    expect(responses.map((response) => response.status)).toEqual([
-      404, 404, 404,
-    ]);
-  });
-});
-
 const statusOf = async (response: Promise<Response>) => {
   const { status } = await response;
 

@@ -8,15 +8,19 @@ import { useCopy } from "./lib/language";
 
 /**
  * The Book of Shadows, Booster Potion (now Potion Brewing) and Spell
- * Creator moved to Realms on 2026-11-16. Their old addresses here send
- * visitors to the same page there.
+ * Creator moved to Realms on 2026-11-16, and the Festival Calendar to the
+ * landing page, beside the apps, the same day. Their old addresses here
+ * send visitors on to where each is now.
  */
 export const REALMS = "https://realms.irmahs.dev";
 
+export const HOME = "https://irmahs.dev";
+
 const MOVED = new Map([
-  ["/book-of-shadows", "/book-of-shadows"],
-  ["/booster-potion", "/book-of-shadows/potion-brewing"],
-  ["/spell-creator", "/book-of-shadows/spell-creator"],
+  ["/book-of-shadows", `${REALMS}/book-of-shadows`],
+  ["/booster-potion", `${REALMS}/book-of-shadows/potion-brewing`],
+  ["/spell-creator", `${REALMS}/book-of-shadows/spell-creator`],
+  ["/festival-calendar", `${HOME}/`],
 ]);
 
 /** A saved book is a JSON object; Realms checks its fields itself. */
@@ -63,8 +67,8 @@ const savedBook = (): string | null => {
 };
 
 /**
- * Where a page that moved to Realms is now, its book carried along for the
- * Book of Shadows, or null when `path` didn't move.
+ * Where a page that moved is now, its book carried along for the Book of
+ * Shadows, or null when `path` didn't move.
  */
 export const movedTo = (
   path: string,
@@ -76,27 +80,40 @@ export const movedTo = (
     return null;
   }
 
-  return path === "/book-of-shadows"
-    ? `${REALMS}${there}${bookFragment(saved)}`
-    : `${REALMS}${there}`;
+  return path === "/book-of-shadows" ? `${there}${bookFragment(saved)}` : there;
 };
 
 const COPY = {
   en: {
-    go: "go to Realms",
-    sub: "It lives in the Book of Shadows on Realms now. Taking you there…",
-    title: "This moved to Realms",
+    home: {
+      go: "go to irmahs.dev",
+      sub: "The Festival Calendar sits beside the apps on irmahs.dev now. Taking you there…",
+      title: "This moved to irmahs.dev",
+    },
+    realms: {
+      go: "go to Realms",
+      sub: "It lives in the Book of Shadows on Realms now. Taking you there…",
+      title: "This moved to Realms",
+    },
   },
   fr: {
-    go: "aller sur Realms",
-    sub: "Il vit désormais dans le Livre des ombres, sur Realms. On vous y emmène…",
-    title: "Ce jeu a déménagé sur Realms",
+    home: {
+      go: "aller sur irmahs.dev",
+      sub: "Le calendrier des fêtes est désormais à côté des apps, sur irmahs.dev. On vous y emmène…",
+      title: "Ce jeu a déménagé sur irmahs.dev",
+    },
+    realms: {
+      go: "aller sur Realms",
+      sub: "Il vit désormais dans le Livre des ombres, sur Realms. On vous y emmène…",
+      title: "Ce jeu a déménagé sur Realms",
+    },
   },
 };
 
 /** Sends the visitor on to `to` at once, with a link in case that fails. */
 export const Moved = ({ to }: { to: string }) => {
-  const t = useCopy(COPY);
+  const words = useCopy(COPY);
+  const t = new URL(to).origin === REALMS ? words.realms : words.home;
 
   useEffect(() => {
     window.location.replace(to);
