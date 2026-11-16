@@ -9,6 +9,7 @@ import { Hub } from "./hub";
 import { APP_NAME } from "./lib/brand";
 import { useCopy, useLanguage } from "./lib/language";
 import { Link, usePath, withoutTrailingSlashes } from "./lib/router";
+import { Moved, movedTo } from "./moved";
 
 const NOT_FOUND = {
   en: {
@@ -49,6 +50,12 @@ const PageAt = ({ path }: { path: string }): ReactNode => {
 
   if (path === "/") {
     return <Hub />;
+  }
+
+  const moved = movedTo(path);
+
+  if (moved) {
+    return <Moved to={moved} />;
   }
 
   const game = GAMES.find(

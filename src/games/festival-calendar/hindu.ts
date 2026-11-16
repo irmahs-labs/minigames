@@ -5,7 +5,7 @@ import {
 } from "astronomy-engine";
 import type { AstroTime } from "astronomy-engine";
 
-import { DAY, keyOf } from "../book-of-shadows/time";
+import { DAY, keyOf } from "./sky/time";
 
 /**
  * The Hindu lunisolar calendar, worked out from the Sun and the Moon, as

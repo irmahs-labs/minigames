@@ -1,7 +1,4 @@
 import type { Language } from "../../lib/language";
-import { festivalsIn } from "../book-of-shadows/buddhist-calendar";
-import type { FestivalId } from "../book-of-shadows/buddhist-calendar";
-import { keyOf } from "../book-of-shadows/time";
 import { chineseDaysOf } from "./chinese";
 import {
   daysOf,
@@ -15,6 +12,9 @@ import {
 import type { CalendarSystem, Span } from "./dates";
 import { holikaDahan, indianDay, keptOn, sankranti, tithiSpan } from "./hindu";
 import type { Observance, TithiOf } from "./hindu";
+import { festivalsIn } from "./sky/buddhist-calendar";
+import type { FestivalId } from "./sky/buddhist-calendar";
+import { keyOf } from "./sky/time";
 
 /**
  * The festivals the calendar can show, in groups a visitor adds: by region

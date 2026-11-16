@@ -1,8 +1,8 @@
 import { SearchMoonPhase, SunPosition } from "astronomy-engine";
 
-import { lunarNewYear } from "../book-of-shadows/lunar-zodiac";
-import { DAY, keyOf, parseDay } from "../book-of-shadows/time";
 import { shift } from "./dates";
+import { lunarNewYear } from "./sky/lunar-new-year";
+import { DAY, keyOf, parseDay } from "./sky/time";
 
 /**
  * The Chinese lunisolar calendar, worked out from the Sun and the Moon as
