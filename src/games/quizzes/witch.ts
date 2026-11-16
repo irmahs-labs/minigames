@@ -1343,6 +1343,13 @@ export const WITCH_QUIZ: Quiz = {
       name: { en: "Tech witch", fr: "Sorcière techno" },
     },
   },
+  profile: {
+    name: {
+      en: "your Book of Shadows on Realms",
+      fr: "votre Livre des ombres sur Realms",
+    },
+    url: "https://realms.irmahs.dev/book-of-shadows",
+  },
   slug: "what-type-of-witch",
   title: {
     en: "What type of witch are you?",

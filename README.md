@@ -46,7 +46,7 @@ Mini Games admins can take a note down before then. An admin is anyone the accou
 
 ## Where things are kept
 
-The Wheel of Fortune, the same-screen game and the quizzes' last results keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard and the sticky board live on the server.
+The Wheel of Fortune, the same-screen game and the quizzes' last results keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard and the sticky board live on the server, and so does a signed-in visitor's witch quiz result, so it can show on their Book of Shadows on [Realms](https://realms.irmahs.dev); they can take it off from the quiz's result. The life partner quiz's result never leaves the browser.
 
 ## Develop
 
@@ -67,7 +67,7 @@ npm run dev:api   # the server on :3002; Vite forwards /api and /ws to it
 
 and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames@localhost:5434/minigames npm test` also runs the leaderboard's and the sticky board's database tests, which are skipped otherwise. The local database has no password: it only answers this machine. One made before it went passwordless still asks for one; `npm run db:reset` rebuilds it.
 
-The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/board`, `/api/board/notes` and `/api/board/notes/:id/vote` (the sticky board), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move.
+The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/quizzes/:slug/result` (a quiz result kept on an account, for Realms), `/api/board`, `/api/board/notes` and `/api/board/notes/:id/vote` (the sticky board), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move.
 
 ## Deploy
 

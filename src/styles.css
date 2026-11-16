@@ -519,6 +519,19 @@ a:hover {
   font-size: 13px;
   font-weight: 700;
 }
+/* A button that reads as a link, inside a line of text. */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:disabled {
+  cursor: progress;
+}
 /* Cute Matcha's Footer: where to find more apps, on a small paper pill. */
 .site-foot {
   width: fit-content;

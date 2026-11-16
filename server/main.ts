@@ -15,6 +15,7 @@ import {
   sweepNotes,
   voteNote,
 } from "./notes";
+import { readResult, removeResult, saveResult } from "./quiz-results";
 import { readLeaderboard, recordGame } from "./scores";
 import { askAccountService, askAdminAccess } from "./session";
 
@@ -67,6 +68,11 @@ const { app } = createApp({
     readNotes: (userId) => readNotes(pool, userId),
     removeNote: (id) => removeNote(pool, id),
     voteNote: (userId, id, vote) => voteNote(pool, userId, id, vote),
+  },
+  quizResults: {
+    read: (userId, quiz) => readResult(pool, userId, quiz),
+    remove: (userId, quiz) => removeResult(pool, userId, quiz),
+    save: (userId, quiz, result) => saveResult(pool, userId, quiz, result),
   },
   readLeaderboard: (userId) => readLeaderboard(pool, userId),
   whoIs: askAccountService(env.authUrl),

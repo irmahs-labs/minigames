@@ -36,6 +36,16 @@ export interface Quiz {
   questions: readonly Question[];
   /** The words before its result, if not "You are a": "Verdict:". */
   verdict?: Words;
+  /**
+   * Where its result shows on a signed-in visitor's profile elsewhere on
+   * irmahs.dev: the witch quiz's on their Book of Shadows on Realms. A quiz
+   * without one keeps its result in the browser only.
+   */
+  profile?: {
+    /** "your Book of Shadows on Realms", as a sentence ends with it. */
+    name: Words;
+    url: string;
+  };
 }
 
 /** Points per result id, as the answers add them up. */
