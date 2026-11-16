@@ -7,6 +7,40 @@ import type { Language } from "./language";
  */
 const FRENCH = new Map([
   [
+    "Your account can't be reached right now.",
+    "Votre compte est injoignable pour le moment.",
+  ],
+  ["The result wasn't kept.", "Le résultat n’a pas été gardé."],
+  [
+    "The server's answer made no sense.",
+    "La réponse du serveur n’avait aucun sens.",
+  ],
+  [
+    "That quiz's results stay in the browser.",
+    "Les résultats de ce quiz restent dans le navigateur.",
+  ],
+  [
+    "Results are only kept from the site itself.",
+    "Les résultats ne sont gardés que depuis le site lui-même.",
+  ],
+  [
+    "Sign in to keep your result.",
+    "Connectez-vous pour garder votre résultat.",
+  ],
+  [
+    "That's a lot of results. Try again in a minute.",
+    "Ça fait beaucoup de résultats. Réessayez dans une minute.",
+  ],
+  ["That result can't be kept.", "Ce résultat ne peut pas être gardé."],
+  [
+    "Results are only taken off from the site itself.",
+    "Les résultats ne sont retirés que depuis le site lui-même.",
+  ],
+  [
+    "Sign in to take your result off.",
+    "Connectez-vous pour retirer votre résultat.",
+  ],
+  [
     "Notes are only taken from the site itself.",
     "Les notes ne sont acceptées que depuis le site lui-même.",
   ],

@@ -7,11 +7,19 @@ import type { Board, Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY, isValidBody, tidy } from "../src/board/rules";
 import type { Vote } from "../src/board/rules";
 import {
+  accountResultOf,
+  keepable,
+  resultRequest,
+} from "../src/games/quizzes/account-result";
+import { QUIZZES } from "../src/games/quizzes/all-quizzes";
+import type { Quiz } from "../src/games/quizzes/quiz";
+import {
   clientMessage,
   parseMessage,
 } from "../src/games/super-tic-tac-toe/online/protocol";
 import { createLimiter } from "./limiter";
 import type { Client, Lobby } from "./lobby";
+import type { KeptResult } from "./quiz-results";
 import type { Leaderboard } from "./scores";
 import { shortName } from "./session";
 import type { IsAdmin, SessionAccount, WhoIs } from "./session";
@@ -53,6 +61,24 @@ const readVote = async (request: Request): Promise<Vote | null> => {
 /** Plenty for anyone reading the board; too few to stuff a count. */
 const VOTES_PER_MINUTE = 60;
 
+/** Plenty for anyone finishing a quiz; too few to hammer the database. */
+const RESULTS_PER_MINUTE = 20;
+
+/** The quiz at /quizzes/`slug`, if its result shows on a profile; null otherwise. */
+const profileQuiz = (slug: string): Quiz | null =>
+  QUIZZES.find((quiz) => quiz.slug === slug && quiz.profile) ?? null;
+
+/** The result a request asks to keep, or null when it is not JSON or not one. */
+const readResultRequest = async (request: Request, quiz: Quiz) => {
+  try {
+    const parsed = resultRequest.safeParse(await request.json());
+
+    return parsed.success ? keepable(quiz, parsed.data) : null;
+  } catch {
+    return null;
+  }
+};
+
 /** A note's id as the database has it: a bigint, so at most 18 digits. */
 const NOTE_ID = /^\d{1,18}$/u;
 
@@ -74,6 +100,12 @@ interface AppOptions {
     /** False when there is no such note up. */
     voteNote: (userId: string, id: string, vote: Vote) => Promise<boolean>;
   };
+  /** Quiz results kept on accounts, for profiles elsewhere on irmahs.dev. */
+  quizResults: {
+    read: (userId: string, quiz: string) => Promise<KeptResult | null>;
+    save: (userId: string, quiz: string, result: KeptResult) => Promise<void>;
+    remove: (userId: string, quiz: string) => Promise<void>;
+  };
   /** Whether a visitor can take notes down, from their cookie. */
   isAdmin: IsAdmin;
   /** The site's own origin; sockets from any other are refused. */
@@ -85,8 +117,8 @@ interface Variables {
 }
 
 /**
- * The server's routes: /api for who is signed in, the leaderboard and
- * the hub's sticky board, and /ws, the socket online games are played
+ * The server's routes: /api for who is signed in, the leaderboard, the
+ * quiz results kept on accounts and the hub's sticky board, and /ws, the socket online games are played
  * over. Who a socket belongs to comes
  * from the shared irmahs.dev sign-in cookie, asked of the account service
  * when the socket opens, never from anything sent over it.
@@ -96,11 +128,13 @@ export const createApp = ({
   whoIs,
   readLeaderboard,
   notes,
+  quizResults,
   isAdmin,
   appOrigin,
 }: AppOptions) => {
   const app = new Hono<{ Variables: Variables }>();
   const votes = createLimiter({ max: VOTES_PER_MINUTE, windowMs: 60_000 });
+  const results = createLimiter({ max: RESULTS_PER_MINUTE, windowMs: 60_000 });
 
   app.get("/healthz", (c) => c.text("ok"));
 
@@ -127,6 +161,89 @@ export const createApp = ({
     const { account } = await whoIs(c.req.header("cookie"));
 
     return c.json(await readLeaderboard(account?.id ?? null));
+  });
+
+  // A quiz result on the visitor's account, for a quiz shown on a profile
+  // elsewhere: Realms' server asks for the witch quiz's with the visitor's
+  // cookie, for their Book of Shadows. Signed out, there is none to read.
+  app.get("/api/quizzes/:slug/result", async (c) => {
+    const quiz = profileQuiz(c.req.param("slug"));
+
+    if (!quiz) {
+      return c.text("That quiz's results stay in the browser.", 404);
+    }
+
+    const { account } = await whoIs(c.req.header("cookie"));
+
+    if (!account) {
+      return c.json({ result: null, signedIn: false });
+    }
+
+    const kept = await quizResults.read(account.id, quiz.slug);
+    const result = kept ? accountResultOf(quiz, kept) : null;
+
+    return c.json({
+      result: result && result.ranked.length > 0 ? result : null,
+      signedIn: true,
+    });
+  });
+
+  // Keeps a finished quiz's result on the visitor's account, over the last:
+  // from the site itself only, since the cookie reaches here from any
+  // irmahs.dev page, and only results the quiz could give.
+  app.put("/api/quizzes/:slug/result", async (c) => {
+    if (c.req.header("origin") !== appOrigin) {
+      return c.text("Results are only kept from the site itself.", 403);
+    }
+
+    const quiz = profileQuiz(c.req.param("slug"));
+
+    if (!quiz) {
+      return c.text("That quiz's results stay in the browser.", 404);
+    }
+
+    const { account } = await whoIs(c.req.header("cookie"));
+
+    if (!account) {
+      return c.text("Sign in to keep your result.", 401);
+    }
+
+    if (!results.allow(account.id)) {
+      return c.text("That's a lot of results. Try again in a minute.", 429);
+    }
+
+    const kept = await readResultRequest(c.req.raw, quiz);
+
+    if (!kept) {
+      return c.text("That result can't be kept.", 400);
+    }
+
+    await quizResults.save(account.id, quiz.slug, kept);
+
+    return c.json({ result: accountResultOf(quiz, kept), signedIn: true });
+  });
+
+  // Takes the visitor's result off their account; the browser keeps its own.
+  app.delete("/api/quizzes/:slug/result", async (c) => {
+    if (c.req.header("origin") !== appOrigin) {
+      return c.text("Results are only taken off from the site itself.", 403);
+    }
+
+    const quiz = profileQuiz(c.req.param("slug"));
+
+    if (!quiz) {
+      return c.text("That quiz's results stay in the browser.", 404);
+    }
+
+    const { account } = await whoIs(c.req.header("cookie"));
+
+    if (!account) {
+      return c.text("Sign in to take your result off.", 401);
+    }
+
+    await quizResults.remove(account.id, quiz.slug);
+
+    return c.json({ result: null, signedIn: true });
   });
 
   /**

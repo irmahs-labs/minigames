@@ -11,6 +11,7 @@ on:
       - "db/**"
       - "server/scores*.ts"
       - "server/notes*.ts"
+      - "server/quiz-results*.ts"
       - "server/db.ts"
       - "compose.yaml"
       - ".github/workflows/database.yml"
@@ -19,6 +20,7 @@ on:
       - "db/**"
       - "server/scores*.ts"
       - "server/notes*.ts"
+      - "server/quiz-results*.ts"
       - "server/db.ts"
       - "compose.yaml"
       - ".github/workflows/database.yml"
@@ -52,6 +54,6 @@ jobs:
       - run: npm ci --ignore-scripts
 
       - name: The leaderboard's and the sticky board's queries against the migrated database
-        run: npm test -- server/scores.test.ts server/notes.test.ts
+        run: npm test -- server/scores.test.ts server/notes.test.ts server/quiz-results.test.ts
         env:
           TEST_DATABASE_URL: postgres://minigames@localhost:5434/minigames

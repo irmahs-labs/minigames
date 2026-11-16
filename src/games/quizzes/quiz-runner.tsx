@@ -4,6 +4,7 @@ import { Icon } from "../../lib/icon";
 import { LOCALES, useCopy, useLanguage } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { PieChart } from "./pie-chart";
+import { ProfileNote } from "./profile-note";
 import { tally, winner } from "./quiz";
 import type { Quiz } from "./quiz";
 import { loadSaved, saveResult } from "./saved";
@@ -16,7 +17,6 @@ const COPY = {
     of: (n: number, total: number) => `Question ${n} of ${total}`,
     questions: (n: number) => `${n} questions`,
     retake: "retake the quiz",
-    saved: "Saved in this browser only.",
     start: "start the quiz",
     taken: (date: string) => `Taken on ${date}.`,
     youAre: "You are a",
@@ -27,7 +27,6 @@ const COPY = {
     of: (n: number, total: number) => `Question ${n} sur ${total}`,
     questions: (n: number) => `${n} questions`,
     retake: "refaire le quiz",
-    saved: "Enregistré dans ce navigateur uniquement.",
     start: "commencer le quiz",
     taken: (date: string) => `Fait le ${date}.`,
     youAre: "Vous êtes une",
@@ -39,14 +38,14 @@ const LETTERS = ["A", "B", "C", "D", "E", "F"];
 type Phase =
   | { step: "intro" }
   | { step: "asking"; picks: number[] }
-  | { step: "result"; saved: Saved };
+  | { step: "result"; saved: Saved; fresh: boolean };
 
 /** A quiz from its first page to its result: the last result saved, if any. */
 export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
   const [phase, setPhase] = useState<Phase>(() => {
     const saved = loadSaved(quiz);
 
-    return saved ? { saved, step: "result" } : { step: "intro" };
+    return saved ? { fresh: false, saved, step: "result" } : { step: "intro" };
   });
 
   const language = useLanguage();
@@ -73,6 +72,7 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
     }
 
     setPhase({
+      fresh: true,
       saved: saveResult(quiz, tally(quiz, next)),
       step: "result",
     });
@@ -158,7 +158,7 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
     );
   }
 
-  const { saved } = phase;
+  const { fresh, saved } = phase;
   const id = winner(quiz, saved.scores);
   const result = id ? quiz.results[id] : undefined;
   const takenAt = new Date(saved.takenAt);
@@ -185,14 +185,15 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
             {t.allQuizzes}
           </Link>
         </div>
-        <p className="hint">
+        <p className="hint" aria-live="polite">
           {Number.isNaN(takenAt.getTime())
-            ? t.saved
+            ? null
             : `${t.taken(
                 takenAt.toLocaleDateString(LOCALES[language], {
                   dateStyle: "long",
                 })
-              )} ${t.saved}`}
+              )} `}
+          <ProfileNote quiz={quiz} saved={saved} fresh={fresh} />
         </p>
       </div>
       <PieChart quiz={quiz} scores={saved.scores} />

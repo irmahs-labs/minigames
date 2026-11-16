@@ -12,6 +12,7 @@ import type { Vote } from "../src/board/rules";
 import type { ServerMessage } from "../src/games/super-tic-tac-toe/online/protocol";
 import { createApp } from "./app";
 import { createLobby } from "./lobby";
+import type { KeptResult } from "./quiz-results";
 import type { Leaderboard } from "./scores";
 import type { WhoIs } from "./session";
 
@@ -118,12 +119,31 @@ const notes = {
 
 const askedFor: (string | null)[] = [];
 
+/** Stands in for quizzes_results: each person's result, by quiz. */
+const resultLog = new Map<string, KeptResult>();
+
+const quizResults = {
+  read: (userId: string, quiz: string) =>
+    Promise.resolve(resultLog.get(`${userId}|${quiz}`) ?? null),
+  remove: (userId: string, quiz: string) => {
+    resultLog.delete(`${userId}|${quiz}`);
+
+    return Promise.resolve();
+  },
+  save: (userId: string, quiz: string, result: KeptResult) => {
+    resultLog.set(`${userId}|${quiz}`, result);
+
+    return Promise.resolve();
+  },
+};
+
 const { app } = createApp({
   appOrigin: ORIGIN,
   // Ana is on Alma Housila's list in the account service's APP_ACCESS.
   isAdmin: (cookie) => Promise.resolve(cookie === "session=ana"),
   lobby,
   notes,
+  quizResults,
   readLeaderboard: (userId): Promise<Leaderboard> => {
     askedFor.push(userId);
 
@@ -448,5 +468,128 @@ describe("/api/board", () => {
     expect(await notesUp()).not.toContainEqual(newest);
     expect(await statusOf(takeDown("session=ana", id))).toBe(404);
     expect(await statusOf(takeDown("session=ana", "1; drop table"))).toBe(404);
+  });
+});
+
+/** The status of Ana taking her witch result off, from `origin`. */
+const takeWitchOff = async (origin: string) => {
+  const { status } = await fetch(
+    `http://${base}/api/quizzes/what-type-of-witch/result`,
+    { headers: { cookie: "session=ana", origin }, method: "DELETE" }
+  );
+
+  return status;
+};
+
+describe("/api/quizzes/:slug/result", () => {
+  const WITCH = "/api/quizzes/what-type-of-witch/result";
+  const PARTNER = "/api/quizzes/are-they-your-life-partner/result";
+  const takenAt = new Date().toISOString();
+
+  /** A result as the page sends it; `takenAt` left out to check it's required. */
+  interface SentResult {
+    scores: Record<string, number>;
+    takenAt?: string;
+  }
+
+  /** The status of keeping `sent` as `cookie`, from `origin`. */
+  const keep = async (
+    cookie: string,
+    sent: SentResult,
+    { origin = ORIGIN, path = WITCH } = {}
+  ) => {
+    const { status } = await fetch(`http://${base}${path}`, {
+      body: JSON.stringify(sent),
+      headers: { "content-type": "application/json", cookie, origin },
+      method: "PUT",
+    });
+
+    return status;
+  };
+
+  /** What GET answers `cookie`, and with which status. */
+  const resultAs = async (cookie = "", path = WITCH) => {
+    const response = await fetch(`http://${base}${path}`, {
+      headers: { cookie },
+    });
+
+    const { status } = response;
+    const body: unknown = status === 200 ? await response.json() : null;
+
+    return { body, status };
+  };
+
+  const bodyAs = async (cookie = "") => {
+    const { body } = await resultAs(cookie);
+
+    return body;
+  };
+
+  it("keeps a signed-in visitor's witch result, named, for their profile", async () => {
+    expect(
+      await keep("session=ben", { scores: { cosmic: 20, tech: 41 }, takenAt })
+    ).toBe(200);
+
+    expect(await bodyAs("session=ben")).toMatchObject({
+      result: {
+        ranked: [
+          { id: "tech", name: { en: "Tech witch" }, points: 41 },
+          { id: "cosmic", points: 20 },
+        ],
+        takenAt,
+      },
+      signedIn: true,
+    });
+    expect(await bodyAs("session=cy")).toEqual({
+      result: null,
+      signedIn: true,
+    });
+    expect(await bodyAs()).toEqual({ result: null, signedIn: false });
+  });
+
+  it("refuses results the quiz can't give, from elsewhere, or signed out", async () => {
+    const tech = { scores: { tech: 4 }, takenAt };
+
+    expect(await keep("", tech)).toBe(401);
+    expect(
+      await keep("session=cy", tech, { origin: "https://evil.irmahs.dev" })
+    ).toBe(403);
+
+    const refused: SentResult[] = [
+      { scores: { necromancer: 4 }, takenAt },
+      { scores: { tech: 0 }, takenAt },
+      { scores: { tech: 9000 }, takenAt },
+      { scores: { tech: 4 }, takenAt: "2019-01-01T00:00:00Z" },
+      { scores: { tech: 4 }, takenAt: "2099-01-01T00:00:00Z" },
+      { scores: { tech: 4 } },
+    ];
+
+    const statuses = await Promise.all(
+      refused.map((sent) => keep("session=cy", sent))
+    );
+
+    expect(statuses).toEqual(refused.map(() => 400));
+    expect(await bodyAs("session=cy")).toMatchObject({ result: null });
+  });
+
+  it("never keeps a quiz that shows on no profile", async () => {
+    const { status } = await resultAs("session=cy", PARTNER);
+
+    expect(
+      await keep(
+        "session=cy",
+        { scores: { yes: 4 }, takenAt },
+        { path: PARTNER }
+      )
+    ).toBe(404);
+    expect(status).toBe(404);
+  });
+
+  it("takes a result off, from the site itself", async () => {
+    await keep("session=ana", { scores: { moon: 12 }, takenAt });
+
+    expect(await takeWitchOff("https://evil.irmahs.dev")).toBe(403);
+    expect(await takeWitchOff(ORIGIN)).toBe(200);
+    expect(await bodyAs("session=ana")).toMatchObject({ result: null });
   });
 });
