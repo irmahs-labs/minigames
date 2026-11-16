@@ -113,7 +113,7 @@ const COPY = {
 /** Sends the visitor on to `to` at once, with a link in case that fails. */
 export const Moved = ({ to }: { to: string }) => {
   const words = useCopy(COPY);
-  const t = to.startsWith(REALMS) ? words.realms : words.home;
+  const t = new URL(to).origin === REALMS ? words.realms : words.home;
 
   useEffect(() => {
     window.location.replace(to);
