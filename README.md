@@ -32,6 +32,8 @@ Nobody's total drops below 0. Players appear as first name and the initials of t
 
 **Moved to Realms.** The Book of Shadows, Booster Potion (now Potion Brewing) and Spell Creator moved to [Realms](https://realms.irmahs.dev) on 2026-11-16, in its Book of Shadows. Their old addresses here (`/book-of-shadows`, `/booster-potion`, `/spell-creator`) send visitors to the same page there (`src/moved.tsx`); the Book of Shadows' address carries the visitor's saved book along in the address's fragment (`#book=…`, never sent to a server), which Realms keeps when its own book is still blank. The recipe books were copied across by Realms' `scripts/import-potions.sh`; their tables here, `booster_potion_brews` and `booster_potion_solo_brews`, are no longer read, and come out in a later migration.
 
+**Moved to the landing page.** The Festival Calendar moved to [irmahs.dev](https://irmahs.dev) the same day, into the slot beside the apps (irmahs-labs/landing-page). Its old address here, `/festival-calendar`, sends visitors there. Calendars picked here stay in this site's browser storage and don't carry over.
+
 **Quizzes.** Personality quizzes, each at its own address under `/quizzes`. The first is **What type of witch are you?**: thirty-two questions, six answers each, and sixteen witches (green, hedge, kitchen, cottage, sea, fire, storm, moon, cosmic, crystal, fairy, love, chaos, grey, eclectic and tech, the tinkering kind). Each answer gives 2 points to the witch it describes best, and most give 1 to another it leans towards. Every witch is worth 35 points over all the answers, and never twice in one question, so each has the same chance. The witch with the most points is yours; on a tie, the first alphabetically by its English name. The result shows a pie of your mix, biggest first: up to eight slices, the rest folded into "Others", with a legend that names every witch and its share. Take it again as often as you like; the last result is kept in the browser and shown when you come back.
 
 ## The sticky board
@@ -44,7 +46,7 @@ Mini Games admins can take a note down before then. An admin is anyone the accou
 
 ## Where things are kept
 
-The Wheel of Fortune, the same-screen game, the Festival Calendar's calendars and the quizzes' last results keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard, the Booster Potion recipe book and the sticky board live on the server.
+The Wheel of Fortune, the same-screen game and the quizzes' last results keep everything in the browser's `localStorage`, until the visitor deletes it or clears their site data. Online games, the leaderboard and the sticky board live on the server.
 
 ## Develop
 
@@ -65,7 +67,7 @@ npm run dev:api   # the server on :3002; Vite forwards /api and /ws to it
 
 and [irmahs-labs/auth](https://github.com/irmahs-labs/auth) running on `localhost:3001` (its README says how), so there is someone to sign in as. `TEST_DATABASE_URL=postgres://minigames@localhost:5434/minigames npm test` also runs the leaderboard's and the sticky board's database tests, which are skipped otherwise. The local database has no password: it only answers this machine. One made before it went passwordless still asks for one; `npm run db:reset` rebuilds it.
 
-The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/festival-calendar/:id/:file` (a festival's .ics), `/api/board`, `/api/board/notes` and `/api/board/notes/:id/vote` (the sticky board), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move.
+The server (`server/`) is [Hono](https://hono.dev/) on Node. It serves the built site, `/api/me`, `/api/leaderboard`, `/api/board`, `/api/board/notes` and `/api/board/notes/:id/vote` (the sticky board), and `/ws`, the WebSocket online games are played over. It learns who a socket belongs to from the shared irmahs.dev sign-in cookie, by asking the account service, and refuses sockets from any other site. The queue and the games in progress are kept in memory, so a deploy ends the games being played; finished games and totals go in its own Postgres database (`db/migrations/`, applied by [dbmate](https://github.com/amacneil/dbmate)). The rules in `src/games/super-tic-tac-toe/rules.ts` are the same code in the browser and on the server, which checks every move.
 
 ## Deploy
 

@@ -47,16 +47,6 @@ export const GAMES: readonly Game[] = [
     slug: "super-tic-tac-toe",
   },
   {
-    Screen: lazy(() => import("./games/festival-calendar/festival-calendar")),
-    blurb: {
-      en: "Add the calendars you want, from moon phases to Diwali, Día de los Muertos and Bon Om Touk, and see their days month by month.",
-      fr: "Ajoutez les calendriers de votre choix, des phases de la lune à Divali, Día de los Muertos et Bon Om Touk, et voyez leurs jours mois par mois.",
-    },
-    legend: "festival-calendar.exe",
-    name: { en: "Festival Calendar", fr: "Calendrier des fêtes" },
-    slug: "festival-calendar",
-  },
-  {
     Screen: lazy(() => import("./games/the-arena/the-arena")),
     blurb: {
       en: "Put your friends in districts, send them into the arena, and follow them day by day until one is left standing.",

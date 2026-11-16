@@ -7,12 +7,6 @@ import type { Board, Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY, isValidBody, tidy } from "../src/board/rules";
 import type { Vote } from "../src/board/rules";
 import {
-  eventOf,
-  fileNameOf,
-  icsOf,
-  occasionOf,
-} from "../src/games/festival-calendar/add-to-calendar";
-import {
   clientMessage,
   parseMessage,
 } from "../src/games/super-tic-tac-toe/online/protocol";
@@ -91,8 +85,8 @@ interface Variables {
 }
 
 /**
- * The server's routes: /api for who is signed in, the leaderboard,
- * the festival calendar's .ics files and the hub's sticky board, and /ws, the socket online games are played
+ * The server's routes: /api for who is signed in, the leaderboard and
+ * the hub's sticky board, and /ws, the socket online games are played
  * over. Who a socket belongs to comes
  * from the shared irmahs.dev sign-in cookie, asked of the account service
  * when the socket opens, never from anything sent over it.
@@ -126,30 +120,6 @@ export const createApp = ({
 
     return c.json({
       account: account ? { name: shortName(account.name) } : null,
-    });
-  });
-
-  // A festival's days as an .ics, for an iPhone: Safari opens one from a
-  // real address in Calendar. Only a festival and its first day are taken;
-  // the server works out the rest, so the event is always one of ours.
-  app.get("/api/festival-calendar/:id/:file", (c) => {
-    const start = c.req.param("file").replace(/\.ics$/u, "");
-    const occasion = occasionOf(c.req.param("id"), start);
-
-    if (!occasion) {
-      return c.text("There is no such festival on that day.", 404);
-    }
-
-    const language = c.req.query("lang") === "fr" ? "fr" : "en";
-
-    // Unlike the rest of /api, this may be kept: it is the same for everyone,
-    // and Safari on an iPhone has to keep the file to hand it to Calendar,
-    // saying it "cannot download this file" when told to store nothing.
-    c.header("cache-control", "public, max-age=86400");
-
-    return c.body(icsOf(eventOf(occasion, language), new Date()), 200, {
-      "content-disposition": `inline; filename="${fileNameOf(occasion)}"`,
-      "content-type": "text/calendar; charset=utf-8",
     });
   });
 

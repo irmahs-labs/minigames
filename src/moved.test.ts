@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { REALMS, bookFragment, movedTo } from "./moved";
+import { HOME, REALMS, bookFragment, movedTo } from "./moved";
 
 /** Reads a fragment back as Realms does (its carry-over.ts). */
 const readBack = (fragment: string) => {
@@ -34,6 +34,10 @@ describe("movedTo", () => {
     expect(movedTo("/spell-creator", saved)).toBe(
       `${REALMS}/book-of-shadows/spell-creator`
     );
+  });
+
+  it("sends the Festival Calendar to the landing page, beside the apps", () => {
+    expect(movedTo("/festival-calendar", null)).toBe(`${HOME}/`);
   });
 
   it("leaves every other page here", () => {
