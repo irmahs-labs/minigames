@@ -15,15 +15,6 @@ import {
   sweepNotes,
   voteNote,
 } from "./notes";
-import {
-  readBrewers,
-  readBrews,
-  readLatest,
-  readSoloFinds,
-  recordBrew,
-  recordSoloBrew,
-  resetSolo,
-} from "./potions";
 import { readLeaderboard, recordGame } from "./scores";
 import { askAccountService, askAdminAccess } from "./session";
 
@@ -76,15 +67,6 @@ const { app } = createApp({
     readNotes: (userId) => readNotes(pool, userId),
     removeNote: (id) => removeNote(pool, id),
     voteNote: (userId, id, vote) => voteNote(pool, userId, id, vote),
-  },
-  potions: {
-    readBrewers: (potion) => readBrewers(pool, potion),
-    readBrews: (userId) => readBrews(pool, userId),
-    readLatest: () => readLatest(pool),
-    readSoloFinds: (userId) => readSoloFinds(pool, userId),
-    recordBrew: (potion, account) => recordBrew(pool, potion, account),
-    recordSoloBrew: (userId, potion) => recordSoloBrew(pool, userId, potion),
-    resetSolo: (userId) => resetSolo(pool, userId),
   },
   readLeaderboard: (userId) => readLeaderboard(pool, userId),
   whoIs: askAccountService(env.authUrl),

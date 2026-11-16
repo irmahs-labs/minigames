@@ -1,6 +1,6 @@
 import { SearchSunLongitude } from "astronomy-engine";
 
-import { DAY, keyOf, parseDay } from "../book-of-shadows/time";
+import { DAY, keyOf, parseDay } from "./sky/time";
 
 /**
  * The days festivals fall on, in the Gregorian calendar. The Islamic,

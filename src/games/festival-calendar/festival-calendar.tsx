@@ -7,20 +7,6 @@ import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import type { Language } from "../../lib/language";
 import { Link } from "../../lib/router";
-import { formatClock, formatDay, formatMonth } from "../book-of-shadows/format";
-import { say } from "../book-of-shadows/french";
-import { fullMoonName, moonMonth } from "../book-of-shadows/moon";
-import type { MoonDay } from "../book-of-shadows/moon";
-import { MoonGlyph } from "../book-of-shadows/moon-glyph";
-import { PeriodNav } from "../book-of-shadows/period-nav";
-import {
-  dayKey,
-  daysInMonth,
-  keyOf,
-  localTimeZone,
-  wallTimeAt,
-  weekdayOf,
-} from "../book-of-shadows/time";
 import { addToCalendar } from "./add-to-calendar";
 import { occasionsIn } from "./festivals";
 import type { GroupId, Occasion } from "./festivals";
@@ -32,6 +18,20 @@ import {
   toggleCalendar,
 } from "./groups";
 import type { CalendarId } from "./groups";
+import { formatClock, formatDay, formatMonth } from "./sky/format";
+import { say } from "./sky/french";
+import { fullMoonName, moonMonth } from "./sky/moon";
+import type { MoonDay } from "./sky/moon";
+import { MoonGlyph } from "./sky/moon-glyph";
+import { PeriodNav } from "./sky/period-nav";
+import {
+  dayKey,
+  daysInMonth,
+  keyOf,
+  localTimeZone,
+  wallTimeAt,
+  weekdayOf,
+} from "./sky/time";
 
 const COPY = {
   en: {

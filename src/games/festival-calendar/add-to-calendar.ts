@@ -1,7 +1,7 @@
-import { daysBetween, parseDay } from "../book-of-shadows/time";
 import { shift } from "./dates";
 import { FESTIVALS } from "./festivals";
 import type { Occasion, Words } from "./festivals";
+import { daysBetween, parseDay } from "./sky/time";
 
 /**
  * A festival's days as an event for the visitor's own calendar: once, all

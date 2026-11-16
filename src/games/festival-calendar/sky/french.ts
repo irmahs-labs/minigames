@@ -1,4 +1,4 @@
-import { currentLanguage } from "../../lib/language";
+import { currentLanguage } from "../../../lib/language";
 import { BUDDHIST_CALENDAR } from "./french/buddhist-calendar";
 import { COMPAT } from "./french/compat";
 import { EIGHT_BALL } from "./french/eight-ball";
