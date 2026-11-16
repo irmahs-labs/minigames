@@ -1,7 +1,7 @@
 import momentkh from "@thyrith/momentkh";
 
 import { inFrench } from "./french";
-import { lunarNewYear } from "./lunar-zodiac";
+import { lunarNewYear } from "./lunar-new-year";
 import { DAY, daysBetween, keyOf, parseDay } from "./time";
 
 /**

@@ -29,7 +29,8 @@ const toBase64Url = (bytes: Uint8Array) =>
   btoa(String.fromCodePoint(...bytes))
     .replaceAll("+", "-")
     .replaceAll("/", "_")
-    .replace(/[=]+$/u, "");
+    // Base64 only ever uses "=" as padding at the end.
+    .replaceAll("=", "");
 
 /**
  * A book saved here, as the fragment Realms reads it from (its

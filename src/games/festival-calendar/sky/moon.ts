@@ -1,6 +1,6 @@
 import { NextMoonQuarter, Seasons, SearchMoonQuarter } from "astronomy-engine";
 
-import { illuminationOf, longitudeOf, moonAngle } from "./sky";
+import { illuminationOf, moonAngle, moonLongitude } from "./sky";
 import {
   dayKey,
   daysInMonth,
@@ -236,6 +236,6 @@ export const moonNow = (date: Date): MoonNow => {
     age: (angle / 360) * 29.530589,
     angle,
     illumination: illuminationOf(angle),
-    longitude: longitudeOf("Moon", date),
+    longitude: moonLongitude(date),
   };
 };

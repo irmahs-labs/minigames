@@ -1,7 +1,7 @@
 import { SearchMoonPhase, SunPosition } from "astronomy-engine";
 
 import { shift } from "./dates";
-import { lunarNewYear } from "./sky/lunar-zodiac";
+import { lunarNewYear } from "./sky/lunar-new-year";
 import { DAY, keyOf, parseDay } from "./sky/time";
 
 /**
