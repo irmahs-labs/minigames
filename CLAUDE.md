@@ -55,7 +55,7 @@ The site reads in English or French. The choice is `src/lib/language.ts`: kept i
 ## Adding a game
 
 1. Put it in its own folder, `src/games/<slug>/`, with a default-exported screen component, its words in English and French.
-2. Add an entry to `GAMES` in `src/games.ts`. The hub lists it and `/<slug>` routes to it; it loads only when opened.
+2. Add an entry to `GAMES` in `src/games.ts`, with its icon from `src/components/app-icons.tsx` and what's `inside` it (a few short `{ en, fr }` names, its modes or parts, shown as pills on its card). The hub lists it, two cards a row, and `/<slug>` routes to it; it loads only when opened.
 3. Keep its rules (spinning, scoring, state changes) in plain functions next to it with Vitest tests, apart from the React code.
 
 A game marked `nested` in `GAMES` also owns the pages under `/<slug>/`. Quizzes is one: each quiz is a `Quiz` (`src/games/quizzes/quiz.ts`) in `QUIZZES` (`all-quizzes.ts`), at `/quizzes/<slug>`, its answers giving points to its results; the most points wins, a tie going to the first result alphabetically by its English name. Its last result is kept in `localStorage`, one key per quiz.
