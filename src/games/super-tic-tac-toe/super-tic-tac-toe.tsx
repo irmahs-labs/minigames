@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import * as z from "zod/mini";
 
-import { SuperTicTacToeIcon } from "../../components/app-icons";
-import { Header } from "../../components/header";
-import type { GameProps } from "../../games";
+import { GameHeader } from "../../components/game-header";
 import { currentAccount } from "../../lib/account";
 import type { Account } from "../../lib/account";
-import { Icon } from "../../lib/icon";
 import { useCopy } from "../../lib/language";
-import { Link } from "../../lib/router";
 import { readStored, writeStored } from "../../lib/storage";
 import { Leaderboard } from "./leaderboard";
 import { LocalGame } from "./local-game";
@@ -18,13 +14,11 @@ const MODE_KEY = "minigames:super-tic-tac-toe:mode:v1";
 
 const COPY = {
   en: {
-    allGames: "all games",
     how: "How to play",
     modes: { local: "Same screen", online: "Online" },
     sub: "conquer three planets in a row",
   },
   fr: {
-    allGames: "tous les jeux",
     how: "Comment jouer",
     modes: { local: "Même écran", online: "En ligne" },
     sub: "conquérez trois planètes alignées",
@@ -35,7 +29,7 @@ const modeSchema = z.enum(["local", "online"]);
 
 type Mode = z.infer<typeof modeSchema>;
 
-const SuperTicTacToe = ({ name }: GameProps) => {
+const SuperTicTacToe = () => {
   // The tab last picked, so a reload mid-game comes back to it.
   const [mode, setMode] = useState<Mode>(() =>
     readStored(MODE_KEY, modeSchema, () => "local")
@@ -71,16 +65,7 @@ const SuperTicTacToe = ({ name }: GameProps) => {
 
   return (
     <>
-      <Header
-        icon={<SuperTicTacToeIcon />}
-        name={name}
-        href="/super-tic-tac-toe"
-      >
-        <Link href="/" className="btn">
-          <Icon name="back" size={16} />
-          {t.allGames}
-        </Link>
-      </Header>
+      <GameHeader slug="super-tic-tac-toe" />
       <main className="page">
         <p className="page__sub">{t.sub}</p>
 

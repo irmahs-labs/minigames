@@ -19,7 +19,7 @@ export interface GameProps {
  * src/games/: the hub lists it and the app routes /<slug> to it, titling the
  * tab with its name. Each game loads only when it is opened.
  */
-interface Game {
+export interface Game {
   slug: string;
   /** Its name and the card's line, in each of the site's languages. */
   name: Record<Language, string>;
@@ -32,6 +32,11 @@ interface Game {
   inside: readonly Record<Language, string>[];
   /** Whether the pages under /<slug>/ are its own too, as each quiz is. */
   nested?: boolean;
+  /**
+   * A nested game's pages, for its tabs and the phone's menu: "" is the game
+   * itself. Named here, so the header needn't load the pages to list them.
+   */
+  pages?: readonly { slug: string; name: Record<Language, string> }[];
   Screen: LazyExoticComponent<ComponentType<GameProps>>;
 }
 
@@ -97,6 +102,17 @@ export const GAMES: readonly Game[] = [
     legend: "quizzes.exe",
     name: { en: "Quizzes", fr: "Quiz" },
     nested: true,
+    pages: [
+      { name: { en: "All quizzes", fr: "Tous les quiz" }, slug: "" },
+      {
+        name: { en: "What type of witch?", fr: "Quel type de sorcière ?" },
+        slug: "what-type-of-witch",
+      },
+      {
+        name: { en: "Life partner?", fr: "Partenaire de vie ?" },
+        slug: "are-they-your-life-partner",
+      },
+    ],
     slug: "quizzes",
   },
 ];
