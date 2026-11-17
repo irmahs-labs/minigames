@@ -257,6 +257,24 @@ a:hover {
   overflow-x: auto;
   scrollbar-width: none;
 }
+/* The way back to every game: quiet, before the tabs, not one of them */
+.game-tabs__back {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 10px;
+  padding: 6px 4px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.game-tabs__back:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
 .game-tab {
   flex: none;
   padding: 8px 16px;
@@ -354,8 +372,7 @@ a:hover {
 }
 
 @media (max-width: 600px) {
-  .game-tabs,
-  .app-header .game-back {
+  .game-tabs {
     display: none;
   }
   .app-header .game-menu-button {

@@ -123,8 +123,9 @@ const GameMenu = ({ slug, here }: { slug: string; here: string }) => {
 
 /**
  * Every game's header: its icon and name, "Mini Games · by Irma HS" under
- * it, a way back to every game, and the shared pills. A game with pages of
- * its own (Quizzes) has them as tabs under it, the open one lifted in lime.
+ * it, and the shared pills, nothing more. Under it, a quiet way back to
+ * every game, then its tabs: a game with pages of its own (Quizzes) has one
+ * each, any other one tab of its own name; the open one lifted in lime.
  * On a phone the tabs give way to the menu.
  */
 export const GameHeader = ({
@@ -152,26 +153,23 @@ export const GameHeader = ({
         href={`/${game.slug}`}
         app={APP_NAME}
         lead={<GameMenu slug={slug} here={here} />}
-      >
-        <Link href="/" className="btn game-back">
+      />
+      <nav className="game-tabs" aria-label={t.pages(name)}>
+        <Link href="/" className="game-tabs__back">
           <Icon name="back" size={16} />
           {t.all}
         </Link>
-      </Header>
-      {game.pages ? (
-        <nav className="game-tabs" aria-label={t.pages(name)}>
-          {game.pages.map((page) => (
-            <Link
-              key={page.slug}
-              href={pathOf(game, page.slug)}
-              className="game-tab"
-              aria-current={page.slug === here ? "page" : undefined}
-            >
-              {page.name[language]}
-            </Link>
-          ))}
-        </nav>
-      ) : null}
+        {(game.pages ?? [{ name: game.name, slug: "" }]).map((page) => (
+          <Link
+            key={page.slug}
+            href={pathOf(game, page.slug)}
+            className="game-tab"
+            aria-current={page.slug === here ? "page" : undefined}
+          >
+            {page.name[language]}
+          </Link>
+        ))}
+      </nav>
     </>
   );
 };

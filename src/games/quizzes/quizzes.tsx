@@ -1,4 +1,3 @@
-import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import { Link, usePath } from "../../lib/router";
@@ -62,13 +61,10 @@ const Quizzes = () => {
   const quiz = QUIZZES.find((entry) => entry.slug === slug);
 
   return (
-    <>
-      <GameHeader slug="quizzes" here={quiz?.slug ?? ""} />
-      <main className="page">
-        {/* A new quiz starts afresh, not where the last one was. */}
-        {quiz ? <QuizRunner key={quiz.slug} quiz={quiz} /> : <QuizList />}
-      </main>
-    </>
+    <main className="page">
+      {/* A new quiz starts afresh, not where the last one was. */}
+      {quiz ? <QuizRunner key={quiz.slug} quiz={quiz} /> : <QuizList />}
+    </main>
   );
 };
 

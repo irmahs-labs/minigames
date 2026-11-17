@@ -1,5 +1,5 @@
-import { lazy } from "react";
-import type { ComponentType, LazyExoticComponent } from "react";
+import { createElement, lazy } from "react";
+import type { ComponentType } from "react";
 
 import {
   ArenaIcon,
@@ -37,13 +37,44 @@ export interface Game {
    * itself. Named here, so the header needn't load the pages to list them.
    */
   pages?: readonly { slug: string; name: Record<Language, string> }[];
-  Screen: LazyExoticComponent<ComponentType<GameProps>>;
+  /** The game itself: drawn at once when its code is in, loaded on demand when not. */
+  Screen: ComponentType<GameProps>;
+  /** Loads its code ahead of time, so opening it later is instant. */
+  preload: () => Promise<void>;
 }
+
+/**
+ * A game's screen and its preload, from the import of its code. Once the
+ * code is in, the game is drawn at once, without the moment of waiting a
+ * lazy component always takes, even for code already loaded.
+ */
+const screenOf = (
+  load: () => Promise<{ default: ComponentType<GameProps> }>
+): Pick<Game, "Screen" | "preload"> => {
+  let ready: ComponentType<GameProps> | null = null;
+
+  const loadAndKeep = async () => {
+    const loaded = await load();
+
+    ready = loaded.default;
+
+    return loaded;
+  };
+
+  const Lazy = lazy(loadAndKeep);
+
+  return {
+    Screen: (props: GameProps) => createElement(ready ?? Lazy, props),
+    preload: async () => {
+      await loadAndKeep();
+    },
+  };
+};
 
 export const GAMES: readonly Game[] = [
   {
     Icon: WheelIcon,
-    Screen: lazy(() => import("./games/wheel-of-fortune/wheel-of-fortune")),
+    ...screenOf(() => import("./games/wheel-of-fortune/wheel-of-fortune")),
     blurb: {
       en: "Spin a wheel of names, a wheel of doom, or a wheel of your own.",
       fr: "Faites tourner une roue de prénoms, une roue du destin, ou la vôtre.",
@@ -59,7 +90,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     Icon: SuperTicTacToeIcon,
-    Screen: lazy(() => import("./games/super-tic-tac-toe/super-tic-tac-toe")),
+    ...screenOf(() => import("./games/super-tic-tac-toe/super-tic-tac-toe")),
     blurb: {
       en: "Nine games of tic-tac-toe, one on each planet. Conquer three planets in a row to win.",
       fr: "Neuf parties de morpion, une sur chaque planète. Conquérez trois planètes alignées pour gagner.",
@@ -75,7 +106,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     Icon: ArenaIcon,
-    Screen: lazy(() => import("./games/the-arena/the-arena")),
+    ...screenOf(() => import("./games/the-arena/the-arena")),
     blurb: {
       en: "Put your friends in districts, send them into the arena, and follow them day by day until one is left standing.",
       fr: "Répartissez vos amis en districts, envoyez-les dans l’arène, et suivez-les jour après jour jusqu’au dernier debout.",
@@ -90,7 +121,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     Icon: QuizzesIcon,
-    Screen: lazy(() => import("./games/quizzes/quizzes")),
+    ...screenOf(() => import("./games/quizzes/quizzes")),
     blurb: {
       en: "Personality quizzes, starting with the big one: what type of witch are you?",
       fr: "Des quiz de personnalité, à commencer par le grand : quel type de sorcière êtes-vous ?",

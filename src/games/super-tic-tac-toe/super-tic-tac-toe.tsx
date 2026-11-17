@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import * as z from "zod/mini";
 
-import { GameHeader } from "../../components/game-header";
 import { currentAccount } from "../../lib/account";
 import type { Account } from "../../lib/account";
 import { useCopy } from "../../lib/language";
@@ -64,34 +63,31 @@ const SuperTicTacToe = () => {
   const t = useCopy(COPY);
 
   return (
-    <>
-      <GameHeader slug="super-tic-tac-toe" />
-      <main className="page">
-        <p className="page__sub">{t.sub}</p>
+    <main className="page">
+      <p className="page__sub">{t.sub}</p>
 
-        <nav aria-label={t.how} className="picker">
-          {modeSchema.options.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className="picker__option"
-              aria-pressed={option === mode}
-              onClick={() => setMode(option)}
-            >
-              {t.modes[option]}
-            </button>
-          ))}
-        </nav>
+      <nav aria-label={t.how} className="picker">
+        {modeSchema.options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className="picker__option"
+            aria-pressed={option === mode}
+            onClick={() => setMode(option)}
+          >
+            {t.modes[option]}
+          </button>
+        ))}
+      </nav>
 
-        {mode === "local" ? (
-          <LocalGame />
-        ) : (
-          <OnlineGame account={account} onFinished={onFinished} />
-        )}
+      {mode === "local" ? (
+        <LocalGame />
+      ) : (
+        <OnlineGame account={account} onFinished={onFinished} />
+      )}
 
-        <Leaderboard key={finished} />
-      </main>
-    </>
+      <Leaderboard key={finished} />
+    </main>
   );
 };
 

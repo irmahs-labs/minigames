@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 
-import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import { cryptoRandom } from "../../lib/random";
@@ -578,13 +577,10 @@ const TheArena = () => {
   }
 
   return (
-    <>
-      <GameHeader slug="the-arena" />
-      <main className="page">
-        <p className="page__sub">{t.sub}</p>
-        {body}
-      </main>
-    </>
+    <main className="page">
+      <p className="page__sub">{t.sub}</p>
+      {body}
+    </main>
   );
 };
 
