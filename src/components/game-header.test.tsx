@@ -34,17 +34,32 @@ const hrefs = (links: NodeListOf<Element>) =>
   [...links].map((link) => link.getAttribute("href"));
 
 describe("GameHeader", () => {
-  it("names the game, with no tabs for a game of one page", () => {
+  it("names the game, with a tab of its own and the way back before it", () => {
     const page = drawn("the-arena");
 
     expect(page.querySelector("h1")?.textContent).toBe("The Arena");
-    expect(page.querySelector(".game-tabs")).toBeNull();
+    expect(hrefs(page.querySelectorAll(".game-tabs a"))).toEqual([
+      "/",
+      "/the-arena",
+    ]);
+    expect(
+      page.querySelector('.game-tabs [aria-current="page"]')?.textContent
+    ).toBe("The Arena");
+  });
+
+  it("keeps the header to the game's name and the shared pills", () => {
+    const back = [
+      ...drawn("the-arena").querySelectorAll("header a[href='/']"),
+    ].filter((link) => !link.closest("dialog"));
+
+    expect(back).toEqual([]);
   });
 
   it("gives Quizzes a tab per quiz, the open one marked", () => {
     const page = drawn("quizzes", "what-type-of-witch");
 
     expect(hrefs(page.querySelectorAll(".game-tabs a"))).toEqual([
+      "/",
       "/quizzes",
       "/quizzes/what-type-of-witch",
       "/quizzes/are-they-your-life-partner",

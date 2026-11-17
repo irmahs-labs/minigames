@@ -1,8 +1,9 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import type { ReactNode } from "react";
 
 import { MiniGamesIcon } from "./components/app-icons";
 import { Footer } from "./components/footer";
+import { GameHeader } from "./components/game-header";
 import { Header } from "./components/header";
 import { GAMES } from "./games";
 import { Hub } from "./hub";
@@ -48,6 +49,18 @@ const NotFound = () => {
 const PageAt = ({ path }: { path: string }): ReactNode => {
   const language = useLanguage();
 
+  // Once any page is open, every game loads while the browser is idle, so
+  // opening one later is instant
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      for (const game of GAMES) {
+        game.preload().catch(() => null);
+      }
+    }, 1500);
+
+    return () => window.clearTimeout(id);
+  }, []);
+
   if (path === "/") {
     return <Hub />;
   }
@@ -68,10 +81,15 @@ const PageAt = ({ path }: { path: string }): ReactNode => {
     return <NotFound />;
   }
 
+  // A nested game's page under it: a quiz's slug
+  const here = path.slice(`/${game.slug}/`.length);
+
   return (
     <>
       {/* React puts this in the head while the game is open. */}
       <title>{`${game.name[language]} · ${APP_NAME}`}</title>
+      {/* The header stays while the game under it changes */}
+      <GameHeader slug={game.slug} here={here} />
       <Suspense fallback={<main className="page" aria-busy="true" />}>
         <game.Screen name={game.name[language]} />
       </Suspense>

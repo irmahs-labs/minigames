@@ -1,6 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
 
-import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy } from "../../lib/language";
 import { useConfirm } from "../../lib/use-confirm";
@@ -134,217 +133,209 @@ const WheelOfFortune = () => {
   };
 
   return (
-    <>
-      <GameHeader slug="wheel-of-fortune" />
-      <main className="page">
-        <p className="page__sub">{t.sub}</p>
+    <main className="page">
+      <p className="page__sub">{t.sub}</p>
 
-        <nav aria-label={t.yourWheels} className="picker">
-          {state.wheels.map((entry) => (
-            <button
-              key={entry.id}
-              type="button"
-              className="picker__option"
-              aria-pressed={entry.id === wheel.id}
-              disabled={spinning}
-              onClick={() => {
-                setWinner(null);
-                dispatch({ id: entry.id, type: "select" });
-              }}
-            >
-              {entry.name.trim() || t.untitled}
-            </button>
-          ))}
+      <nav aria-label={t.yourWheels} className="picker">
+        {state.wheels.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            className="picker__option"
+            aria-pressed={entry.id === wheel.id}
+            disabled={spinning}
+            onClick={() => {
+              setWinner(null);
+              dispatch({ id: entry.id, type: "select" });
+            }}
+          >
+            {entry.name.trim() || t.untitled}
+          </button>
+        ))}
+        <button
+          type="button"
+          className="picker__option picker__add"
+          disabled={spinning || state.wheels.length >= MAX_WHEELS}
+          onClick={() => dispatch({ id: crypto.randomUUID(), type: "create" })}
+        >
+          {t.newWheel}
+        </button>
+      </nav>
+
+      <div className="layout">
+        <section aria-label={t.wheel} className="panel panel--wheel">
+          <span className="legend">{legendFor(wheel.name)}</span>
+          <WheelView
+            labels={labels}
+            emptySlots={slots.length}
+            rotation={rotation}
+            onSettle={settle}
+          />
           <button
             type="button"
-            className="picker__option picker__add"
-            disabled={spinning || state.wheels.length >= MAX_WHEELS}
-            onClick={() =>
-              dispatch({ id: crypto.randomUUID(), type: "create" })
-            }
+            className="btn btn--primary btn--spin"
+            onClick={spin}
+            disabled={!canSpin}
           >
-            {t.newWheel}
+            <Icon name="spin" />
+            {spinning ? t.spinning : t.spin}
           </button>
-        </nav>
+          <p className="hint" aria-live="polite">
+            {tooFew ? t.tooFew : ""}
+          </p>
+        </section>
 
-        <div className="layout">
-          <section aria-label={t.wheel} className="panel panel--wheel">
-            <span className="legend">{legendFor(wheel.name)}</span>
-            <WheelView
-              labels={labels}
-              emptySlots={slots.length}
-              rotation={rotation}
-              onSettle={settle}
+        <section aria-labelledby="slices-title" className="panel panel--slices">
+          <span className="legend">slices.txt</span>
+
+          <div className="stack">
+            <label className="field-label" htmlFor="wheel-name">
+              {t.wheelName}
+            </label>
+            <input
+              id="wheel-name"
+              className="field"
+              value={wheel.name}
+              maxLength={MAX_NAME}
+              disabled={spinning}
+              onChange={(event) =>
+                dispatch({ name: event.target.value, type: "renameWheel" })
+              }
             />
+          </div>
+
+          <div className="slices__head">
+            <div className="stack">
+              <h2 id="slices-title" className="field-label">
+                {t.onTheWheel}
+              </h2>
+              <span className="slices__count">
+                {labels.length} <span>{t.named(slots.length)}</span>
+              </span>
+            </div>
             <button
               type="button"
-              className="btn btn--primary btn--spin"
-              onClick={spin}
-              disabled={!canSpin}
+              className="btn"
+              onClick={() => dispatch({ type: "add" })}
+              disabled={spinning || slots.length >= MAX_SLOTS}
             >
-              <Icon name="spin" />
-              {spinning ? t.spinning : t.spin}
+              {t.add}
             </button>
-            <p className="hint" aria-live="polite">
-              {tooFew ? t.tooFew : ""}
-            </p>
-          </section>
+          </div>
 
-          <section
-            aria-labelledby="slices-title"
-            className="panel panel--slices"
-          >
-            <span className="legend">slices.txt</span>
-
-            <div className="stack">
-              <label className="field-label" htmlFor="wheel-name">
-                {t.wheelName}
-              </label>
-              <input
-                id="wheel-name"
-                className="field"
-                value={wheel.name}
-                maxLength={MAX_NAME}
-                disabled={spinning}
-                onChange={(event) =>
-                  dispatch({ name: event.target.value, type: "renameWheel" })
-                }
-              />
-            </div>
-
-            <div className="slices__head">
-              <div className="stack">
-                <h2 id="slices-title" className="field-label">
-                  {t.onTheWheel}
-                </h2>
-                <span className="slices__count">
-                  {labels.length} <span>{t.named(slots.length)}</span>
+          <ol className="slices">
+            {slots.map((slot, i) => (
+              // Slots are positional and may share a name, so the index is the key.
+              // oxlint-disable-next-line no-array-index-key
+              <li key={i} className="slice">
+                <span
+                  aria-hidden="true"
+                  className="slice__dot"
+                  style={{
+                    background: colors[positions[i] ?? -1] ?? "transparent",
+                  }}
+                />
+                <span aria-hidden="true" className="slice__num">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-              </div>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => dispatch({ type: "add" })}
-                disabled={spinning || slots.length >= MAX_SLOTS}
-              >
-                {t.add}
-              </button>
-            </div>
-
-            <ol className="slices">
-              {slots.map((slot, i) => (
-                // Slots are positional and may share a name, so the index is the key.
-                // oxlint-disable-next-line no-array-index-key
-                <li key={i} className="slice">
-                  <span
-                    aria-hidden="true"
-                    className="slice__dot"
-                    style={{
-                      background: colors[positions[i] ?? -1] ?? "transparent",
-                    }}
-                  />
-                  <span aria-hidden="true" className="slice__num">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <input
-                    aria-label={t.slice(i + 1)}
-                    className="field slice__input"
-                    value={slot}
-                    maxLength={MAX_LABEL}
-                    placeholder={t.placeholder}
-                    disabled={spinning}
-                    onChange={(event) =>
-                      dispatch({
-                        index: i,
-                        label: event.target.value,
-                        type: "rename",
-                      })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label={t.removeSlice(i + 1)}
-                    disabled={
-                      spinning || (slots.length <= MIN_SLOTS && slot === "")
-                    }
-                    onClick={() => dispatch({ index: i, type: "remove" })}
-                  >
-                    <Icon name="close" size={16} />
-                  </button>
-                </li>
-              ))}
-            </ol>
-
-            <div className="slices__foot">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={state.sound}
-                className="switch"
-                onClick={() => dispatch({ on: !state.sound, type: "sound" })}
-              >
-                <span>{t.beep}</span>
-                <span aria-hidden="true" className="switch__track">
-                  <span className="switch__thumb" />
-                </span>
-              </button>
-              <div className="slices__actions">
-                <button
-                  type="button"
-                  className="btn btn--quiet"
-                  onClick={() =>
-                    confirm.press("clear", () => dispatch({ type: "clear" }))
+                <input
+                  aria-label={t.slice(i + 1)}
+                  className="field slice__input"
+                  value={slot}
+                  maxLength={MAX_LABEL}
+                  placeholder={t.placeholder}
+                  disabled={spinning}
+                  onChange={(event) =>
+                    dispatch({
+                      index: i,
+                      label: event.target.value,
+                      type: "rename",
+                    })
                   }
-                  disabled={spinning || labels.length === 0}
+                />
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={t.removeSlice(i + 1)}
+                  disabled={
+                    spinning || (slots.length <= MIN_SLOTS && slot === "")
+                  }
+                  onClick={() => dispatch({ index: i, type: "remove" })}
                 >
-                  {confirm.armed === "clear" ? t.sureClear : t.clear}
+                  <Icon name="close" size={16} />
                 </button>
+              </li>
+            ))}
+          </ol>
+
+          <div className="slices__foot">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={state.sound}
+              className="switch"
+              onClick={() => dispatch({ on: !state.sound, type: "sound" })}
+            >
+              <span>{t.beep}</span>
+              <span aria-hidden="true" className="switch__track">
+                <span className="switch__thumb" />
+              </span>
+            </button>
+            <div className="slices__actions">
+              <button
+                type="button"
+                className="btn btn--quiet"
+                onClick={() =>
+                  confirm.press("clear", () => dispatch({ type: "clear" }))
+                }
+                disabled={spinning || labels.length === 0}
+              >
+                {confirm.armed === "clear" ? t.sureClear : t.clear}
+              </button>
+              <button
+                type="button"
+                className="btn btn--quiet"
+                onClick={() =>
+                  confirm.press("reset", () => dispatch({ type: "reset" }))
+                }
+                disabled={spinning}
+              >
+                {confirm.armed === "reset" ? t.sureReset : t.reset}
+              </button>
+              {state.wheels.length > 1 ? (
                 <button
                   type="button"
                   className="btn btn--quiet"
                   onClick={() =>
-                    confirm.press("reset", () => dispatch({ type: "reset" }))
+                    confirm.press("delete", () =>
+                      dispatch({ type: "deleteWheel" })
+                    )
                   }
                   disabled={spinning}
                 >
-                  {confirm.armed === "reset" ? t.sureReset : t.reset}
+                  {confirm.armed === "delete" ? t.sureDelete : t.delete}
                 </button>
-                {state.wheels.length > 1 ? (
-                  <button
-                    type="button"
-                    className="btn btn--quiet"
-                    onClick={() =>
-                      confirm.press("delete", () =>
-                        dispatch({ type: "deleteWheel" })
-                      )
-                    }
-                    disabled={spinning}
-                  >
-                    {confirm.armed === "delete" ? t.sureDelete : t.delete}
-                  </button>
-                ) : null}
-              </div>
+              ) : null}
             </div>
-            <p className="hint">{t.saved}</p>
-          </section>
-        </div>
+          </div>
+          <p className="hint">{t.saved}</p>
+        </section>
+      </div>
 
-        <ResultDialog
-          winner={winner === null ? null : (labels[winner] ?? null)}
-          canRemove={labels.length > MIN_SLOTS}
-          onClose={() => setWinner(null)}
-          onSpinAgain={spin}
-          onRemove={() => {
-            dispatch({
-              index: positions.indexOf(winner ?? -1),
-              type: "remove",
-            });
-            setWinner(null);
-          }}
-        />
-      </main>
-    </>
+      <ResultDialog
+        winner={winner === null ? null : (labels[winner] ?? null)}
+        canRemove={labels.length > MIN_SLOTS}
+        onClose={() => setWinner(null)}
+        onSpinAgain={spin}
+        onRemove={() => {
+          dispatch({
+            index: positions.indexOf(winner ?? -1),
+            type: "remove",
+          });
+          setWinner(null);
+        }}
+      />
+    </main>
   );
 };
 
