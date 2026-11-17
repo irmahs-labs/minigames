@@ -143,3 +143,44 @@ export const ArenaIcon = () => (
     />
   </svg>
 );
+
+/** A Magic 8 Ball: a dark ball, its cream window with an 8 in it. */
+export const MagicEightBallIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <circle cx="20" cy="20" r="12" fill="#2f3b34" />
+    <circle cx="20" cy="18" r="6" fill="#fff3cf" />
+    <circle
+      cx="20"
+      cy="16.2"
+      r="1.7"
+      fill="none"
+      stroke="#2f3b34"
+      strokeWidth="1.3"
+    />
+    <circle
+      cx="20"
+      cy="19.8"
+      r="2"
+      fill="none"
+      stroke="#2f3b34"
+      strokeWidth="1.3"
+    />
+    <path
+      d="M12.5 23.5a8.5 8.5 0 0 0 5 4.6"
+      fill="none"
+      stroke="#afc584"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+);
