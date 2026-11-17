@@ -1,6 +1,4 @@
-import { QuizzesIcon } from "../../components/app-icons";
-import { Header } from "../../components/header";
-import type { GameProps } from "../../games";
+import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import { Link, usePath } from "../../lib/router";
@@ -11,14 +9,10 @@ import { loadSaved } from "./saved";
 
 const COPY = {
   en: {
-    allGames: "all games",
-    allQuizzes: "all quizzes",
     sub: "a few questions, and the truth about you",
     you: "You are a",
   },
   fr: {
-    allGames: "tous les jeux",
-    allQuizzes: "tous les quiz",
     sub: "quelques questions, et la vérité sur vous",
     you: "Vous êtes une",
   },
@@ -63,19 +57,13 @@ const QuizList = () => {
 };
 
 /** /quizzes lists the quizzes; /quizzes/<slug> is one of them. */
-const Quizzes = ({ name }: GameProps) => {
+const Quizzes = () => {
   const slug = /^\/quizzes\/(?<slug>[^/]+)/u.exec(usePath())?.groups?.slug;
   const quiz = QUIZZES.find((entry) => entry.slug === slug);
-  const t = useCopy(COPY);
 
   return (
     <>
-      <Header icon={<QuizzesIcon />} name={name} href="/quizzes">
-        <Link href={quiz ? "/quizzes" : "/"} className="btn">
-          <Icon name="back" size={16} />
-          {quiz ? t.allQuizzes : t.allGames}
-        </Link>
-      </Header>
+      <GameHeader slug="quizzes" here={quiz?.slug ?? ""} />
       <main className="page">
         {/* A new quiz starts afresh, not where the last one was. */}
         {quiz ? <QuizRunner key={quiz.slug} quiz={quiz} /> : <QuizList />}

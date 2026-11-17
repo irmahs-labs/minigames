@@ -1,12 +1,9 @@
 import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 
-import { ArenaIcon } from "../../components/app-icons";
-import { Header } from "../../components/header";
-import type { GameProps } from "../../games";
+import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import { cryptoRandom } from "../../lib/random";
-import { Link } from "../../lib/router";
 import {
   MAX_DISTRICTS,
   MAX_NAME,
@@ -27,7 +24,6 @@ const COPY = {
   en: {
     addDistrict: "+ add a district",
     addPlace: "+ add a contestant",
-    allGames: "all games",
     backToCast: "back to the cast",
     contestant: (n: number) => `Contestant ${n}`,
     count: (people: number, districts: number) =>
@@ -65,7 +61,6 @@ const COPY = {
   fr: {
     addDistrict: "+ ajouter un district",
     addPlace: "+ ajouter un concurrent",
-    allGames: "tous les jeux",
     backToCast: "retour aux concurrents",
     contestant: (n: number) => `Concurrent ${n}`,
     count: (people: number, districts: number) =>
@@ -387,7 +382,7 @@ const killsUpTo = (games: Games, shown: number) => {
 };
 
 /** The arena: name the cast, then follow the games day by day to the victor. */
-const TheArena = ({ name }: GameProps) => {
+const TheArena = () => {
   const t = useCopy(COPY);
   const [cast, dispatch] = useReducer(castReducer, undefined, loadCast);
   const [games, setGames] = useState<Games | null>(null);
@@ -584,12 +579,7 @@ const TheArena = ({ name }: GameProps) => {
 
   return (
     <>
-      <Header icon={<ArenaIcon />} name={name} href="/the-arena">
-        <Link href="/" className="btn">
-          <Icon name="back" size={16} />
-          {t.allGames}
-        </Link>
-      </Header>
+      <GameHeader slug="the-arena" />
       <main className="page">
         <p className="page__sub">{t.sub}</p>
         {body}

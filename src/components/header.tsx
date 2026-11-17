@@ -19,6 +19,10 @@ interface HeaderProps {
   href: string;
   /** The page's own buttons, in the middle. */
   children?: ReactNode;
+  /** Before the icon: the phone's menu button, on a game's pages. */
+  lead?: ReactNode;
+  /** What the name belongs to, before "by Irma HS": "Mini Games" on a game's pages. */
+  app?: string;
 }
 
 /**
@@ -27,16 +31,26 @@ interface HeaderProps {
  * and the account pill at the end. The
  * name is the page's heading.
  */
-export const Header = ({ icon, name, href, children }: HeaderProps) => {
+export const Header = ({
+  icon,
+  name,
+  href,
+  children,
+  lead,
+  app,
+}: HeaderProps) => {
   const t = useCopy(COPY);
 
   return (
     <header className="app-header">
+      {lead}
       <Link href={href} className="app-header__home">
         {icon}
         <span>
           <h1 className="app-header__name">{name}</h1>
-          <span className="app-header__by">{t.by}</span>
+          <span className="app-header__by">
+            {app ? `${app} · ${t.by}` : t.by}
+          </span>
         </span>
       </Link>
       {children ? <div className="app-header__actions">{children}</div> : null}

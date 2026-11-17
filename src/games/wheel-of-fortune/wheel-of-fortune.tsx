@@ -1,11 +1,8 @@
 import { useEffect, useReducer, useState } from "react";
 
-import { WheelIcon } from "../../components/app-icons";
-import { Header } from "../../components/header";
-import type { GameProps } from "../../games";
+import { GameHeader } from "../../components/game-header";
 import { Icon } from "../../lib/icon";
 import { useCopy } from "../../lib/language";
-import { Link } from "../../lib/router";
 import { useConfirm } from "../../lib/use-confirm";
 import { beep, primeAudio } from "./beep";
 import { ResultDialog } from "./result-dialog";
@@ -28,7 +25,6 @@ import { WheelView, sliceColors } from "./wheel-view";
 const COPY = {
   en: {
     add: "Add a slice",
-    allGames: "all games",
     beep: "Beep when it lands",
     clear: "Clear",
     delete: "Delete wheel",
@@ -54,7 +50,6 @@ const COPY = {
   },
   fr: {
     add: "Ajouter une part",
-    allGames: "tous les jeux",
     beep: "Bip à l’arrêt",
     clear: "Vider",
     delete: "Supprimer la roue",
@@ -93,7 +88,7 @@ const legendFor = (name: string) => {
   return `${slug || "untitled"}.gif`;
 };
 
-const WheelOfFortune = ({ name }: GameProps) => {
+const WheelOfFortune = () => {
   const [state, dispatch] = useReducer(reducer, undefined, loadState);
   const [rotation, setRotation] = useState(0);
   // The slice a spin is heading for while the wheel turns, then the one it won.
@@ -140,12 +135,7 @@ const WheelOfFortune = ({ name }: GameProps) => {
 
   return (
     <>
-      <Header icon={<WheelIcon />} name={name} href="/wheel-of-fortune">
-        <Link href="/" className="btn">
-          <Icon name="back" size={16} />
-          {t.allGames}
-        </Link>
-      </Header>
+      <GameHeader slug="wheel-of-fortune" />
       <main className="page">
         <p className="page__sub">{t.sub}</p>
 

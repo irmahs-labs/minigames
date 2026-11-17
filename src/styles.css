@@ -247,6 +247,126 @@ a:hover {
   gap: 8px;
 }
 
+/* ── a game's pages: tabs under the header, a side menu on a phone ── */
+.game-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 28px 0;
+  background: var(--ground);
+  border-bottom: var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.game-tab {
+  flex: none;
+  padding: 8px 16px;
+  border: var(--line);
+  border-bottom: 0;
+  border-radius: var(--radius-field) var(--radius-field) 0 0;
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+.game-tab:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+/* The page open: lime, lifted onto the line under the tabs */
+.game-tab[aria-current="page"] {
+  background: var(--selected);
+  color: var(--on-selected);
+  margin-bottom: -2px;
+  padding-bottom: 10px;
+}
+.game-tab:focus-visible,
+.game-drawer__link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+.app-header .game-menu-button {
+  display: none;
+  color: var(--text);
+  border: var(--line);
+  background: var(--raised);
+}
+.game-drawer {
+  margin: 0;
+  width: min(300px, 85vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-right: var(--line);
+  background: var(--header);
+  color: var(--text);
+}
+.game-drawer::backdrop {
+  background: rgb(15 20 17 / 55%);
+}
+.game-drawer__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+}
+.game-drawer__close {
+  align-self: flex-end;
+  color: var(--text);
+}
+.game-drawer__games,
+.game-drawer__pages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.game-drawer__games {
+  margin-top: 10px;
+}
+/* A game's own pages, under it */
+.game-drawer__link.game-drawer__link--sub {
+  padding-left: 28px;
+  font-weight: 600;
+}
+.game-drawer__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-field);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.game-drawer__link:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+.game-drawer__link[aria-current="page"] {
+  background: var(--selected);
+  color: var(--on-selected);
+}
+
+@media (max-width: 600px) {
+  .game-tabs,
+  .app-header .game-back {
+    display: none;
+  }
+  .app-header .game-menu-button {
+    display: inline-flex;
+  }
+  /* The menu button and the game's name share the first row */
+  .app-header:has(.game-menu-button) .app-header__home {
+    flex: 1 1 0;
+  }
+}
+
 /* Cute Matcha's AccountButton, as a 40px header pill: a panel piece lying
    on the desk, with Google's mark or the person's picture in a white
    circle. On phones only the circle shows; its text stays for screen
