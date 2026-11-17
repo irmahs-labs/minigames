@@ -136,7 +136,7 @@ export const ArenaIcon = () => (
     />
     <path
       d="M20 8c3.5 4 6.5 7.5 6.5 12.5a6.5 6.5 0 0 1-13 0c0-3 1.5-5 3-6.5 0 2.5 1 4 2.5 4.5-1-4 .5-7.5 1-10.5z"
-      fill="#ffd968"
+      fill="#afc584"
       stroke="#2f3b34"
       strokeWidth="1.5"
       strokeLinejoin="round"
