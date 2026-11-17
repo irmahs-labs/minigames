@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 
 import {
   ArenaIcon,
+  MagicEightBallIcon,
   QuizzesIcon,
   SuperTicTacToeIcon,
   WheelIcon,
@@ -118,6 +119,21 @@ export const GAMES: readonly Game[] = [
     legend: "the-arena.exe",
     name: { en: "The Arena", fr: "L’Arène" },
     slug: "the-arena",
+  },
+  {
+    Icon: MagicEightBallIcon,
+    ...screenOf(() => import("./games/magic-8-ball/magic-8-ball")),
+    blurb: {
+      en: "Ask a yes-or-no question and shake: shake your phone, flick the ball, or press the button.",
+      fr: "Posez une question fermée et secouez : votre téléphone, la boule d’un coup de doigt, ou le bouton.",
+    },
+    inside: [
+      { en: "Shake your phone", fr: "Secouez le téléphone" },
+      { en: "20 answers", fr: "20 réponses" },
+    ],
+    legend: "magic-8-ball.exe",
+    name: { en: "Magic 8 Ball", fr: "Boule magique" },
+    slug: "magic-8-ball",
   },
   {
     Icon: QuizzesIcon,
