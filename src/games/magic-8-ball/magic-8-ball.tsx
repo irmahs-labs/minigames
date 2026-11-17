@@ -1,6 +1,8 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 
+import { useCopy, useLanguage } from "../../lib/language";
+import type { Language } from "../../lib/language";
 import { cryptoRandom } from "../../lib/random";
 import {
   EIGHT,
@@ -21,7 +23,58 @@ import {
   ZERO,
 } from "./eight-ball";
 import type { Answer, Quat, ShakeState, Vec } from "./eight-ball";
-import { say, tr } from "./french";
+
+/** The page's words, in each of the site's languages. */
+const COPY = {
+  en: {
+    about:
+      "Twenty answers: ten say yes, five say maybe, five say no. It is a toy, not an oracle, so ask again whenever you like.",
+    felt: "Shake your phone to ask, or flick the ball.",
+    flick: "Flick the ball hard to shake it, or drag it to turn it and peek.",
+    hold: "Hold a question in your mind.",
+    how: "How it works",
+    motionOff:
+      " Motion is off for this site; you can allow it in your browser's settings.",
+    placeholder: "Ask a yes-or-no question…",
+    question: "Your question",
+    shake: "Shake the ball",
+    shakePhone: "Shake your phone instead",
+    step1: "Think of a question that can be answered yes or no.",
+    step2:
+      "Shake: shake your phone, flick the ball with your finger or the mouse, or press the button.",
+    step3:
+      "The ball tumbles, then rolls its window up to you, and the die floats up with your answer.",
+    step4: "Drag the ball gently to turn it over and look at it from any side.",
+    stirring: "The spirits are stirring…",
+    sub: "ask a yes-or-no question, and shake",
+    title: "Ask the Magic 8 Ball",
+  },
+  fr: {
+    about:
+      "Vingt réponses : dix disent oui, cinq peut-être, cinq non. C’est un jouet, pas un oracle, alors redemandez quand vous voulez.",
+    felt: "Secouez votre téléphone pour demander, ou lancez la boule d’un coup.",
+    flick:
+      "Lancez la boule d’un coup sec pour la secouer, ou faites-la glisser pour la tourner et regarder.",
+    hold: "Gardez une question en tête.",
+    how: "Comment ça marche",
+    motionOff:
+      " Le mouvement est désactivé pour ce site ; vous pouvez l’autoriser dans les réglages du navigateur.",
+    placeholder: "Posez une question fermée…",
+    question: "Votre question",
+    shake: "Secouer la boule",
+    shakePhone: "Secouer plutôt votre téléphone",
+    step1: "Pensez à une question à laquelle on répond par oui ou par non.",
+    step2:
+      "Secouez : secouez votre téléphone, lancez la boule du doigt ou à la souris, ou appuyez sur le bouton.",
+    step3:
+      "La boule roule, puis tourne sa fenêtre vers vous, et le dé remonte avec votre réponse.",
+    step4:
+      "Faites glisser la boule doucement pour la retourner et la regarder sous tous les angles.",
+    stirring: "Les esprits s’agitent…",
+    sub: "posez une question fermée, et secouez",
+    title: "Interrogez la boule magique",
+  },
+};
 
 /** The ball's radius, in the drawing's units (it is 300 across, with room). */
 const RADIUS = 130;
@@ -93,7 +146,8 @@ const Ball = ({
 }) => {
   const eight = project(turn, EIGHT, RADIUS);
   const window = project(turn, WINDOW, RADIUS);
-  const lines = answer ? linesOf(say(answer.text)) : [];
+  const language = useLanguage();
+  const lines = answer ? linesOf(answer.text[language]) : [];
 
   return (
     <svg
@@ -198,16 +252,23 @@ interface Held {
 }
 
 /** What the line under the ball says. */
-const captionOf = (phase: Phase, answer: Answer | null) => {
+const captionOf = (
+  phase: Phase,
+  answer: Answer | null,
+  stirring: string,
+  language: Language
+) => {
   if (phase === "spinning" || phase === "settling") {
-    return tr("The spirits are stirring…", "Les esprits s’agitent…");
+    return stirring;
   }
 
-  return phase === "answered" && answer ? say(answer.text) : null;
+  return phase === "answered" && answer ? answer.text[language] : null;
 };
 
 /** The Magic 8 Ball: ask, shake, and read the answer. */
 const MagicEightBall = () => {
+  const t = useCopy(COPY);
+  const language = useLanguage();
   const [turn, setTurn] = useState<Quat>(IDENTITY);
   const [phase, setPhase] = useState<Phase>("idle");
   const [answer, setAnswer] = useState<Answer | null>(null);
@@ -232,11 +293,11 @@ const MagicEightBall = () => {
     state.last = now;
 
     if (state.phase === "settling") {
-      const t = Math.min(1, (now - state.started) / SETTLE_MS);
+      const done = Math.min(1, (now - state.started) / SETTLE_MS);
 
-      state.turn = slerp(state.settleFrom, WINDOW_UP, ease(t));
+      state.turn = slerp(state.settleFrom, WINDOW_UP, ease(done));
 
-      if (t >= 1) {
+      if (done >= 1) {
         enter("answered");
       }
     } else {
@@ -420,16 +481,11 @@ const MagicEightBall = () => {
     }
   };
 
-  const caption = captionOf(phase, answer);
+  const caption = captionOf(phase, answer, t.stirring, language);
 
   return (
     <main className="page">
-      <p className="page__sub">
-        {tr(
-          "ask a yes-or-no question, and shake",
-          "posez une question fermée, et secouez"
-        )}
-      </p>
+      <p className="page__sub">{t.sub}</p>
       <div className="layout">
         <section
           aria-labelledby="eight-ball-title"
@@ -437,15 +493,12 @@ const MagicEightBall = () => {
         >
           <span className="legend">magic-8-ball.gif</span>
           <h2 id="eight-ball-title" className="display eight-ball__title">
-            {tr("Ask the Magic 8 Ball", "Interrogez la boule magique")}
+            {t.title}
           </h2>
           <input
             className="field"
-            aria-label={tr("Your question", "Votre question")}
-            placeholder={tr(
-              "Ask a yes-or-no question…",
-              "Posez une question fermée…"
-            )}
+            aria-label={t.question}
+            placeholder={t.placeholder}
             maxLength={120}
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
@@ -469,13 +522,7 @@ const MagicEightBall = () => {
             }
             aria-live="polite"
           >
-            {caption ??
-              (question.trim()
-                ? `“${question.trim()}”`
-                : tr(
-                    "Hold a question in your mind.",
-                    "Gardez une question en tête."
-                  ))}
+            {caption ?? (question.trim() ? `“${question.trim()}”` : t.hold)}
           </p>
           <div className="eight-ball__actions">
             <button
@@ -484,33 +531,17 @@ const MagicEightBall = () => {
               disabled={busy}
               onClick={() => shake()}
             >
-              {tr("Shake the ball", "Secouer la boule")}
+              {t.shake}
             </button>
             {motion === "ask" && !felt ? (
               <button type="button" className="btn" onClick={askForMotion}>
-                {tr(
-                  "Shake your phone instead",
-                  "Secouer plutôt votre téléphone"
-                )}
+                {t.shakePhone}
               </button>
             ) : null}
           </div>
           <p className="hint">
-            {felt
-              ? tr(
-                  "Shake your phone to ask, or flick the ball.",
-                  "Secouez votre téléphone pour demander, ou lancez la boule d’un coup."
-                )
-              : tr(
-                  "Flick the ball hard to shake it, or drag it to turn it and peek.",
-                  "Lancez la boule d’un coup sec pour la secouer, ou faites-la glisser pour la tourner et regarder."
-                )}
-            {motion === "denied"
-              ? tr(
-                  " Motion is off for this site; you can allow it in your browser's settings.",
-                  " Le mouvement est désactivé pour ce site ; vous pouvez l’autoriser dans les réglages du navigateur."
-                )
-              : ""}
+            {felt ? t.felt : t.flick}
+            {motion === "denied" ? t.motionOff : ""}
           </p>
         </section>
 
@@ -520,40 +551,15 @@ const MagicEightBall = () => {
         >
           <span className="legend">how-it-works.txt</span>
           <h2 id="eight-ball-how" className="display eight-ball__title">
-            {tr("How it works", "Comment ça marche")}
+            {t.how}
           </h2>
           <ol className="how-to">
-            <li>
-              {tr(
-                "Think of a question that can be answered yes or no.",
-                "Pensez à une question à laquelle on répond par oui ou par non."
-              )}
-            </li>
-            <li>
-              {tr(
-                "Shake: shake your phone, flick the ball with your finger or the mouse, or press the button.",
-                "Secouez : secouez votre téléphone, lancez la boule du doigt ou à la souris, ou appuyez sur le bouton."
-              )}
-            </li>
-            <li>
-              {tr(
-                "The ball tumbles, then rolls its window up to you, and the die floats up with your answer.",
-                "La boule roule, puis tourne sa fenêtre vers vous, et le dé remonte avec votre réponse."
-              )}
-            </li>
-            <li>
-              {tr(
-                "Drag the ball gently to turn it over and look at it from any side.",
-                "Faites glisser la boule doucement pour la retourner et la regarder sous tous les angles."
-              )}
-            </li>
+            <li>{t.step1}</li>
+            <li>{t.step2}</li>
+            <li>{t.step3}</li>
+            <li>{t.step4}</li>
           </ol>
-          <p className="hint">
-            {tr(
-              "Twenty answers: ten say yes, five say maybe, five say no. It is a toy, not an oracle, so ask again whenever you like.",
-              "Vingt réponses : dix disent oui, cinq peut-être, cinq non. C’est un jouet, pas un oracle, alors redemandez quand vous voulez."
-            )}
-          </p>
+          <p className="hint">{t.about}</p>
         </section>
       </div>
     </main>

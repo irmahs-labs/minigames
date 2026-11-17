@@ -62,7 +62,7 @@ A game marked `nested` in `GAMES` also owns the pages under `/<slug>/`. Quizzes 
 
 The Arena (`src/games/the-arena/`) is a last-one-standing simulator: the visitor names contestants in up to 12 districts of up to 4 (`cast.ts`, kept in `localStorage`), and the games play out Day 1, Night 1, Day 2… until one is left, or, when district-mates may win together, until everyone left is from one district (`simulation.ts`, every day taking at least one life). What can happen is `events.ts`: lines with places for one to three contestants, who dies and at whose hand, in English and French, written to fit anyone (no "he" or "she", no French word agreeing with one). It is its own game, not any book's or film's: keep their names, places and characters out of it.
 
-The Magic 8 Ball (`src/games/magic-8-ball/`, at `/magic-8-ball`) came from the Book of Shadows on Realms. The ball's physics, its 3D turning and the shake detection are plain functions in `eight-ball.ts`, with tests; the page is `magic-8-ball.tsx`. Its twenty answers are English data, and `french.ts` gives each its French through `say`; the page's own words use `tr(english, french)`. The ball's colours (`--ball`, `--ball-liquid`, `--ball-die`) are artwork, the same in both themes.
+The Magic 8 Ball (`src/games/magic-8-ball/`, at `/magic-8-ball`) came from the Book of Shadows on Realms. The ball's physics, its 3D turning and the shake detection are plain functions in `eight-ball.ts`, with tests; the page is `magic-8-ball.tsx`. Its twenty answers carry their words in both languages (`text: { en, fr }`), and the page's own words are in its `COPY`, as every game's are. The ball's colours (`--ball`, `--ball-liquid`, `--ball-die`) are artwork, the same in both themes.
 
 ## Names
 

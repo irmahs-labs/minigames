@@ -3,35 +3,77 @@
  * (as a quaternion), and a shake detector for a phone's motion sensors.
  * View space has x to the right, y up and z toward the viewer.
  */
-export type Mood = "yes" | "maybe" | "no";
+import type { Language } from "../../lib/language";
+
+/** A line in each of the site's languages. */
+type Words = Record<Language, string>;
+
+type Mood = "yes" | "maybe" | "no";
 
 export interface Answer {
-  text: string;
+  /** What the die says, in English and French. */
+  text: Words;
   mood: Mood;
 }
 
 /** The classic twenty: ten yes, five maybe, five no. */
 export const ANSWERS: readonly Answer[] = [
-  { mood: "yes", text: "It is certain" },
-  { mood: "yes", text: "It is decidedly so" },
-  { mood: "yes", text: "Without a doubt" },
-  { mood: "yes", text: "Yes, definitely" },
-  { mood: "yes", text: "You may rely on it" },
-  { mood: "yes", text: "As I see it, yes" },
-  { mood: "yes", text: "Most likely" },
-  { mood: "yes", text: "Outlook good" },
-  { mood: "yes", text: "Yes" },
-  { mood: "yes", text: "Signs point to yes" },
-  { mood: "maybe", text: "Reply hazy, try again" },
-  { mood: "maybe", text: "Ask again later" },
-  { mood: "maybe", text: "Better not tell you now" },
-  { mood: "maybe", text: "Cannot predict now" },
-  { mood: "maybe", text: "Concentrate and ask again" },
-  { mood: "no", text: "Don't count on it" },
-  { mood: "no", text: "My reply is no" },
-  { mood: "no", text: "My sources say no" },
-  { mood: "no", text: "Outlook not so good" },
-  { mood: "no", text: "Very doubtful" },
+  { mood: "yes", text: { en: "It is certain", fr: "C’est certain" } },
+  {
+    mood: "yes",
+    text: { en: "It is decidedly so", fr: "C’est décidément ainsi" },
+  },
+  { mood: "yes", text: { en: "Without a doubt", fr: "Sans aucun doute" } },
+  { mood: "yes", text: { en: "Yes, definitely", fr: "Oui, absolument" } },
+  {
+    mood: "yes",
+    text: { en: "You may rely on it", fr: "Vous pouvez compter dessus" },
+  },
+  { mood: "yes", text: { en: "As I see it, yes", fr: "D’après moi, oui" } },
+  { mood: "yes", text: { en: "Most likely", fr: "Très probablement" } },
+  { mood: "yes", text: { en: "Outlook good", fr: "C’est bien parti" } },
+  { mood: "yes", text: { en: "Yes", fr: "Oui" } },
+  {
+    mood: "yes",
+    text: { en: "Signs point to yes", fr: "Les signes disent oui" },
+  },
+  {
+    mood: "maybe",
+    text: { en: "Reply hazy, try again", fr: "Réponse floue, réessayez" },
+  },
+  {
+    mood: "maybe",
+    text: { en: "Ask again later", fr: "Redemandez plus tard" },
+  },
+  {
+    mood: "maybe",
+    text: {
+      en: "Better not tell you now",
+      fr: "Mieux vaut ne pas vous le dire maintenant",
+    },
+  },
+  {
+    mood: "maybe",
+    text: { en: "Cannot predict now", fr: "Impossible de prédire maintenant" },
+  },
+  {
+    mood: "maybe",
+    text: {
+      en: "Concentrate and ask again",
+      fr: "Concentrez-vous et redemandez",
+    },
+  },
+  { mood: "no", text: { en: "Don't count on it", fr: "N’y comptez pas" } },
+  { mood: "no", text: { en: "My reply is no", fr: "Ma réponse est non" } },
+  {
+    mood: "no",
+    text: { en: "My sources say no", fr: "Mes sources disent non" },
+  },
+  {
+    mood: "no",
+    text: { en: "Outlook not so good", fr: "Ce n’est pas bien parti" },
+  },
+  { mood: "no", text: { en: "Very doubtful", fr: "Très douteux" } },
 ];
 
 /** An answer, `random` giving 0 ≤ n < 1; never the same one twice running. */
@@ -169,7 +211,7 @@ export const dragTurn = (dx: number, dy: number, radius: number): Quat =>
 export const WINDOW_UP: Quat = fromAxisAngle([0, 1, 0], Math.PI);
 
 /** A flat disc on the ball: the 8 on the front, the window on the back. */
-export interface Decal {
+interface Decal {
   /** Where its middle points, in the ball's own frame. */
   normal: Vec;
   /** Its right and its up, in the ball's own frame. */
@@ -190,9 +232,9 @@ export const WINDOW: Decal = {
 };
 
 /** Half the angle a decal covers, seen from the ball's middle. */
-export const DECAL_ANGLE = (38 * Math.PI) / 180;
+const DECAL_ANGLE = (38 * Math.PI) / 180;
 
-export interface Projected {
+interface Projected {
   /** How squarely it faces the viewer: 1 head on, 0 edge on, below 0 hidden. */
   facing: number;
   /**
@@ -256,7 +298,7 @@ export interface ShakeState {
 }
 
 /** What one sample adds up to, and what the detector remembers after it. */
-export interface Felt {
+interface Felt {
   felt: "shake" | "jolt" | null;
   state: ShakeState;
 }

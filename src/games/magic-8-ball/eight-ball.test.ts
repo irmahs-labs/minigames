@@ -37,8 +37,8 @@ describe("answers", () => {
   it("never gives the same answer twice running", () => {
     const first = pickAnswer(() => 0);
 
-    expect(first.text).toBe("It is certain");
-    expect(pickAnswer(() => 0, first).text).toBe("It is decidedly so");
+    expect(first.text.en).toBe("It is certain");
+    expect(pickAnswer(() => 0, first).text.en).toBe("It is decidedly so");
   });
 
   it("breaks an answer into short lines for the die", () => {
