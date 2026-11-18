@@ -88,3 +88,8 @@ The site is styled in Cute Matcha's app look (the _Apps_ section of Irma's Cute 
 ## Deploy
 
 Merging to `main` runs `.github/workflows/deploy.yml`, which SSHes to the server as `deploy`, resets `/srv/minigames` to `main`, and with `compose.prod.yaml` starts Postgres, runs pending migrations and rebuilds the site's container. It needs the `MINIGAMES_POSTGRES_PASSWORD` secret. The shared Caddy in `irmahs-labs/proxy` routes `minigames.irmahs.dev` to it. `compose.yaml` is for local development only: a database and dbmate.
+
+
+## Footer and privacy
+
+Every page ends with every irmahs.dev app and the legal pages (legal notice, privacy, terms of use, cookies), which live on irmahs.dev (`src/components/site-links.tsx`). Keep the app list the same, and in the same order, as irmahs-labs/landing-page `src/lib/site-links.ts`. The privacy policy there (`src/lib/legal.ts`) describes exactly what this app collects, sends and keeps in the browser: a change that adds a cookie, a localStorage key, a database column about people, or a request to another service updates it in the same change (a PR in irmahs-labs/landing-page). Nothing may need a consent banner: no analytics, ads or tracking cookies.

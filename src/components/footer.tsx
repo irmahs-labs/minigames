@@ -1,4 +1,5 @@
 import { useCopy } from "../lib/language";
+import { SiteLinks } from "./site-links";
 
 /**
  * Cute Matcha's Footer, the foot of every page: the Header already names
@@ -13,8 +14,11 @@ export const Footer = () => {
   const t = useCopy(COPY);
 
   return (
-    <footer className="site-foot">
-      {t.more} <a href="https://irmahs.dev">irmahs.dev</a>
+    <footer className="site-end">
+      <p className="site-foot">
+        {t.more} <a href="https://irmahs.dev">irmahs.dev</a>
+      </p>
+      <SiteLinks />
     </footer>
   );
 };
