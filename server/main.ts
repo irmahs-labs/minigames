@@ -5,6 +5,7 @@ import { WebSocketServer } from "ws";
 import { createApp } from "./app";
 import { connect } from "./db";
 import { env } from "./env";
+import { oukChaktrang, superTicTacToe } from "./games";
 import { createLobby } from "./lobby";
 import type { FinishedGame } from "./lobby";
 import {
@@ -16,7 +17,13 @@ import {
   voteNote,
 } from "./notes";
 import { readResult, removeResult, saveResult } from "./quiz-results";
-import { readLeaderboard, recordGame } from "./scores";
+import {
+  OUK_CHAKTRANG,
+  SUPER_TIC_TAC_TOE,
+  readLeaderboard,
+  recordGame,
+} from "./scores";
+import type { Board } from "./scores";
 import { askAccountService, askAdminAccess } from "./session";
 
 const pool = connect(env.databaseUrl);
@@ -25,9 +32,12 @@ const pool = connect(env.databaseUrl);
  * Saves a finished game. One that cannot be saved still ended for its
  * players; the error is logged and the leaderboard misses that one game.
  */
-const saveGame = async (game: FinishedGame) => {
+const saveGame = async <P extends string>(
+  board: Board<P>,
+  game: FinishedGame<unknown, P, string>
+) => {
   try {
-    await recordGame(pool, game);
+    await recordGame(pool, board, game);
   } catch (error) {
     console.error("Could not save a finished game", error);
   }
@@ -52,16 +62,25 @@ void sweep();
 
 setInterval(sweep, SWEEP_MS);
 
-const lobby = createLobby({
-  onFinish: (game) => {
-    void saveGame(game);
-  },
-});
+const lobbies = {
+  oukChaktrang: createLobby({
+    onFinish: (game) => {
+      void saveGame(OUK_CHAKTRANG, game);
+    },
+    rules: oukChaktrang,
+  }),
+  superTicTacToe: createLobby({
+    onFinish: (game) => {
+      void saveGame(SUPER_TIC_TAC_TOE, game);
+    },
+    rules: superTicTacToe,
+  }),
+};
 
 const { app } = createApp({
   appOrigin: env.appOrigin,
   isAdmin: askAdminAccess(env.authUrl),
-  lobby,
+  lobbies,
   notes: {
     countNotes: (userId) => countNotes(pool, userId),
     postNote: (userId, note, limit) => postNote(pool, userId, note, limit),
@@ -74,7 +93,12 @@ const { app } = createApp({
     remove: (userId, quiz) => removeResult(pool, userId, quiz),
     save: (userId, quiz, result) => saveResult(pool, userId, quiz, result),
   },
-  readLeaderboard: (userId) => readLeaderboard(pool, userId),
+  readLeaderboard: (game, userId) =>
+    readLeaderboard(
+      pool,
+      game === "ouk-chaktrang" ? OUK_CHAKTRANG : SUPER_TIC_TAC_TOE,
+      userId
+    ),
   whoIs: askAccountService(env.authUrl),
 });
 

@@ -5,8 +5,21 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { connect } from "./db";
-import type { Account, FinishedGame } from "./lobby";
-import { TOP, readLeaderboard, recordGame } from "./scores";
+import type { SuperTicTacToeGame as FinishedGame } from "./games";
+import type { Account } from "./lobby";
+import {
+  OUK_CHAKTRANG,
+  SUPER_TIC_TAC_TOE,
+  TOP,
+  readLeaderboard as readBoard,
+  recordGame as recordOn,
+} from "./scores";
+
+const recordGame = (p: typeof pool, game: FinishedGame) =>
+  recordOn(p, SUPER_TIC_TAC_TOE, game);
+
+const readLeaderboard = (p: typeof pool, userId: string | null) =>
+  readBoard(p, SUPER_TIC_TAC_TOE, userId);
 
 const url = process.env.TEST_DATABASE_URL;
 const pool = connect(url ?? "postgres://unused");
@@ -35,6 +48,11 @@ const game = (
   winner,
 });
 
+// Both suites share the pool; it closes once, after both
+afterAll(async () => {
+  await pool.end();
+});
+
 const totals = async () => {
   const { rows } = await pool.query(
     "select name, points, wins, losses, draws from super_tic_tac_toe_players order by name"
@@ -48,10 +66,6 @@ describe.skipIf(!url)("the leaderboard in Postgres", () => {
     await pool.query(
       "truncate super_tic_tac_toe_games, super_tic_tac_toe_players"
     );
-  });
-
-  afterAll(async () => {
-    await pool.end();
   });
 
   it("adds a win, and never takes a total below 0", async () => {
@@ -134,5 +148,41 @@ describe.skipIf(!url)("the leaderboard in Postgres", () => {
       rank: TOP + 1,
       you: true,
     });
+  });
+});
+
+describe.skipIf(!url)("the Ouk Chaktrang leaderboard in Postgres", () => {
+  beforeEach(async () => {
+    await pool.query("truncate ouk_chaktrang_games, ouk_chaktrang_players");
+  });
+
+  it("keeps its own players and games, apart from Super Tic-Tac-Toe's", async () => {
+    await recordOn(pool, OUK_CHAKTRANG, {
+      ending: "checkmate",
+      moves: [{ from: 18, to: 26 }],
+      players: { black: ben, white: ana },
+      points: { black: 3 - 25, white: 31 },
+      winner: "white",
+    });
+
+    const board = await readBoard(pool, OUK_CHAKTRANG, ben.id);
+
+    expect(board.top).toMatchObject([
+      { losses: 0, name: "Ana L.", points: 31, rank: 1, wins: 1 },
+      { losses: 1, name: "Ben", points: 0, rank: 2, you: true },
+    ]);
+
+    const { rows } = await pool.query(
+      "select winner, ending, white_points, black_points from ouk_chaktrang_games"
+    );
+
+    expect(rows).toEqual([
+      {
+        black_points: -22,
+        ending: "checkmate",
+        white_points: 31,
+        winner: "white",
+      },
+    ]);
   });
 });

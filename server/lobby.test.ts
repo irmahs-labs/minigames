@@ -10,8 +10,10 @@ import {
 } from "../src/games/super-tic-tac-toe/rules";
 import type { Game, Move } from "../src/games/super-tic-tac-toe/rules";
 import { POINTS } from "../src/games/super-tic-tac-toe/scoring";
+import { superTicTacToe } from "./games";
+import type { SuperTicTacToeGame } from "./games";
 import { QUEUE_MS, ROOM_IDLE_MS, createLobby } from "./lobby";
-import type { Account, FinishedGame } from "./lobby";
+import type { Account } from "./lobby";
 
 const account = (name: string): Account => ({ id: `id-${name}`, name });
 
@@ -31,7 +33,7 @@ const socket = () => {
   };
 };
 
-let finished: FinishedGame[] = [];
+let finished: SuperTicTacToeGame[] = [];
 
 /** A lobby where the first in the queue always plays Pink. */
 const setup = () => {
@@ -40,6 +42,7 @@ const setup = () => {
   return createLobby({
     onFinish: (game) => finished.push(game),
     random: () => 0,
+    rules: superTicTacToe,
   });
 };
 
