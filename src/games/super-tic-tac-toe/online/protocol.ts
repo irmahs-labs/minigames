@@ -54,16 +54,4 @@ export const serverMessage = z.discriminatedUnion("type", [
 
 export type ServerMessage = z.infer<typeof serverMessage>;
 
-/** A received text frame as a message of the given schema, or null if it is not one. */
-export const parseMessage = <T>(
-  schema: z.ZodMiniType<T>,
-  frame: string
-): T | null => {
-  try {
-    const result = schema.safeParse(JSON.parse(frame));
-
-    return result.success ? result.data : null;
-  } catch {
-    return null;
-  }
-};
+export { parseMessage } from "../../../lib/parse-message";

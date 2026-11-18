@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { useCopy } from "../../lib/language";
+import { useCopy } from "../lib/language";
 
 const COPY = {
   en: { again: "New game", see: "See the board" },

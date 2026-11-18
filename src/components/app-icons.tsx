@@ -78,6 +78,46 @@ export const SuperTicTacToeIcon = () => (
   </svg>
 );
 
+/** A cream Ouk Chaktrang token on the lime tile, a crown on it: the Khun. */
+export const OukChaktrangIcon = () => (
+  <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">
+    <rect
+      x="3"
+      y="3"
+      width="34"
+      height="34"
+      rx="9"
+      fill="#d4dd9c"
+      stroke="var(--text)"
+      strokeWidth="1.5"
+    />
+    <circle
+      cx="20"
+      cy="20.5"
+      r="11.5"
+      fill="#fff3cf"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+    />
+    <circle
+      cx="20"
+      cy="20.5"
+      r="9"
+      fill="none"
+      stroke="#afc584"
+      strokeWidth="1"
+    />
+    <path
+      d="M14 24.5 L13.2 16.5 L16.6 20 L18.4 14.6 L20 18.6 L21.6 14.6 L23.4 20 L26.8 16.5 L26 24.5 Z M14.4 26.8 H25.6"
+      fill="none"
+      stroke="#2f3b34"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** A cream card with a question mark on it. */
 export const QuizzesIcon = () => (
   <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40">

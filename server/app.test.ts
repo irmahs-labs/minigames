@@ -11,6 +11,7 @@ import { NOTES_PER_DAY } from "../src/board/rules";
 import type { Vote } from "../src/board/rules";
 import type { ServerMessage } from "../src/games/super-tic-tac-toe/online/protocol";
 import { createApp } from "./app";
+import { oukChaktrang, superTicTacToe } from "./games";
 import { createLobby } from "./lobby";
 import type { KeptResult } from "./quiz-results";
 import type { Leaderboard } from "./scores";
@@ -34,7 +35,17 @@ const whoIs: WhoIs = (cookie) =>
     setCookies: [],
   });
 
-const lobby = createLobby({ onFinish: () => null, random: () => 0 });
+const lobby = createLobby({
+  onFinish: () => null,
+  random: () => 0,
+  rules: superTicTacToe,
+});
+
+const oukLobby = createLobby({
+  onFinish: () => null,
+  random: () => 0,
+  rules: oukChaktrang,
+});
 
 /** Stands in for hub_sticky_notes, newest last. */
 const noteLog: {
@@ -117,7 +128,7 @@ const notes = {
   },
 };
 
-const askedFor: (string | null)[] = [];
+const askedFor: [string, string | null][] = [];
 
 /** Stands in for quizzes_results: each person's result, by quiz. */
 const resultLog = new Map<string, KeptResult>();
@@ -141,11 +152,11 @@ const { app } = createApp({
   appOrigin: ORIGIN,
   // Ana is on Alma Housila's list in the account service's APP_ACCESS.
   isAdmin: (cookie) => Promise.resolve(cookie === "session=ana"),
-  lobby,
+  lobbies: { oukChaktrang: oukLobby, superTicTacToe: lobby },
   notes,
   quizResults,
-  readLeaderboard: (userId): Promise<Leaderboard> => {
-    askedFor.push(userId);
+  readLeaderboard: (game, userId): Promise<Leaderboard> => {
+    askedFor.push([game, userId]);
 
     return Promise.resolve({ top: [], you: null });
   },
@@ -174,12 +185,13 @@ beforeAll(async () => {
 
 afterAll(() => {
   lobby.close();
+  oukLobby.close();
   server.close();
 });
 
 /** A socket as a browser would open it, and what it hears. */
-const open = (cookie: string, origin = ORIGIN) => {
-  const socket = new WebSocket(`ws://${base}/ws`, {
+const open = (cookie: string, origin = ORIGIN, path = "/ws") => {
+  const socket = new WebSocket(`ws://${base}${path}`, {
     headers: { cookie },
     origin,
   });
@@ -218,6 +230,38 @@ const refusal = async (cookie: string, origin = ORIGIN) => {
 
   return response.statusCode;
 };
+
+describe("/ws/ouk-chaktrang", () => {
+  it("matches two players on a board of their own, White first", async () => {
+    const ana = open("session=ana", ORIGIN, "/ws/ouk-chaktrang");
+    const ben = open("session=ben", ORIGIN, "/ws/ouk-chaktrang");
+
+    await ana.next("idle");
+    await ben.next("idle");
+    ana.socket.send(JSON.stringify({ type: "join" }));
+    await ana.next("queued");
+    ben.socket.send(JSON.stringify({ type: "join" }));
+
+    expect(await ana.next("room")).toMatchObject({ you: "white" });
+    expect(await ben.next("room")).toMatchObject({ you: "black" });
+
+    // c3 to c4: a Trey one square ahead
+    ana.socket.send(JSON.stringify({ from: 18, to: 26, type: "move" }));
+    expect(await ben.next("room")).toMatchObject({
+      moves: [{ from: 18, to: 26 }],
+    });
+
+    // b6 to b4: two squares ahead is not a Trey's move
+    ben.socket.send(JSON.stringify({ from: 41, to: 25, type: "move" }));
+    expect(await ben.next("error")).toEqual({
+      message: "That move cannot be played.",
+      type: "error",
+    });
+
+    ana.socket.close();
+    ben.socket.close();
+  });
+});
 
 describe("/ws", () => {
   it("refuses a socket from another site", async () => {
@@ -281,8 +325,15 @@ describe("/api", () => {
       headers: { cookie: "session=ben" },
     });
     await fetch(`http://${base}/api/leaderboard`);
+    await fetch(`http://${base}/api/ouk-chaktrang/leaderboard`, {
+      headers: { cookie: "session=ana" },
+    });
 
-    expect(askedFor).toEqual([BEN.id, null]);
+    expect(askedFor).toEqual([
+      ["super-tic-tac-toe", BEN.id],
+      ["super-tic-tac-toe", null],
+      ["ouk-chaktrang", ANA.id],
+    ]);
   });
 });
 

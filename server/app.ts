@@ -1,11 +1,14 @@
 import { upgradeWebSocket } from "@hono/node-server";
 import { Hono } from "hono";
 import { WebSocket } from "ws";
+import type * as z from "zod/mini";
 
 import { noteRequest, voteRequest } from "../src/board/api";
 import type { Board, Note, NoteRequest } from "../src/board/api";
 import { NOTES_PER_DAY, isValidBody, tidy } from "../src/board/rules";
 import type { Vote } from "../src/board/rules";
+import { clientMessage as oukMessage } from "../src/games/ouk-chaktrang/online/protocol";
+import type * as ouk from "../src/games/ouk-chaktrang/rules";
 import {
   accountResultOf,
   keepable,
@@ -13,10 +16,10 @@ import {
 } from "../src/games/quizzes/account-result";
 import { QUIZZES } from "../src/games/quizzes/all-quizzes";
 import type { Quiz } from "../src/games/quizzes/quiz";
-import {
-  clientMessage,
-  parseMessage,
-} from "../src/games/super-tic-tac-toe/online/protocol";
+import { clientMessage as stttMessage } from "../src/games/super-tic-tac-toe/online/protocol";
+import type * as sttt from "../src/games/super-tic-tac-toe/rules";
+import type { Ending as StttEnding } from "../src/games/super-tic-tac-toe/scoring";
+import { parseMessage } from "../src/lib/parse-message";
 import { createLimiter } from "./limiter";
 import type { Client, Lobby } from "./lobby";
 import type { KeptResult } from "./quiz-results";
@@ -82,10 +85,19 @@ const readResultRequest = async (request: Request, quiz: Quiz) => {
 /** A note's id as the database has it: a bigint, so at most 18 digits. */
 const NOTE_ID = /^\d{1,18}$/u;
 
+/** The games played online, each with its own socket and leaderboard */
+export type OnlineGame = "super-tic-tac-toe" | "ouk-chaktrang";
+
 interface AppOptions {
-  lobby: Lobby;
+  lobbies: {
+    superTicTacToe: Lobby<sttt.Move, sttt.Player, StttEnding>;
+    oukChaktrang: Lobby<ouk.Move, ouk.Side, ouk.Ending>;
+  };
   whoIs: WhoIs;
-  readLeaderboard: (userId: string | null) => Promise<Leaderboard>;
+  readLeaderboard: (
+    game: OnlineGame,
+    userId: string | null
+  ) => Promise<Leaderboard>;
   /** The hub's sticky board. */
   notes: {
     /** The notes up now, with the votes `userId` gave them. */
@@ -118,13 +130,14 @@ interface Variables {
 
 /**
  * The server's routes: /api for who is signed in, the leaderboard, the
- * quiz results kept on accounts and the hub's sticky board, and /ws, the socket online games are played
- * over. Who a socket belongs to comes
+ * quiz results kept on accounts and the hub's sticky board, and the sockets
+ * online games are played over: /ws for Super Tic-Tac-Toe and
+ * /ws/ouk-chaktrang for Ouk Chaktrang. Who a socket belongs to comes
  * from the shared irmahs.dev sign-in cookie, asked of the account service
  * when the socket opens, never from anything sent over it.
  */
 export const createApp = ({
-  lobby,
+  lobbies,
   whoIs,
   readLeaderboard,
   notes,
@@ -157,11 +170,17 @@ export const createApp = ({
     });
   });
 
-  app.get("/api/leaderboard", async (c) => {
-    const { account } = await whoIs(c.req.header("cookie"));
+  // Super Tic-Tac-Toe's at /api/leaderboard, as it always was
+  for (const [path, game] of [
+    ["/api/leaderboard", "super-tic-tac-toe"],
+    ["/api/ouk-chaktrang/leaderboard", "ouk-chaktrang"],
+  ] as const) {
+    app.get(path, async (c) => {
+      const { account } = await whoIs(c.req.header("cookie"));
 
-    return c.json(await readLeaderboard(account?.id ?? null));
-  });
+      return c.json(await readLeaderboard(game, account?.id ?? null));
+    });
+  }
 
   // A quiz result on the visitor's account, for a quiz shown on a profile
   // elsewhere: Realms' server asks for the witch quiz's with the visitor's
@@ -366,82 +385,101 @@ export const createApp = ({
     return c.body(null, 204);
   });
 
-  app.get(
-    "/ws",
-    async (c, next) => {
-      // Browsers always send Origin on a socket; the shared cookie would
-      // otherwise vouch for a page on any irmahs.dev subdomain.
-      if (c.req.header("origin") !== appOrigin) {
-        return c.text("Sockets are only accepted from the site itself.", 403);
-      }
+  /**
+   * A game's socket: signed in, from the site itself, and every message
+   * parsed before it reaches the lobby. `moveOf` reads a move message's move.
+   */
+  const gameSocket = <
+    M,
+    P extends string,
+    E extends string,
+    C extends { type: string },
+  >(
+    path: string,
+    lobby: Lobby<M, P, E>,
+    schema: z.ZodMiniType<C>,
+    moveOf: (message: C) => M | null
+  ) =>
+    app.get(
+      path,
+      async (c, next) => {
+        // Browsers always send Origin on a socket; the shared cookie would
+        // otherwise vouch for a page on any irmahs.dev subdomain.
+        if (c.req.header("origin") !== appOrigin) {
+          return c.text("Sockets are only accepted from the site itself.", 403);
+        }
 
-      const { account } = await whoIs(c.req.header("cookie"));
+        const { account } = await whoIs(c.req.header("cookie"));
 
-      if (!account) {
-        return c.text("Sign in to play online.", 401);
-      }
+        if (!account) {
+          return c.text("Sign in to play online.", 401);
+        }
 
-      c.set("account", { id: account.id, name: shortName(account.name) });
+        c.set("account", { id: account.id, name: shortName(account.name) });
 
-      return await next();
-    },
-    upgradeWebSocket((c) => {
-      const account = c.get("account");
-      let heartbeat: ReturnType<typeof setInterval> | undefined;
-      // Replaced once the socket is open; nothing is sent before that.
-      const client: Client = { send: () => null };
+        return await next();
+      },
+      upgradeWebSocket((c) => {
+        const account = c.get("account");
+        let heartbeat: ReturnType<typeof setInterval> | undefined;
+        // Replaced once the socket is open; nothing is sent before that.
+        const client: Client<M, P, E> = { send: () => null };
 
-      return {
-        onClose: () => {
-          clearInterval(heartbeat);
-          lobby.disconnect(account, client);
-        },
-        onMessage: (event) => {
-          const message = parseMessage(clientMessage, String(event.data));
+        return {
+          onClose: () => {
+            clearInterval(heartbeat);
+            lobby.disconnect(account, client);
+          },
+          onMessage: (event) => {
+            const message = parseMessage(schema, String(event.data));
 
-          if (!message) {
-            client.send({
-              message: "That message was not understood.",
-              type: "error",
-            });
+            if (!message) {
+              client.send({
+                message: "That message was not understood.",
+                type: "error",
+              });
 
-            return;
-          }
+              return;
+            }
 
-          switch (message.type) {
-            case "join": {
+            if (message.type === "join") {
               lobby.join(account);
-              break;
-            }
-
-            case "leave": {
+            } else if (message.type === "leave") {
               lobby.leave(account);
-              break;
-            }
+            } else {
+              const move = moveOf(message);
 
-            case "move": {
-              lobby.move(account, { board: message.board, cell: message.cell });
-              break;
+              if (move) {
+                lobby.move(account, move);
+              }
             }
+          },
+          onOpen: (_event, socket) => {
+            client.send = (message) => socket.send(JSON.stringify(message));
+            // The ping is ws's own, so only a ws socket is asked for one
+            const { raw } = socket;
+            heartbeat = setInterval(() => {
+              if (raw instanceof WebSocket) {
+                raw.ping();
+              }
+            }, HEARTBEAT_MS);
+            lobby.connect(account, client);
+          },
+        };
+      })
+    );
 
-            default: {
-              break;
-            }
-          }
-        },
-        onOpen: (_event, socket) => {
-          client.send = (message) => socket.send(JSON.stringify(message));
-          // The ping is ws's own, so only a ws socket is asked for one
-          const { raw } = socket;
-          heartbeat = setInterval(() => {
-            if (raw instanceof WebSocket) {
-              raw.ping();
-            }
-          }, HEARTBEAT_MS);
-          lobby.connect(account, client);
-        },
-      };
-    })
+  gameSocket("/ws", lobbies.superTicTacToe, stttMessage, (message) =>
+    message.type === "move"
+      ? { board: message.board, cell: message.cell }
+      : null
+  );
+  gameSocket(
+    "/ws/ouk-chaktrang",
+    lobbies.oukChaktrang,
+    oukMessage,
+    (message) =>
+      message.type === "move" ? { from: message.from, to: message.to } : null
   );
 
   return { app };

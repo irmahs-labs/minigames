@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { EndDialog } from "../../components/end-dialog";
 import { useCopy, useLanguage } from "../../lib/language";
 import type { Language } from "../../lib/language";
 import { useConfirm } from "../../lib/use-confirm";
 import { BoardView } from "./board-view";
-import { EndDialog } from "./end-dialog";
 import { HowToPlay } from "./how-to-play";
 import { PlanetScore } from "./planet-score";
 import {

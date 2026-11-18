@@ -74,6 +74,7 @@ const FRENCH = new Map([
   ["You are not in a game.", "Vous n’êtes pas dans une partie."],
   ["It is not your turn.", "Ce n’est pas votre tour."],
   ["That square cannot be played.", "Cette case ne peut pas être jouée."],
+  ["That move cannot be played.", "Ce coup ne peut pas être joué."],
   // The board's own, when the server didn't say
   ["The note didn't go up.", "La note n’a pas été collée."],
   [

@@ -2089,3 +2089,202 @@ a:hover {
 .site-links a:hover {
   text-decoration-thickness: 2px;
 }
+
+/* ---------- Ouk Chaktrang ----------
+   The board and its pieces are artwork: the same wood and greens in Light
+   and Dark Matcha, so the pieces read the same on both. */
+.ouk-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+.ouk-settings fieldset {
+  margin: 0;
+}
+.ouk-sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.ouk-sound input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--selected);
+}
+.panel--ouk {
+  flex: 999 1 520px;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px 12px 12px;
+}
+.ouk-board-wrap {
+  width: min(100%, 560px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ouk-board {
+  position: relative;
+  display: grid;
+  border: 2px solid #2f3b34;
+  border-radius: var(--radius-field);
+  overflow: hidden;
+  /* A finger dragging a piece moves the piece, not the page */
+  touch-action: none;
+  user-select: none;
+}
+.ouk-board__row {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+.ouk-square {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: #ece6bd;
+  cursor: default;
+}
+.ouk-square.is-dark {
+  background: #a9bf7f;
+}
+.ouk-square.is-last {
+  background: #f2d27a;
+}
+.ouk-square.is-dark.is-last {
+  background: #d9bc5c;
+}
+.ouk-square:focus-visible {
+  outline: 3px solid #4a7fc0;
+  outline-offset: -3px;
+  z-index: 1;
+}
+.ouk-square .ouk-piece {
+  width: 88%;
+  height: 88%;
+  pointer-events: none;
+}
+.ouk-board:not(.is-dragging) .ouk-square:has(.ouk-piece) {
+  cursor: pointer;
+}
+/* The piece picked, and where it can go: a dot, or a ring round a capture */
+.ouk-square.is-selected {
+  box-shadow: inset 0 0 0 4px #2f3b34;
+}
+.ouk-square.is-target {
+  cursor: pointer;
+}
+.ouk-square.is-target::after {
+  content: "";
+  position: absolute;
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  background: rgb(47 59 52 / 45%);
+}
+.ouk-square.is-capture {
+  cursor: pointer;
+  box-shadow: inset 0 0 0 4px rgb(47 59 52 / 55%);
+}
+/* The square picked to play on: tap again to confirm */
+.ouk-square.is-pending,
+.ouk-square.is-over {
+  box-shadow:
+    inset 0 0 0 5px #ffd968,
+    inset 0 0 0 7px #2f3b34;
+}
+/* The piece could be taken there */
+.ouk-square.is-danger {
+  box-shadow:
+    inset 0 0 0 5px #d6463c,
+    inset 0 0 0 7px #2f3b34;
+}
+.ouk-square.is-danger::before {
+  content: "!";
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  width: 1.3em;
+  height: 1.3em;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #2f3b34;
+  border-radius: 50%;
+  background: #d6463c;
+  color: #ffffff;
+  font-size: clamp(9px, 1.6vw, 12px);
+  font-weight: 800;
+  z-index: 1;
+}
+.ouk-square.is-check {
+  background: radial-gradient(circle, #f0675c 0 45%, transparent 72%), #ece6bd;
+}
+.ouk-coords {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  pointer-events: none;
+}
+.ouk-coords__rank,
+.ouk-coords__file {
+  padding: 3px 4px;
+  font-size: clamp(9px, 1.5vw, 11px);
+  font-weight: 800;
+  line-height: 1;
+  color: #2f3b34;
+}
+.ouk-coords__rank {
+  align-self: start;
+  justify-self: start;
+}
+.ouk-coords__file {
+  align-self: end;
+  justify-self: end;
+}
+.ouk-ghost {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(3px 4px 0 rgb(15 20 17 / 45%));
+}
+.ouk-ghost .ouk-piece {
+  width: 100%;
+  height: 100%;
+}
+.ouk-board__status {
+  min-height: 1.4em;
+  margin: 0;
+}
+.ouk-captures__row {
+  display: grid;
+  grid-template-columns: 5.5em 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.ouk-captures__side {
+  font-weight: 700;
+}
+.ouk-captures__pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.ouk-captures__worth {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.ouk-how summary {
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .panel--ouk {
+    padding: 32px 6px 8px;
+  }
+}
