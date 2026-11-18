@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   capturesOf,
+  exposedAfter,
   inCheck,
   isLegal,
   legalMoves,
@@ -212,6 +213,20 @@ describe("the special first moves", () => {
     const after = playAll(game, [["e1", "e3"]]);
 
     expect(after.double.white).toBe(false);
+  });
+});
+
+describe("what the board warns about", () => {
+  it("says when a piece could be taken where it lands", () => {
+    const game = position({
+      a1: ["white", "khun"],
+      c1: ["white", "tuk"],
+      d8: ["black", "tuk"],
+      h8: ["black", "khun"],
+    });
+
+    expect(exposedAfter(game, mv("c1", "d1"))).toBe(true);
+    expect(exposedAfter(game, mv("c1", "c4"))).toBe(false);
   });
 });
 

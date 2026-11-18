@@ -328,6 +328,13 @@ export const movesFrom = (game: Game, from: Square): Move[] =>
         (move) => !inCheck({ board: moved(game.board, move) }, game.turn)
       );
 
+/**
+ * Whether the piece a move lands could be taken there at once: what the
+ * board shows while a move is being picked.
+ */
+export const exposedAfter = (game: Game, move: Move): boolean =>
+  isAttacked(moved(game.board, move), move.to, other(game.turn));
+
 export const legalMoves = (game: Game): Move[] =>
   game.board.flatMap((_, from) => movesFrom(game, from));
 

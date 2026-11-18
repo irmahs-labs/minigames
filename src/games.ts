@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import {
   ArenaIcon,
   MagicEightBallIcon,
+  OukChaktrangIcon,
   QuizzesIcon,
   SuperTicTacToeIcon,
   WheelIcon,
@@ -104,6 +105,23 @@ export const GAMES: readonly Game[] = [
     legend: "super-tic-tac-toe.exe",
     name: { en: "Super Tic-Tac-Toe", fr: "Super Morpion" },
     slug: "super-tic-tac-toe",
+  },
+  {
+    Icon: OukChaktrangIcon,
+    ...screenOf(() => import("./games/ouk-chaktrang/ouk-chaktrang")),
+    blurb: {
+      en: "Cambodian chess: the Khun, the Neang, boats, horses and fish. Play the bot, a friend on this screen, or someone online.",
+      fr: "Les échecs cambodgiens : le Khun, la Neang, des bateaux, des chevaux et des poissons. Jouez contre le bot, un ami sur cet écran, ou quelqu’un en ligne.",
+    },
+    inside: [
+      { en: "Bot: easy to hard", fr: "Bot : facile à difficile" },
+      { en: "Online", fr: "En ligne" },
+      { en: "Leaderboard", fr: "Classement" },
+      { en: "Yeak vs Tevada", fr: "Yeak contre Tevada" },
+    ],
+    legend: "ouk-chaktrang.exe",
+    name: { en: "Ouk Chaktrang", fr: "Ouk Chaktrang" },
+    slug: "ouk-chaktrang",
   },
   {
     Icon: ArenaIcon,
