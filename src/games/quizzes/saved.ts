@@ -1,6 +1,7 @@
 import * as z from "zod/mini";
 
 import { readStored, writeStored } from "../../lib/storage";
+import { allEras } from "./quiz";
 import type { Quiz, Scores } from "./quiz";
 
 /**
@@ -52,4 +53,25 @@ export const saveResult = (
   writeStored(storageKey(quiz), saved);
 
   return saved;
+};
+
+const erasSchema = z.array(z.string());
+
+export const erasKey = (quiz: Quiz) => `minigames:quizzes:${quiz.slug}:eras:v1`;
+
+/**
+ * The eras this visitor last chose for `quiz`, in the quiz's order: every era
+ * until they choose, and again if none they chose is left.
+ */
+export const loadEras = (quiz: Quiz): string[] => {
+  const all = allEras(quiz);
+  const chosen = readStored(erasKey(quiz), z.nullable(erasSchema), () => null);
+  const kept = all.filter((id) => chosen?.includes(id));
+
+  return kept.length > 0 ? kept : all;
+};
+
+/** Keeps the eras chosen for `quiz` in this browser, for next time. */
+export const saveEras = (quiz: Quiz, eras: readonly string[]) => {
+  writeStored(erasKey(quiz), eras);
 };

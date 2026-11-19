@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { loadSaved, saveResult, storageKey } from "./saved";
+import { BARBIE_QUIZ } from "./barbie";
+import {
+  erasKey,
+  loadEras,
+  loadSaved,
+  saveEras,
+  saveResult,
+  storageKey,
+} from "./saved";
 import { WITCH_QUIZ } from "./witch";
 
 afterEach(() => window.localStorage.clear());
@@ -38,5 +46,33 @@ describe("saved results", () => {
       JSON.stringify({ scores: { unicorn: 9 }, takenAt: "x" })
     );
     expect(loadSaved(WITCH_QUIZ)).toBeNull();
+  });
+});
+
+describe("chosen eras", () => {
+  it("are every era until the visitor chooses", () => {
+    expect(loadEras(BARBIE_QUIZ)).toEqual([
+      "heroines",
+      "herself",
+      "malibu-brooklyn",
+    ]);
+  });
+
+  it("read back what was chosen, in the quiz's order", () => {
+    saveEras(BARBIE_QUIZ, ["malibu-brooklyn", "heroines"]);
+
+    expect(loadEras(BARBIE_QUIZ)).toEqual(["heroines", "malibu-brooklyn"]);
+  });
+
+  it("go back to every era when none chosen is left", () => {
+    window.localStorage.setItem(erasKey(BARBIE_QUIZ), JSON.stringify(["gone"]));
+    expect(loadEras(BARBIE_QUIZ)).toHaveLength(3);
+
+    window.localStorage.setItem(erasKey(BARBIE_QUIZ), "{not json");
+    expect(loadEras(BARBIE_QUIZ)).toHaveLength(3);
+  });
+
+  it("are none for a quiz without eras", () => {
+    expect(loadEras(WITCH_QUIZ)).toEqual([]);
   });
 });

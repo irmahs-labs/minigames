@@ -1,14 +1,24 @@
-import type { Answer, Quiz, QuizResult } from "./quiz";
+import type { Answer, Quiz, QuizResult, Words } from "./quiz";
 
 /**
- * Which Barbie character are you? Twenty heroines Barbie plays in the animated
- * films, one per character however many films she is in, and only the blonde
- * Barbie's role where a film has two leads. Films with the second Barbie,
- * Brooklyn, and films where Barbie only plays herself are left out. Twenty
- * questions of six answers: each answer gives 2 points to the heroine it
- * describes best and 1 to another she is close to. Every heroine is worth 18
- * points over all the answers and never twice in one question, so each has the
- * same chance and can come out on top.
+ * Which Barbie character are you? Three eras of the animated Barbie films, and
+ * the visitor picks any of them before the questions:
+ *
+ * - Heroines: the named characters Barbie plays, 2001 to 2015. One result per
+ *   character however many films she is in, and only the blonde Barbie's role
+ *   where a film has two leads.
+ * - Barbie as herself: one result per film or series where she is Barbie
+ *   Roberts, 2010 to 2020, each the Barbie of that film.
+ * - Barbie and Brooklyn: Barbie "Malibu" Roberts and Barbie "Brooklyn" Roberts,
+ *   from 2021.
+ *
+ * Twenty questions of six answers. Each answer gives one heroine 2 points and
+ * most another 1, and many do the same for the Barbies of the other two eras.
+ * No result is named twice in a question, so whatever the answers, each has
+ * the same chance (one answer in however many are shown); a result's score is
+ * its share of the most it could have scored (`eraScores`), so results of
+ * different eras compare fairly. Every heroine and every Barbie of the second
+ * era is worth 18 points, and each can come out on top with any eras chosen.
  */
 const answer = (
   en: string,
@@ -16,25 +26,55 @@ const answer = (
   points: Record<string, number>
 ): Answer => ({ points, text: { en, fr } });
 
-/** A heroine, opening with the films she is from, their English titles and years. */
-const heroine = (
-  name: string,
-  film: string,
-  en: string,
-  fr: string
-): QuizResult => ({
-  about: {
-    en: `From ${film}. ${en}`,
-    fr: `Dans ${film}. ${fr}`,
-  },
-  name: { en: name, fr: name },
-});
+/** A result, opening with the films it is from, their English titles and years. */
+const result =
+  (era: string) =>
+  (name: Words, film: string, en: string, fr: string): QuizResult => ({
+    about: {
+      en: `From ${film}. ${en}`,
+      fr: `Dans ${film}. ${fr}`,
+    },
+    era,
+    name,
+  });
+
+const heroine = (name: string, film: string, en: string, fr: string) =>
+  result("heroines")({ en: name, fr: name }, film, en, fr);
+
+const herself = result("herself");
+const twoBarbies = result("malibu-brooklyn");
 
 export const BARBIE_QUIZ: Quiz = {
   blurb: {
-    en: "Twenty questions, twenty heroines from the animated Barbie films. Which one are you?",
-    fr: "Vingt questions, vingt héroïnes des films d’animation Barbie. Laquelle êtes-vous ?",
+    en: "Twenty questions and the Barbies of three eras of films: pick your eras, and find out which one you are.",
+    fr: "Vingt questions et les Barbie de trois époques de films : choisissez vos époques, et découvrez laquelle vous êtes.",
   },
+  eras: [
+    {
+      about: {
+        en: "Barbie plays a heroine with her own name: Clara, Odette, Mariposa, Merliah… (2001–2015)",
+        fr: "Barbie joue une héroïne qui a son propre nom : Clara, Odette, Mariposa, Merliah… (2001–2015)",
+      },
+      id: "heroines",
+      name: { en: "Old school", fr: "À l’ancienne" },
+    },
+    {
+      about: {
+        en: "Barbie Roberts in her own adventures, from A Fashion Fairytale to Princess Adventure (2010–2020)",
+        fr: "Barbie Roberts dans ses propres aventures, de A Fashion Fairytale à Princess Adventure (2010–2020)",
+      },
+      id: "herself",
+      name: { en: "Barbie as herself", fr: "Barbie elle-même" },
+    },
+    {
+      about: {
+        en: "The two Barbies, Malibu and Brooklyn, from Big City, Big Dreams on (2021–)",
+        fr: "Les deux Barbie, Malibu et Brooklyn, depuis Big City, Big Dreams (2021–)",
+      },
+      id: "malibu-brooklyn",
+      name: { en: "Barbie and Brooklyn", fr: "Barbie et Brooklyn" },
+    },
+  ],
   legend: "barbie-heroine.txt",
   questions: [
     {
@@ -42,32 +82,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Painting something huge and bold, just to see if I can",
           "Peindre quelque chose d’immense et d’audacieux, juste pour voir si j’en suis capable",
-          { rapunzel: 2, alexa: 1 }
+          { alexa: 1, brooklyn: 2, fashionFairytale: 2, rapunzel: 2 }
         ),
         answer(
           "A quiet walk by a lake, feeding the birds",
           "Une balade tranquille au bord d’un lac, en nourrissant les oiseaux",
-          { odette: 2, elina: 1 }
+          { elina: 1, odette: 2, princessAdventure: 2 }
         ),
         answer(
           "Curling up with an old storybook and wishing I could step inside",
           "Me blottir avec un vieux livre de contes en rêvant d’y entrer",
-          { clara: 2, annika: 1 }
+          { annika: 1, clara: 2, puppyAdventure: 2 }
         ),
         answer(
           "Reading in the garden, among the butterflies",
           "Lire au jardin, au milieu des papillons",
-          { mariposa: 2, liana: 1 }
+          { fairySecret: 2, liana: 1, mariposa: 2 }
         ),
         answer(
           "Catching the first waves at sunrise",
           "Attraper les premières vagues au lever du soleil",
-          { merliah: 2, eden: 1 }
+          { eden: 1, malibu: 2, merliah: 2, puppyChase: 2 }
         ),
         answer(
           "Exploring a beach I’ve never seen, barefoot",
           "Explorer pieds nus une plage que je ne connais pas",
-          { rosella: 2, lumina: 1 }
+          { dolphinMagic: 1, lumina: 1, ponyTale: 2, rosella: 2 }
         ),
       ],
       prompt: {
@@ -80,32 +120,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Find a clever way round the rules, then tell no one",
           "Trouver une astuce pour contourner les règles, sans le dire à personne",
-          { mariposa: 2, alexa: 1 }
+          { alexa: 1, brooklyn: 2, fairySecret: 1, mariposa: 2 }
         ),
         answer(
           "Go anyway, and face whatever happens",
           "Y aller quand même, et affronter ce qui arrive",
-          { clara: 2, kristyn: 1 }
+          { clara: 2, kristyn: 1, puppyAdventure: 1 }
         ),
         answer(
           "Ask my sisters to come along: we’re stronger together",
           "Demander à mes sœurs de venir : ensemble, on est plus fortes",
-          { genevieve: 2, anneliese: 1 }
+          { anneliese: 1, genevieve: 2, perfectChristmas: 1, puppyChase: 2 }
         ),
         answer(
           "Slip out and help, even if no one believes in me yet",
           "M’éclipser pour aider, même si personne ne croit encore en moi",
-          { elina: 2, odette: 1 }
+          { elina: 2, odette: 1, starLight: 1 }
         ),
         answer(
           "Practise in secret until I’m good enough to prove them wrong",
           "M’entraîner en secret jusqu’à leur prouver qu’ils ont tort",
-          { corinne: 2, kara: 1 }
+          { corinne: 2, kara: 1, spySquad: 2, videoGame: 1 }
         ),
         answer(
           "Paddle out to sea: the answer’s out there somewhere",
           "Pagayer vers le large : la réponse est quelque part là-bas",
-          { merliah: 2, rosella: 1 }
+          { dolphinMagic: 2, malibu: 2, merliah: 2, rosella: 1 }
         ),
       ],
       prompt: {
@@ -118,30 +158,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer("A pair of ice skates", "Une paire de patins à glace", {
           annika: 2,
           odette: 1,
+          starLight: 1,
         }),
         answer(
           "A surfboard, always waxed",
           "Une planche de surf, toujours fartée",
-          { merliah: 2, lumina: 1 }
+          { lumina: 1, malibu: 2, merliah: 2 }
         ),
         answer(
           "A box of rocks and crystals, each one labelled",
           "Une boîte de pierres et de cristaux, chacune étiquetée",
-          { anneliese: 2, blair: 1 }
+          { anneliese: 2, blair: 1, princessAdventure: 1 }
         ),
         answer(
           "Brushes and paints, a little worn",
           "Des pinceaux et des couleurs, un peu usés",
-          { rapunzel: 2, rosella: 1 }
+          { brooklyn: 2, rapunzel: 2, rosella: 1 }
         ),
         answer(
           "A pressed flower from a secret meadow",
           "Une fleur séchée d’une prairie secrète",
-          { elina: 2, mariposa: 1 }
+          { elina: 2, fairySecret: 2, mariposa: 1, ponyTale: 1 }
         ),
         answer("A sparkling microphone", "Un micro qui brille", {
-          eden: 2,
           courtney: 1,
+          eden: 2,
+          fashionFairytale: 2,
         }),
       ],
       prompt: {
@@ -154,7 +196,7 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "The clever one who keeps the kingdom running",
           "Celle, maligne, qui fait tourner le royaume",
-          { anneliese: 2, genevieve: 1 }
+          { anneliese: 2, brooklyn: 2, genevieve: 1, princessAdventure: 2 }
         ),
         answer(
           "The one who befriends every creature in the forest",
@@ -164,22 +206,22 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "The ordinary princess with a secret superhero side",
           "La princesse ordinaire qui cache un côté super-héroïne",
-          { kara: 2, corinne: 1 }
+          { corinne: 1, kara: 2, spySquad: 2, videoGame: 1 }
         ),
         answer(
           "The sporty one who’d rather be outdoors",
           "La sportive qui préfère être dehors",
-          { merliah: 2, lumina: 1 }
+          { lumina: 1, malibu: 2, merliah: 2, ponyTale: 1, puppyChase: 2 }
         ),
         answer(
           "The loyal friend who shares everything",
           "L’amie fidèle qui partage tout",
-          { liana: 2, blair: 1 }
+          { blair: 1, dreamhouse: 1, liana: 2, perfectChristmas: 2 }
         ),
         answer(
           "The curious one who wanders off into an adventure",
           "La curieuse qui s’égare dans une aventure",
-          { clara: 2, annika: 1 }
+          { annika: 1, clara: 2, puppyAdventure: 2 }
         ),
       ],
       prompt: {
@@ -192,17 +234,17 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Jump in first and work out the plan on the way",
           "Foncer la première et trouver le plan en route",
-          { corinne: 2, merliah: 1 }
+          { corinne: 2, merliah: 1, spySquad: 1, videoGame: 2 }
         ),
         answer(
           "Keep going, even when I’m scared",
           "Continuer, même quand j’ai peur",
-          { annika: 2, kara: 1 }
+          { annika: 2, kara: 1, ponyTale: 1 }
         ),
         answer(
           "Read up on it, then solve it calmly",
           "Me documenter, puis régler ça calmement",
-          { anneliese: 2, mariposa: 1 }
+          { anneliese: 2, brooklyn: 2, dreamhouse: 2, mariposa: 1 }
         ),
         answer(
           "Stay light on my feet and look for the rhythm in it",
@@ -212,12 +254,18 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Make it into a song and sing it out loud",
           "En faire une chanson et la chanter à pleine voix",
-          { eden: 2, courtney: 1 }
+          {
+            courtney: 1,
+            eden: 2,
+            fairySecret: 1,
+            malibu: 2,
+            perfectChristmas: 2,
+          }
         ),
         answer(
           "Ask the animals: they always know something",
           "Demander aux animaux : ils savent toujours quelque chose",
-          { rosella: 2, elina: 1 }
+          { elina: 1, puppyAdventure: 2, rosella: 2 }
         ),
       ],
       prompt: {
@@ -230,12 +278,12 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Waltzing in a grand hall, with my sisters close",
           "Valser dans une grande salle, avec mes sœurs tout près",
-          { clara: 2, kristyn: 1 }
+          { clara: 2, kristyn: 1, perfectChristmas: 2, puppyAdventure: 1 }
         ),
         answer(
           "Singing a duet with my best friend",
           "Chanter en duo avec ma meilleure amie",
-          { liana: 2, courtney: 1 }
+          { courtney: 1, dreamhouse: 2, liana: 2 }
         ),
         answer(
           "Making my first grand entrance, with pearls glowing in my hair",
@@ -245,17 +293,23 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Stepping into the spotlight, with the whole team behind me",
           "Entrer dans la lumière, avec toute l’équipe derrière moi",
-          { eden: 2, corinne: 1 }
+          { corinne: 1, eden: 2, malibu: 2, spySquad: 1 }
         ),
         answer(
           "Painting a backdrop full of hidden butterflies",
           "Peindre un décor rempli de papillons cachés",
-          { rapunzel: 2, mariposa: 1 }
+          {
+            brooklyn: 2,
+            fairySecret: 1,
+            fashionFairytale: 2,
+            mariposa: 1,
+            rapunzel: 2,
+          }
         ),
         answer(
           "Twirling by the water, on tiptoe",
           "Tourbillonner au bord de l’eau, sur la pointe des pieds",
-          { elina: 2, odette: 1 }
+          { dolphinMagic: 1, elina: 2, odette: 1, starLight: 2 }
         ),
       ],
       prompt: {
@@ -268,32 +322,38 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Someone who stands by me, whatever happens",
           "Quelqu’un qui reste à mes côtés, quoi qu’il arrive",
-          { liana: 2, blair: 1 }
+          { blair: 1, liana: 2 }
         ),
         answer(
           "Someone who’s honest with me and helps me grow",
           "Quelqu’un d’honnête qui m’aide à grandir",
-          { anneliese: 2, rapunzel: 1 }
+          { anneliese: 2, brooklyn: 2, dreamhouse: 1, rapunzel: 1 }
         ),
         answer(
           "A furry, feathered or finned best friend",
           "Un meilleur ami à poils, à plumes ou à nageoires",
-          { rosella: 2, merliah: 1 }
+          {
+            dolphinMagic: 1,
+            malibu: 2,
+            merliah: 1,
+            puppyAdventure: 2,
+            rosella: 2,
+          }
         ),
         answer(
           "Someone who gives me a second chance",
           "Quelqu’un qui me laisse une seconde chance",
-          { eden: 2, tori: 1 }
+          { eden: 2, fairySecret: 2, tori: 1 }
         ),
         answer(
           "A crew I can count on in a fight",
           "Une équipe sur qui compter dans la bataille",
-          { corinne: 2, kara: 1 }
+          { corinne: 2, kara: 1, spySquad: 2, videoGame: 1 }
         ),
         answer(
           "Someone who believes I’m braver than I think",
           "Quelqu’un qui me croit plus courageuse que je ne pense",
-          { odette: 2, annika: 1 }
+          { annika: 1, odette: 2, ponyTale: 2, princessAdventure: 1 }
         ),
       ],
       prompt: {
@@ -306,7 +366,7 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "A cosy reading nook full of maps and fairy tales",
           "Un coin lecture douillet rempli de cartes et de contes",
-          { mariposa: 2, liana: 1 }
+          { fairySecret: 2, liana: 1, mariposa: 2 }
         ),
         answer(
           "A ballroom with a floor that gleams",
@@ -321,17 +381,29 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "A sunny studio with a view over the hills",
           "Un atelier ensoleillé avec vue sur les collines",
-          { rapunzel: 2, alexa: 1 }
+          { alexa: 1, fashionFairytale: 1, rapunzel: 2 }
         ),
         answer(
           "A quiet glade where swans come to rest",
           "Une clairière tranquille où les cygnes viennent se poser",
-          { odette: 2, annika: 1 }
+          {
+            annika: 1,
+            brooklyn: 2,
+            odette: 2,
+            ponyTale: 1,
+            princessAdventure: 2,
+          }
         ),
         answer(
           "A treehouse by the sea, open to every animal",
           "Une cabane dans les arbres face à la mer, ouverte à tous les animaux",
-          { rosella: 2, lumina: 1 }
+          {
+            dolphinMagic: 1,
+            lumina: 1,
+            malibu: 2,
+            puppyAdventure: 2,
+            rosella: 2,
+          }
         ),
       ],
       prompt: {
@@ -344,32 +416,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Read to my younger sisters until they fall asleep",
           "Faire la lecture à mes petites sœurs jusqu’à ce qu’elles s’endorment",
-          { genevieve: 2, anneliese: 1 }
+          { anneliese: 1, genevieve: 2, perfectChristmas: 2, puppyChase: 1 }
         ),
         answer(
           "Write in my journal by candlelight",
           "Écrire dans mon journal à la lueur d’une bougie",
-          { mariposa: 2, alexa: 1 }
+          { alexa: 1, brooklyn: 2, mariposa: 2 }
         ),
         answer(
           "Play music with my best friend",
           "Jouer de la musique avec ma meilleure amie",
-          { liana: 2, courtney: 1 }
+          { courtney: 1, dreamhouse: 1, liana: 2, malibu: 2 }
         ),
         answer(
           "Wander through the woods, talking to the fireflies",
           "Me promener dans les bois en parlant aux lucioles",
-          { elina: 2, odette: 1 }
+          { elina: 2, fairySecret: 2, odette: 1, puppyAdventure: 1 }
         ),
         answer(
           "Studying late for tomorrow’s lessons, with a cup of tea",
           "Réviser tard pour les cours du lendemain, avec une tasse de thé",
-          { blair: 2, tori: 1 }
+          { blair: 2, princessAdventure: 1, tori: 1 }
         ),
         answer(
           "Skate on the frozen lake under the stars",
           "Patiner sur le lac gelé sous les étoiles",
-          { annika: 2, clara: 1 }
+          { annika: 2, clara: 1, ponyTale: 1, starLight: 2 }
         ),
       ],
       prompt: {
@@ -382,32 +454,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Decorating every corner, and inviting everyone",
           "Décorer chaque recoin, et inviter tout le monde",
-          { eden: 2, tori: 1 }
+          { eden: 2, fairySecret: 1, perfectChristmas: 2, tori: 1 }
         ),
         answer(
           "Making handmade gifts, each one a little painting",
           "Fabriquer des cadeaux faits main, chacun une petite peinture",
-          { rapunzel: 2, alexa: 1 }
+          { alexa: 1, brooklyn: 2, fashionFairytale: 2, rapunzel: 2 }
         ),
         answer(
           "A snowball fight, then a race to the hot chocolate",
           "Une bataille de boules de neige, puis une course jusqu’au chocolat chaud",
-          { corinne: 2, merliah: 1 }
+          { corinne: 2, merliah: 1, spySquad: 1, videoGame: 2 }
         ),
         answer(
           "Planning a dinner for the whole village",
           "Organiser un dîner pour tout le village",
-          { anneliese: 2, blair: 1 }
+          { anneliese: 2, blair: 1, dreamhouse: 2, princessAdventure: 1 }
         ),
         answer(
           "Sledging down the biggest hill there is",
           "Descendre en luge la plus grande colline qui soit",
-          { annika: 2, clara: 1 }
+          { annika: 2, clara: 1, ponyTale: 2 }
         ),
         answer(
           "Dancing round the tree with the people I love",
           "Danser autour du sapin avec ceux que j’aime",
-          { genevieve: 2, kristyn: 1 }
+          { genevieve: 2, kristyn: 1, malibu: 2, puppyChase: 1, starLight: 2 }
         ),
       ],
       prompt: {
@@ -420,31 +492,33 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Waves, sand and a race to the water",
           "Des vagues, du sable et une course jusqu’à l’eau",
-          { merliah: 2, eden: 1 }
+          { dolphinMagic: 1, eden: 1, malibu: 2, merliah: 2, puppyChase: 2 }
         ),
         answer(
           "Snowflakes and a sleigh ride",
           "Des flocons et une balade en traîneau",
-          { clara: 2, kristyn: 1 }
+          { clara: 2, kristyn: 1, perfectChristmas: 2 }
         ),
         answer(
           "A library, a lamp and a long afternoon",
           "Une bibliothèque, une lampe et un long après-midi",
-          { anneliese: 2, rapunzel: 1 }
+          { anneliese: 2, princessAdventure: 1, rapunzel: 1 }
         ),
         answer(
           "Swords crossed in a palace courtyard",
           "Des épées croisées dans la cour d’un palais",
-          { corinne: 2, genevieve: 1 }
+          { corinne: 2, fairySecret: 1, genevieve: 1, spySquad: 2 }
         ),
         answer(
           "A rock concert under the stars",
           "Un concert de rock sous les étoiles",
-          { courtney: 2, tori: 1 }
+          { brooklyn: 2, courtney: 2, tori: 1, videoGame: 2 }
         ),
         answer("Moonlight on still water", "Le clair de lune sur l’eau calme", {
-          odette: 2,
           elina: 1,
+          odette: 2,
+          ponyTale: 2,
+          starLight: 1,
         }),
       ],
       prompt: {
@@ -457,32 +531,38 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Loyal: I’d never leave a friend behind",
           "Fidèle : je n’abandonnerais jamais une amie",
-          { liana: 2, anneliese: 1 }
+          { anneliese: 1, liana: 2, perfectChristmas: 1 }
         ),
         answer(
           "Expressive: I put my feelings into every move",
           "Expressive : je mets mes émotions dans chaque mouvement",
-          { kristyn: 2, courtney: 1 }
+          {
+            courtney: 1,
+            fashionFairytale: 2,
+            kristyn: 2,
+            malibu: 2,
+            starLight: 1,
+          }
         ),
         answer(
           "Open-hearted: I see the magic in everyday things",
           "Au cœur ouvert : je vois la magie dans les choses du quotidien",
-          { clara: 2, genevieve: 1 }
+          { clara: 2, fairySecret: 1, genevieve: 1 }
         ),
         answer(
           "Thoughtful: I notice the little things",
           "Attentive : je remarque les petites choses",
-          { mariposa: 2, rapunzel: 1 }
+          { brooklyn: 2, mariposa: 2, rapunzel: 1 }
         ),
         answer(
           "Gentle: I protect what’s small and growing",
           "Douce : je protège ce qui est petit et qui grandit",
-          { elina: 2, rosella: 1 }
+          { dolphinMagic: 1, elina: 2, rosella: 1 }
         ),
         answer(
           "Fearless: give me a mountain to climb",
           "Intrépide : donnez-moi une montagne à gravir",
-          { annika: 2, kara: 1 }
+          { annika: 2, kara: 1, ponyTale: 2, spySquad: 1 }
         ),
       ],
       prompt: {
@@ -495,32 +575,32 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Lose my best friend’s trust",
           "Perdre la confiance de ma meilleure amie",
-          { liana: 2, mariposa: 1 }
+          { dreamhouse: 1, liana: 2, mariposa: 1 }
         ),
         answer(
           "Waste my talent by playing it safe",
           "Gâcher mon talent en restant prudente",
-          { merliah: 2, eden: 1 }
+          { eden: 1, merliah: 2, puppyChase: 1 }
         ),
         answer(
           "Never be free to choose my own life",
           "Ne jamais être libre de choisir ma vie",
-          { rapunzel: 2, anneliese: 1 }
+          { anneliese: 1, brooklyn: 2, rapunzel: 2 }
         ),
         answer(
           "Never find out where I really come from",
           "Ne jamais découvrir d’où je viens vraiment",
-          { rosella: 2, lumina: 1 }
+          { lumina: 1, malibu: 2, puppyAdventure: 1, rosella: 2 }
         ),
         answer(
           "Be the one who could have helped, and didn’t",
           "Être celle qui aurait pu aider, et ne l’a pas fait",
-          { odette: 2, alexa: 1 }
+          { alexa: 1, odette: 2, ponyTale: 2 }
         ),
         answer(
           "Let the team down when it counts",
           "Lâcher l’équipe au moment décisif",
-          { corinne: 2, genevieve: 1 }
+          { corinne: 2, genevieve: 1, spySquad: 1 }
         ),
       ],
       prompt: {
@@ -533,32 +613,38 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Dancing until the sun comes up",
           "Danser jusqu’au lever du soleil",
-          { genevieve: 2, clara: 1 }
+          {
+            clara: 1,
+            genevieve: 2,
+            malibu: 2,
+            perfectChristmas: 1,
+            puppyChase: 2,
+          }
         ),
         answer(
           "Swinging from vines over a hidden lagoon",
           "Me balancer de liane en liane au-dessus d’un lagon caché",
-          { rosella: 2, lumina: 1 }
+          { dolphinMagic: 2, lumina: 1, rosella: 2 }
         ),
         answer(
           "Swapping lives with someone for a day",
           "Échanger ma vie avec quelqu’un le temps d’une journée",
-          { tori: 2, blair: 1 }
+          { blair: 1, princessAdventure: 2, tori: 2 }
         ),
         answer(
           "Flying across the sky on a winged horse",
           "Traverser le ciel sur un cheval ailé",
-          { annika: 2, kara: 1 }
+          { annika: 2, kara: 1, ponyTale: 1, starLight: 2 }
         ),
         answer(
           "Turning into a swan for a night",
           "Me changer en cygne le temps d’une nuit",
-          { odette: 2, elina: 1 }
+          { elina: 1, odette: 2 }
         ),
         answer(
           "Opening a book that leads to another world",
           "Ouvrir un livre qui mène à un autre monde",
-          { mariposa: 2, liana: 1 }
+          { brooklyn: 2, fairySecret: 2, liana: 1, mariposa: 2 }
         ),
       ],
       prompt: {
@@ -571,28 +657,33 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Sport: I can’t sit still",
           "Le sport : je ne tiens pas en place",
-          { tori: 2, merliah: 1 }
+          { merliah: 1, puppyChase: 1, tori: 2 }
         ),
         answer("Dance, every single day", "La danse, tous les jours", {
-          kristyn: 2,
           clara: 1,
+          kristyn: 2,
+          malibu: 2,
+          perfectChristmas: 1,
         }),
         answer("Marine biology", "La biologie marine", {
+          dolphinMagic: 2,
           lumina: 2,
           mariposa: 1,
         }),
         answer(
           "Music, the louder the better",
           "La musique, le plus fort possible",
-          { courtney: 2, corinne: 1 }
+          { corinne: 1, courtney: 2, videoGame: 2 }
         ),
         answer(
           "Physics: how fast can I go?",
           "La physique : jusqu’à quelle vitesse puis-je aller ?",
-          { kara: 2, blair: 1 }
+          { blair: 1, kara: 2, spySquad: 1, starLight: 2 }
         ),
         answer("Art and storytelling", "Les arts plastiques et l’écriture", {
           alexa: 2,
+          brooklyn: 2,
+          fashionFairytale: 1,
           rapunzel: 1,
         }),
       ],
@@ -606,31 +697,38 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "I make everyone feel welcome",
           "Je mets tout le monde à l’aise",
-          { lumina: 2, elina: 1 }
+          { elina: 1, lumina: 2, puppyChase: 2 }
         ),
         answer(
           "I jump in to protect people",
           "Je fonce pour protéger les autres",
-          { kara: 2, corinne: 1 }
+          { corinne: 1, kara: 2, videoGame: 1 }
         ),
         answer(
           "I never stop practising",
           "Je ne m’arrête jamais de m’entraîner",
-          { kristyn: 2, genevieve: 1 }
+          {
+            genevieve: 1,
+            kristyn: 2,
+            malibu: 2,
+            perfectChristmas: 1,
+            spySquad: 2,
+          }
         ),
         answer(
           "I’m braver than I look",
           "Je suis plus courageuse que j’en ai l’air",
-          { alexa: 2, rapunzel: 1 }
+          { alexa: 2, brooklyn: 2, puppyAdventure: 1, rapunzel: 1 }
         ),
         answer("I bring the energy", "J’apporte l’énergie", {
           courtney: 2,
           eden: 1,
+          fashionFairytale: 1,
         }),
         answer(
           "I’m fair to everyone, whatever their rank",
           "Je suis juste avec tout le monde, quel que soit son rang",
-          { blair: 2, tori: 1 }
+          { blair: 2, dreamhouse: 1, princessAdventure: 2, tori: 1 }
         ),
       ],
       prompt: {
@@ -643,31 +741,38 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Open it right away: adventure!",
           "L’ouvrez tout de suite : l’aventure !",
-          { tori: 2, merliah: 1 }
+          { merliah: 1, puppyChase: 1, tori: 2, videoGame: 2 }
         ),
         answer(
           "Knock politely, in case someone needs help",
           "Frappez poliment, au cas où quelqu’un aurait besoin d’aide",
-          { blair: 2, anneliese: 1 }
+          { anneliese: 1, blair: 2, princessAdventure: 1 }
         ),
         answer(
           "Step through it like an entrance on stage",
           "La franchissez comme une entrée en scène",
-          { kristyn: 2, clara: 1 }
+          { clara: 1, kristyn: 2, malibu: 2 }
         ),
         answer(
           "Go first, so no one else gets hurt",
           "Passez la première, pour que personne d’autre ne soit en danger",
-          { kara: 2, annika: 1 }
+          { annika: 1, kara: 2, starLight: 1 }
         ),
         answer("Hesitate… then peek inside", "Hésitez… puis jetez un œil", {
           alexa: 2,
           odette: 1,
+          puppyAdventure: 2,
         }),
         answer(
           "Grab my friends so we go together",
           "Allez chercher vos amis pour y aller ensemble",
-          { courtney: 2, liana: 1 }
+          {
+            brooklyn: 2,
+            courtney: 2,
+            dreamhouse: 2,
+            fashionFairytale: 1,
+            liana: 1,
+          }
         ),
       ],
       prompt: {
@@ -680,21 +785,23 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Something shimmery, with seashells",
           "Quelque chose de nacré, avec des coquillages",
-          { lumina: 2, rosella: 1 }
+          { dolphinMagic: 2, lumina: 2, malibu: 2, rosella: 1 }
         ),
         answer(
           "Something I can move in, just in case",
           "Une tenue où je peux bouger, au cas où",
-          { kara: 2, corinne: 1 }
+          { corinne: 1, kara: 2, spySquad: 2 }
         ),
         answer(
           "Sparkles, with trainers underneath",
           "Des paillettes, avec des baskets en dessous",
-          { tori: 2, courtney: 1 }
+          { courtney: 1, tori: 2, videoGame: 1 }
         ),
         answer("A tutu, obviously", "Un tutu, évidemment", {
-          kristyn: 2,
           clara: 1,
+          fashionFairytale: 2,
+          kristyn: 2,
+          starLight: 1,
         }),
         answer(
           "Something soft and simple that’s really me",
@@ -704,7 +811,7 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "A dress I borrowed from a friend",
           "Une robe empruntée à une amie",
-          { blair: 2, liana: 1 }
+          { blair: 2, brooklyn: 2, dreamhouse: 2, liana: 1 }
         ),
       ],
       prompt: {
@@ -717,10 +824,14 @@ export const BARBIE_QUIZ: Quiz = {
         answer("Leading a kingdom fairly", "Diriger un royaume avec justice", {
           blair: 2,
           kara: 1,
+          princessAdventure: 2,
         }),
         answer("Lead singer in a band", "Chanteuse dans un groupe", {
-          courtney: 2,
+          brooklyn: 2,
           corinne: 1,
+          courtney: 2,
+          perfectChristmas: 1,
+          videoGame: 2,
         }),
         answer(
           "Writing and illustrating children’s books",
@@ -728,17 +839,21 @@ export const BARBIE_QUIZ: Quiz = {
           { alexa: 2, rapunzel: 1 }
         ),
         answer("Looking after a coral reef", "Veiller sur un récif de corail", {
+          dolphinMagic: 2,
+          fashionFairytale: 1,
           lumina: 2,
           rosella: 1,
         }),
         answer(
           "Pop star, at least for a while",
           "Pop star, au moins pour un temps",
-          { tori: 2, eden: 1 }
+          { dreamhouse: 1, eden: 1, tori: 2 }
         ),
         answer("Principal dancer", "Danseuse étoile", {
-          kristyn: 2,
           genevieve: 1,
+          kristyn: 2,
+          malibu: 2,
+          puppyChase: 1,
         }),
       ],
       prompt: {
@@ -749,13 +864,14 @@ export const BARBIE_QUIZ: Quiz = {
     {
       answers: [
         answer("Fly straight at the problem", "Foncez droit sur le problème", {
-          kara: 2,
           annika: 1,
+          kara: 2,
+          starLight: 2,
         }),
         answer(
           "Find a quiet corner and think it through",
           "Trouvez un coin tranquille pour y réfléchir",
-          { alexa: 2, mariposa: 1 }
+          { alexa: 2, brooklyn: 2, mariposa: 1, puppyAdventure: 1 }
         ),
         answer(
           "Call my friends: we’ll fix it together",
@@ -765,16 +881,19 @@ export const BARBIE_QUIZ: Quiz = {
         answer(
           "Stay calm and kind, even to whoever caused it",
           "Restez calme et gentille, même avec les responsables",
-          { blair: 2, anneliese: 1 }
+          { anneliese: 1, blair: 2, dreamhouse: 2 }
         ),
         answer(
           "Shake it off and put some music on",
           "Passez à autre chose en mettant de la musique",
-          { tori: 2, eden: 1 }
+          { eden: 1, tori: 2, videoGame: 1 }
         ),
         answer("Look for the bright side", "Cherchez le bon côté des choses", {
-          lumina: 2,
+          dolphinMagic: 2,
           elina: 1,
+          fashionFairytale: 1,
+          lumina: 2,
+          malibu: 2,
         }),
       ],
       prompt: {
@@ -903,6 +1022,90 @@ export const BARBIE_QUIZ: Quiz = {
       "Barbie: The Princess & the Popstar (2012)",
       "A princess who longs for the stage, until she swaps places with a pop star for a day. You are lively, fun and a little restless, and you learn that the best life is the one where you can be fully yourself.",
       "Une princesse qui rêve de la scène, jusqu’au jour où elle échange sa place avec une pop star. Vous êtes vive, drôle et un peu impatiente, et vous apprenez que la plus belle vie est celle où l’on peut être pleinement soi-même."
+    ),
+    dolphinMagic: herself(
+      { en: "Dolphin Barbie", fr: "Barbie amie des dauphins" },
+      "Barbie: Dolphin Magic (2017)",
+      "A big sister on a coral reef who helps a mermaid save rare dolphins from a poacher. You love the ocean, you stand up for creatures that can’t speak for themselves, and you always look on the bright side.",
+      "Une grande sœur sur un récif de corail qui aide une sirène à sauver des dauphins rares d’un braconnier. Vous aimez l’océan, vous défendez ceux qui ne peuvent pas parler pour eux-mêmes, et vous voyez toujours le bon côté des choses."
+    ),
+    dreamhouse: herself(
+      { en: "Dreamhouse Barbie", fr: "Barbie de la Dreamhouse" },
+      "Barbie Dreamhouse Adventures (2018–2020)",
+      "Barbie at home in Malibu, juggling friends, sisters and a hundred projects at once. You are ambitious and caring, you can do almost anything, and your only weak spot is asking for help.",
+      "Barbie chez elle à Malibu, entre ses amis, ses sœurs et cent projets à la fois. Vous êtes ambitieuse et attentionnée, vous savez presque tout faire, et votre seul point faible, c’est de demander de l’aide."
+    ),
+    fairySecret: herself(
+      { en: "Fairy rescue Barbie", fr: "Barbie au pays des fées" },
+      "Barbie: A Fairy Secret (2011)",
+      "A film star who teams up with her rival to rescue Ken from a fairy kingdom, and comes home with a new friend. You are loyal, quick to forgive, and brave when a friend needs you.",
+      "Une star de cinéma qui s’allie à sa rivale pour sauver Ken d’un royaume de fées, et en revient avec une nouvelle amie. Vous êtes fidèle, prompte à pardonner, et courageuse quand une amie a besoin de vous."
+    ),
+    fashionFairytale: herself(
+      { en: "Fashion Barbie", fr: "Barbie de la mode" },
+      "Barbie: A Fashion Fairytale (2010)",
+      "A film star who loses a role and flies to Paris to save her aunt’s fashion house, with a little help from sparkling fairies. You turn setbacks into fresh starts, you have an eye for style, and you lift up the people around you.",
+      "Une star de cinéma qui perd un rôle et s’envole pour Paris sauver la maison de couture de sa tante, avec l’aide de fées scintillantes. Vous transformez les revers en nouveaux départs, vous avez l’œil pour le style, et vous faites briller ceux qui vous entourent."
+    ),
+    perfectChristmas: herself(
+      { en: "Christmas Barbie", fr: "Barbie de Noël" },
+      "Barbie: A Perfect Christmas (2011)",
+      "A big sister snowed in at a country inn on the way to a family Christmas, who makes the holiday perfect anyway. You are warm and upbeat, and you can turn a plan gone wrong into a happy memory.",
+      "Une grande sœur bloquée par la neige dans une auberge de campagne en route vers un Noël en famille, qui rend les fêtes parfaites malgré tout. Vous êtes chaleureuse et enjouée, et vous savez transformer un plan raté en joli souvenir."
+    ),
+    ponyTale: herself(
+      { en: "Pony Tale Barbie", fr: "Barbie cavalière" },
+      "Barbie & Her Sisters in A Pony Tale (2013)",
+      "A big sister on a riding holiday in the Swiss Alps, looking for a one-of-a-kind horse. You love the outdoors and animals, you are patient, and you know the best things are worth the wait.",
+      "Une grande sœur en vacances à cheval dans les Alpes suisses, à la recherche d’un cheval unique. Vous aimez le grand air et les animaux, vous êtes patiente, et vous savez que les plus belles choses valent la peine d’attendre."
+    ),
+    princessAdventure: herself(
+      { en: "Princess swap Barbie", fr: "Barbie princesse d’un jour" },
+      "Barbie: Princess Adventure (2020)",
+      "A visitor to a small kingdom who swaps places with a princess who looks just like her, then comes to her rescue. You are generous and adaptable, you put yourself in other people’s shoes, and you stand up for them.",
+      "Une visiteuse dans un petit royaume qui échange sa place avec une princesse qui lui ressemble trait pour trait, puis vole à son secours. Vous êtes généreuse et souple, vous vous mettez à la place des autres, et vous les défendez."
+    ),
+    puppyAdventure: herself(
+      { en: "Treasure hunt Barbie", fr: "Barbie chasseuse de trésor" },
+      "Barbie & Her Sisters in The Great Puppy Adventure (2015)",
+      "A big sister back in her small hometown, off on a treasure hunt with her sisters and their puppies. You are curious and playful, you love a mystery, and home means everything to you.",
+      "Une grande sœur de retour dans sa petite ville natale, partie en chasse au trésor avec ses sœurs et leurs chiots. Vous êtes curieuse et joueuse, vous adorez les mystères, et votre chez-vous compte plus que tout."
+    ),
+    puppyChase: herself(
+      { en: "Hawaii Barbie", fr: "Barbie à Hawaï" },
+      "Barbie & Her Sisters in A Puppy Chase (2016)",
+      "A big sister in Hawaii to cheer on her little sister at a dance competition, until the puppies go missing. You are sunny, sporty and supportive, and you would search a whole island for someone you love.",
+      "Une grande sœur à Hawaï pour encourager sa petite sœur à un concours de danse, jusqu’à ce que les chiots disparaissent. Vous êtes solaire, sportive et toujours là pour les autres, et vous fouilleriez une île entière pour quelqu’un que vous aimez."
+    ),
+    spySquad: herself(
+      { en: "Spy Barbie", fr: "Barbie espionne" },
+      "Barbie: Spy Squad (2016)",
+      "A gymnast recruited as a secret agent to catch a jewel thief, with her two best friends. You are athletic, quick-thinking and a true team player, and you love a challenge that keeps you on your toes.",
+      "Une gymnaste recrutée comme agente secrète pour arrêter une voleuse de bijoux, avec ses deux meilleures amies. Vous êtes sportive, vive d’esprit et une vraie joueuse d’équipe, et vous adorez les défis qui vous tiennent en alerte."
+    ),
+    starLight: herself(
+      { en: "Starlight Barbie", fr: "Barbie Starlight" },
+      "Barbie: Star Light Adventure (2016)",
+      "A hoverboarder from a faraway planet who can move things with her mind, and who brings the stars back. You are adventurous, a natural leader, and you believe one person can make the whole sky shine.",
+      "Une adepte de l’hoverboard venue d’une planète lointaine, capable de déplacer les objets par la pensée, qui ramène les étoiles. Vous êtes aventurière, née pour mener, et vous croyez qu’une seule personne peut faire briller tout le ciel."
+    ),
+    videoGame: herself(
+      { en: "Gamer Barbie", fr: "Barbie gameuse" },
+      "Barbie: Video Game Hero (2017)",
+      "A gamer pulled into her favourite video game as a roller-skating hero, who beats a virus with her new friends. You are quick, competitive and calm under pressure, and you never give up on a level.",
+      "Une gameuse aspirée dans son jeu vidéo préféré en héroïne à rollers, qui vient à bout d’un virus avec ses nouvelles amies. Vous êtes rapide, compétitrice et calme sous pression, et vous n’abandonnez jamais un niveau."
+    ),
+    brooklyn: twoBarbies(
+      { en: "Barbie “Brooklyn” Roberts", fr: "Barbie « Brooklyn » Roberts" },
+      "Barbie: Big City, Big Dreams and the films after it (2021–2026)",
+      "A Brooklyn girl who grew up in the big city and lives for music and writing songs. You are creative, independent and down to earth, you say what you think, and you never forget your friends.",
+      "Une fille de Brooklyn qui a grandi dans la grande ville et vit pour la musique et l’écriture de chansons. Vous êtes créative, indépendante et les pieds sur terre, vous dites ce que vous pensez, et vous n’oubliez jamais vos amis."
+    ),
+    malibu: twoBarbies(
+      { en: "Barbie “Malibu” Roberts", fr: "Barbie « Malibu » Roberts" },
+      "Barbie: Big City, Big Dreams and the films after it (2021–2026)",
+      "From Malibu, California, she dreams of starring on Broadway and heads to New York to study the performing arts. You are sunny and optimistic, you love music and the stage, and you light up every room.",
+      "Venue de Malibu, en Californie, elle rêve de briller à Broadway et part à New York étudier les arts de la scène. Vous êtes solaire et optimiste, vous aimez la musique et la scène, et vous illuminez chaque pièce où vous entrez."
     ),
   },
   slug: "which-barbie-character",

@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { percent, pieSlices, ranked, tally, winner } from "./quiz";
+import {
+  counts,
+  eraScores,
+  fullMarks,
+  inEras,
+  percent,
+  pieSlices,
+  ranked,
+  tally,
+  winner,
+} from "./quiz";
 import type { Quiz } from "./quiz";
 
 const words = (en: string) => ({ en, fr: en });
@@ -146,5 +156,49 @@ describe("percent", () => {
   it("rounds a share to a whole percentage", () => {
     expect(percent(0.316)).toBe(32);
     expect(percent(1)).toBe(100);
+  });
+});
+
+describe("eras", () => {
+  const ERAS: Quiz = {
+    ...QUIZ,
+    eras: [
+      { about: words(""), id: "old", name: words("Old") },
+      { about: words(""), id: "new", name: words("New") },
+    ],
+    results: {
+      a: { ...result("Apple"), era: "old" },
+      b: { ...result("Banana"), era: "old" },
+      c: { ...result("Cherry"), era: "new" },
+      d: { ...result("Date"), era: "new" },
+    },
+  };
+
+  it("keeps only the results of the chosen eras", () => {
+    expect(inEras(ERAS, "a", ["old"])).toBe(true);
+    expect(inEras(ERAS, "c", ["old"])).toBe(false);
+    expect(inEras(QUIZ, "c", [])).toBe(true);
+  });
+
+  it("shows an answer only when it gives a chosen era points", () => {
+    const [first, second] = ERAS.questions[1]?.answers ?? [];
+
+    expect(first && counts(ERAS, first, ["new"])).toBe(false);
+    expect(second && counts(ERAS, second, ["new"])).toBe(true);
+  });
+
+  it("counts the most points each result can score", () => {
+    expect(fullMarks(ERAS, "a")).toBe(3);
+    expect(fullMarks(ERAS, "c")).toBe(1);
+    expect(fullMarks(ERAS, "e")).toBe(0);
+  });
+
+  it("scores each chosen result as its share of its full marks", () => {
+    expect(eraScores(ERAS, [0, 1], ["old", "new"])).toEqual({
+      b: 100,
+      c: 100,
+      d: 100,
+    });
+    expect(eraScores(ERAS, [1, 0], ["old"])).toEqual({ a: 100 });
   });
 });
