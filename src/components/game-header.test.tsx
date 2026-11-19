@@ -63,6 +63,7 @@ describe("GameHeader", () => {
       "/quizzes",
       "/quizzes/what-type-of-witch",
       "/quizzes/are-they-your-life-partner",
+      "/quizzes/which-barbie-character",
     ]);
     expect(
       page
