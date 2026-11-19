@@ -14,17 +14,17 @@ const bestPicksFor = (id: string) =>
   });
 
 describe("which Barbie character are you?", () => {
-  it("has the fourteen heroines, each with her film", () => {
-    expect(ids).toHaveLength(14);
+  it("has the twenty heroines, each with her film", () => {
+    expect(ids).toHaveLength(20);
 
     for (const result of Object.values(BARBIE_QUIZ.results)) {
-      expect(result.about.en).toMatch(/^From .*\(20(?:0\d|10)\)\. /u);
-      expect(result.about.fr).toMatch(/^Dans .*\(20(?:0\d|10)\)\. /u);
+      expect(result.about.en).toMatch(/^From .*\(20\d\d(?:–20\d\d)?\)\. /u);
+      expect(result.about.fr).toMatch(/^Dans .*\(20\d\d(?:–20\d\d)?\)\. /u);
     }
   });
 
-  it("has fourteen questions of six answers, each in English and French", () => {
-    expect(BARBIE_QUIZ.questions).toHaveLength(14);
+  it("has twenty questions of six answers, each in English and French", () => {
+    expect(BARBIE_QUIZ.questions).toHaveLength(20);
 
     for (const question of BARBIE_QUIZ.questions) {
       expect(question.answers).toHaveLength(6);
