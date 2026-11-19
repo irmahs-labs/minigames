@@ -19,6 +19,13 @@ export interface Era {
   id: string;
   name: Words;
   about: Words;
+  /**
+   * Questions of its own, asked instead of the quiz's when it is the only era
+   * chosen: Malibu or Brooklyn, across all their films.
+   */
+  questions?: readonly Question[];
+  /** What you are when its top two results tie, with only it chosen: 50/50. */
+  even?: QuizResult;
 }
 
 /** An answer, and the points it gives each result it leans towards. */
@@ -70,10 +77,14 @@ export interface Quiz {
 export type Scores = Record<string, number>;
 
 /** The points from the answer picked for each question, in order. */
-export const tally = (quiz: Quiz, picks: readonly number[]) => {
+export const tally = (
+  quiz: Quiz,
+  picks: readonly number[],
+  questions: readonly Question[] = quiz.questions
+) => {
   const scores: Scores = {};
 
-  for (const [i, question] of quiz.questions.entries()) {
+  for (const [i, question] of questions.entries()) {
     const answer = question.answers[picks[i] ?? -1];
 
     for (const [id, points] of Object.entries(answer?.points ?? {})) {
@@ -160,9 +171,23 @@ export const inEras = (quiz: Quiz, id: string, eras: readonly string[]) =>
 export const counts = (quiz: Quiz, answer: Answer, eras: readonly string[]) =>
   Object.keys(answer.points).some((id) => inEras(quiz, id, eras));
 
+/** The era chosen on its own, when it has questions of its own. */
+export const aloneEra = (quiz: Quiz, eras: readonly string[] = []) =>
+  eras.length === 1
+    ? quiz.eras?.find((era) => era.id === eras[0] && era.questions)
+    : undefined;
+
+/** The questions asked with `eras` chosen. */
+export const questionsFor = (quiz: Quiz, eras: readonly string[]) =>
+  aloneEra(quiz, eras)?.questions ?? quiz.questions;
+
 /** The most points `id` can score: its best answer in every question. */
-export const fullMarks = (quiz: Quiz, id: string) =>
-  quiz.questions.reduce(
+export const fullMarks = (
+  quiz: Quiz,
+  id: string,
+  questions: readonly Question[] = quiz.questions
+) =>
+  questions.reduce(
     (sum, question) =>
       sum +
       Math.max(0, ...question.answers.map((answer) => answer.points[id] ?? 0)),
@@ -178,9 +203,34 @@ export const eraScores = (
   quiz: Quiz,
   picks: readonly number[],
   eras: readonly string[]
-): Scores =>
-  Object.fromEntries(
-    Object.entries(tally(quiz, picks))
+): Scores => {
+  const questions = questionsFor(quiz, eras);
+
+  return Object.fromEntries(
+    Object.entries(tally(quiz, picks, questions))
       .filter(([id]) => inEras(quiz, id, eras))
-      .map(([id, points]) => [id, (points / fullMarks(quiz, id)) * 100])
+      .map(([id, points]) => [
+        id,
+        (points / fullMarks(quiz, id, questions)) * 100,
+      ])
   );
+};
+
+/**
+ * What the scores make you: the top result, or the era's `even` result when
+ * an era with questions of its own was played alone and its top two tie.
+ */
+export const outcome = (
+  quiz: Quiz,
+  scores: Scores,
+  eras?: readonly string[]
+): QuizResult | undefined => {
+  const [first, second] = ranked(quiz, scores);
+  const even = aloneEra(quiz, eras)?.even;
+
+  if (even && first && second && first.points === second.points) {
+    return even;
+  }
+
+  return first ? quiz.results[first.id] : undefined;
+};

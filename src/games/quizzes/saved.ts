@@ -10,6 +10,8 @@ import type { Quiz, Scores } from "./quiz";
  * Nothing leaves the browser.
  */
 const savedSchema = z.object({
+  /** The eras it was played with, for a quiz with eras. */
+  eras: z.optional(z.array(z.string())),
   scores: z.record(z.string(), z.number().check(z.gte(0))),
   takenAt: z.string(),
 });
@@ -42,13 +44,21 @@ export const loadSaved = (quiz: Quiz): Saved | null => {
   return Object.keys(scores).length > 0 ? { ...saved, scores } : null;
 };
 
-/** Saves a finished quiz over the last result; `takenAt` is now, but for tests. */
+/**
+ * Saves a finished quiz over the last result, with the eras it was played
+ * with, if any; `takenAt` is now, but for tests.
+ */
 export const saveResult = (
   quiz: Quiz,
   scores: Scores,
-  takenAt = new Date()
+  takenAt = new Date(),
+  eras?: readonly string[]
 ): Saved => {
-  const saved = { scores, takenAt: takenAt.toISOString() };
+  const saved: Saved = { scores, takenAt: takenAt.toISOString() };
+
+  if (eras) {
+    saved.eras = [...eras];
+  }
 
   writeStored(storageKey(quiz), saved);
 

@@ -5,7 +5,16 @@ import { LOCALES, useCopy, useLanguage } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { PieChart } from "./pie-chart";
 import { ProfileNote } from "./profile-note";
-import { counts, eraScores, tally, winner } from "./quiz";
+import {
+  aloneEra,
+  counts,
+  eraScores,
+  outcome,
+  percent,
+  pieSlices,
+  questionsFor,
+  tally,
+} from "./quiz";
 import type { Quiz } from "./quiz";
 import { loadEras, loadSaved, saveEras, saveResult } from "./saved";
 import type { Saved } from "./saved";
@@ -57,7 +66,8 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
   const t = useCopy(COPY);
   const heading = useRef<HTMLHeadingElement>(null);
   const asked = phase.step === "asking" ? phase.picks.length : -1;
-  const total = quiz.questions.length;
+  const questions = questionsFor(quiz, eras);
+  const total = questions.length;
 
   // Each new question, and the result, take the focus, so a keyboard or a
   // screen reader carries on from the top of what changed.
@@ -78,10 +88,9 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
 
     setPhase({
       fresh: true,
-      saved: saveResult(
-        quiz,
-        quiz.eras ? eraScores(quiz, next, eras) : tally(quiz, next)
-      ),
+      saved: quiz.eras
+        ? saveResult(quiz, eraScores(quiz, next, eras), new Date(), eras)
+        : saveResult(quiz, tally(quiz, next)),
       step: "result",
     });
   };
@@ -144,7 +153,7 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
 
   if (phase.step === "asking") {
     const { picks } = phase;
-    const question = quiz.questions[picks.length];
+    const question = questions[picks.length];
 
     if (!question) {
       return null;
@@ -206,8 +215,11 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
   }
 
   const { fresh, saved } = phase;
-  const id = winner(quiz, saved.scores);
-  const result = id ? quiz.results[id] : undefined;
+  const result = outcome(quiz, saved.scores, saved.eras);
+
+  // An era played alone with questions of its own shows its split: 57% / 43%.
+  const split = aloneEra(quiz, saved.eras) ? pieSlices(quiz, saved.scores) : [];
+
   const takenAt = new Date(saved.takenAt);
 
   return (
@@ -218,6 +230,16 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
         <h2 ref={heading} tabIndex={-1} className="display quiz__title">
           {result?.name[language]}
         </h2>
+        {split.length > 0 ? (
+          <p className="quiz__split">
+            {split
+              .map(
+                (slice) =>
+                  `${percent(slice.share)}% ${quiz.results[slice.id]?.name[language] ?? ""}`
+              )
+              .join(" · ")}
+          </p>
+        ) : null}
         <p className="quiz__about">{result?.about[language]}</p>
         <div className="quiz__actions">
           <button

@@ -28,6 +28,14 @@ describe("saved results", () => {
     });
   });
 
+  it("keeps the eras a result was played with", () => {
+    saveResult(BARBIE_QUIZ, { malibu: 40 }, new Date("2026-11-19T10:00:00Z"), [
+      "malibu-brooklyn",
+    ]);
+
+    expect(loadSaved(BARBIE_QUIZ)?.eras).toEqual(["malibu-brooklyn"]);
+  });
+
   it("drops witches the quiz no longer has", () => {
     window.localStorage.setItem(
       storageKey(WITCH_QUIZ),

@@ -68,11 +68,363 @@ export const BARBIE_QUIZ: Quiz = {
     },
     {
       about: {
-        en: "The two Barbies, Malibu and Brooklyn, from Big City, Big Dreams on (2021–)",
-        fr: "Les deux Barbie, Malibu et Brooklyn, depuis Big City, Big Dreams (2021–)",
+        en: "The two Barbies, Malibu and Brooklyn, from Big City, Big Dreams on (2021–). On its own, it’s twelve questions on their films and your Malibu–Brooklyn split.",
+        fr: "Les deux Barbie, Malibu et Brooklyn, depuis Big City, Big Dreams (2021–). Seule, c’est douze questions sur leurs films et votre part de Malibu et de Brooklyn.",
+      },
+      even: {
+        about: {
+          en: "Half Malibu, half Brooklyn: as sunny and stage-ready as one, as creative and down to earth as the other. No wonder the two of them make such a good team.",
+          fr: "Moitié Malibu, moitié Brooklyn : aussi solaire et prête pour la scène que l’une, aussi créative et les pieds sur terre que l’autre. Pas étonnant qu’elles forment une si bonne équipe.",
+        },
+        era: "malibu-brooklyn",
+        name: {
+          en: "Half Malibu, half Brooklyn",
+          fr: "Moitié Malibu, moitié Brooklyn",
+        },
       },
       id: "malibu-brooklyn",
       name: { en: "Barbie and Brooklyn", fr: "Barbie et Brooklyn" },
+      // Played alone, the era asks about moments across all the films with the
+      // two Barbies, each answer leaning to Malibu or to Brooklyn, and the
+      // result is the split between them. Both are worth 36 points.
+      questions: [
+        {
+          answers: [
+            answer(
+              "Already know the shortcut and the best bagels nearby",
+              "Connaissez déjà le raccourci et les meilleurs bagels du coin",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Take in every room, a little starstruck",
+              "Découvrez chaque salle, un peu éblouie",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Arrive early, smile at everyone and ask where the stage is",
+              "Arrivez en avance, souriez à tout le monde et demandez où est la scène",
+              { malibu: 3 }
+            ),
+            answer(
+              "Find an empty practice room and start writing",
+              "Trouvez une salle de répétition vide et commencez à écrire",
+              { brooklyn: 2, malibu: 1 }
+            ),
+          ],
+          prompt: {
+            en: "First day at a performing arts summer school in New York. You…",
+            fr: "Premier jour dans une école d’été des arts de la scène à New York. Vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Suggest you sing it together",
+              "Proposez de le chanter ensemble",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Rewrite the song so it fits two voices",
+              "Réécrivez la chanson pour deux voix",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Tell her straight: may the best voice win, no hard feelings",
+              "Lui dites franchement : que la meilleure voix gagne, sans rancune",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Practise until it’s perfect, and cheer for her too",
+              "Répétez jusqu’à la perfection, en l’encourageant aussi",
+              { malibu: 3 }
+            ),
+          ],
+          prompt: {
+            en: "You and a new friend both want the solo in the showcase. You…",
+            fr: "Une nouvelle amie et vous voulez toutes les deux le solo du spectacle. Vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Keeps the calendar so you both make every audition",
+              "Tenez l’agenda pour que vous alliez toutes les deux à chaque audition",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Decorates, plans the parties and makes the smoothies",
+              "Décorez, organisez les fêtes et préparez les smoothies",
+              { malibu: 3 }
+            ),
+            answer(
+              "Fixes whatever breaks and finds the best food in town",
+              "Réparez tout ce qui casse et trouvez où bien manger en ville",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Turns the spare room into a little studio",
+              "Transformez la chambre d’amis en petit studio",
+              { brooklyn: 2, malibu: 1 }
+            ),
+          ],
+          prompt: {
+            en: "Sharing a house with your new best friend, you’re the one who…",
+            fr: "En colocation avec votre nouvelle meilleure amie, c’est vous qui…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Swim off to explore the deepest trench on your own",
+              "Partez seule explorer la fosse la plus profonde",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Find out what the old rules really mean before following them",
+              "Cherchez ce que veulent vraiment dire les vieilles règles avant de les suivre",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Lead a welcome parade for every new guardian",
+              "Menez une parade d’accueil pour chaque nouvelle gardienne",
+              { malibu: 3 }
+            ),
+            answer(
+              "Make sure everyone gets a fair turn",
+              "Veillez à ce que chacune ait sa chance",
+              { brooklyn: 1, malibu: 2 }
+            ),
+          ],
+          prompt: {
+            en: "Chosen as a mer-guardian of an undersea kingdom, you’d…",
+            fr: "Choisie comme gardienne d’un royaume sous-marin, vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "The map, with a few detours only you know",
+              "De la carte, avec quelques détours que vous seule connaissez",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "The playlist, and the singing along",
+              "De la playlist, et de chanter avec",
+              { malibu: 3 }
+            ),
+            answer(
+              "The photo stops at every pretty view",
+              "Des arrêts photo à chaque joli paysage",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Finding tiny diners and local bands",
+              "De dénicher les petits restos et les groupes du coin",
+              { brooklyn: 3 }
+            ),
+          ],
+          prompt: {
+            en: "On a road trip across the country, you’re in charge of…",
+            fr: "Pendant un road trip à travers le pays, vous vous occupez…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Read everything you can about where it came from",
+              "Lisez tout ce que vous pouvez sur son origine",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Keep it secret and work out how to get it home",
+              "Gardez le secret et cherchez comment le ramener chez lui",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Name it, hug it and plan its first flying lesson",
+              "Lui donnez un nom, le câlinez et prévoyez sa première leçon de vol",
+              { malibu: 3 }
+            ),
+            answer(
+              "Call your friends over: this needs a team",
+              "Appelez vos amis : il faut toute une équipe",
+              { brooklyn: 1, malibu: 2 }
+            ),
+          ],
+          prompt: {
+            en: "A baby pegasus lands in your garden. You…",
+            fr: "Un bébé pégase atterrit dans votre jardin. Vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Taste every batch and cheer her on",
+              "Goûtez chaque fournée en l’encourageant",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Write her a theme song for the night",
+              "Lui écrivez une chanson pour la soirée",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Ask her family for stories: the secret is in the memories",
+              "Demandez des souvenirs à sa famille : le secret est là",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Throw a cooking party and invite everyone",
+              "Organisez une fête en cuisine et invitez tout le monde",
+              { malibu: 3 }
+            ),
+          ],
+          prompt: {
+            en: "A friend has to recreate her family’s recipe for a big opening night. You…",
+            fr: "Une amie doit retrouver la recette de sa famille pour une grande inauguration. Vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "A tiny club where everyone hears every word",
+              "Un petit club où chacun entend chaque mot",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Broadway, under the bright lights",
+              "Broadway, sous les projecteurs",
+              { malibu: 3 }
+            ),
+            answer(
+              "A rooftop gig at sunset",
+              "Un concert sur un toit au coucher du soleil",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "A stadium full of people singing along",
+              "Un stade plein de gens qui chantent avec vous",
+              { brooklyn: 1, malibu: 2 }
+            ),
+          ],
+          prompt: {
+            en: "Your dream stage?",
+            fr: "Votre scène de rêve ?",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Bake something that tastes like home",
+              "Préparez un gâteau qui a le goût de la maison",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Write a song about the place you miss",
+              "Écrivez une chanson sur l’endroit qui vous manque",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Video-call home and show everyone the view",
+              "Appelez la famille en vidéo pour lui montrer la vue",
+              { malibu: 3 }
+            ),
+            answer(
+              "Walk the city until it starts to feel like home",
+              "Marchez dans la ville jusqu’à vous y sentir chez vous",
+              { brooklyn: 3 }
+            ),
+          ],
+          prompt: {
+            en: "Homesick, you…",
+            fr: "Quand vous avez le mal du pays, vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Sundresses and sandals, whatever the weather",
+              "Robes d’été et sandales, quel que soit le temps",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Trainers, a hoodie and plenty of attitude",
+              "Baskets, sweat à capuche et beaucoup d’aplomb",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "A denim jacket over anything",
+              "Une veste en jean sur n’importe quoi",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "Bright colours and something sparkly",
+              "Des couleurs vives et un peu de paillettes",
+              { malibu: 3 }
+            ),
+          ],
+          prompt: {
+            en: "Your style?",
+            fr: "Votre style ?",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Say it straight away: honest beats polite",
+              "Le dites tout de suite : mieux vaut franche que polie",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Hug it out as soon as you can",
+              "Vous réconciliez dans ses bras dès que possible",
+              { malibu: 3 }
+            ),
+            answer(
+              "Talk it through over a smoothie",
+              "En parlez autour d’un smoothie",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "Take a walk first, then say what you really think",
+              "Faites d’abord un tour, puis dites ce que vous pensez vraiment",
+              { brooklyn: 2, malibu: 1 }
+            ),
+          ],
+          prompt: {
+            en: "When you disagree with your best friend, you…",
+            fr: "Quand vous n’êtes pas d’accord avec votre meilleure amie, vous…",
+          },
+        },
+        {
+          answers: [
+            answer(
+              "Exploring a neighbourhood I’ve never been to",
+              "Explorer un quartier où je ne suis jamais allée",
+              { brooklyn: 3 }
+            ),
+            answer(
+              "Brunch with friends, then shopping",
+              "Un brunch entre amis, puis du shopping",
+              { brooklyn: 1, malibu: 2 }
+            ),
+            answer(
+              "A record shop, then the park with my notebook",
+              "Un disquaire, puis le parc avec mon carnet",
+              { brooklyn: 2, malibu: 1 }
+            ),
+            answer(
+              "The beach, the sun and a game of volleyball",
+              "La plage, le soleil et une partie de volley",
+              { malibu: 3 }
+            ),
+          ],
+          prompt: {
+            en: "Your perfect day off?",
+            fr: "Votre jour de repos idéal ?",
+          },
+        },
+      ],
     },
   ],
   legend: "barbie-heroine.txt",

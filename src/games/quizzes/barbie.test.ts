@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import { BARBIE_QUIZ } from "./barbie";
-import { allEras, counts, eraScores, fullMarks, winner } from "./quiz";
+import {
+  aloneEra,
+  allEras,
+  counts,
+  eraScores,
+  fullMarks,
+  outcome,
+  percent,
+  pieSlices,
+  questionsFor,
+  winner,
+} from "./quiz";
 
 const ids = Object.keys(BARBIE_QUIZ.results);
 
@@ -19,7 +30,7 @@ for (let mask = 1; mask < 2 ** allEras(BARBIE_QUIZ).length; mask += 1) {
 
 /** For each question, the shown answer worth the most to `id`. */
 const bestPicksFor = (id: string, eras: string[]) =>
-  BARBIE_QUIZ.questions.map((question) => {
+  questionsFor(BARBIE_QUIZ, eras).map((question) => {
     const shown = question.answers
       .map((answer, i) => ({ answer, i }))
       .filter(({ answer }) => counts(BARBIE_QUIZ, answer, eras));
@@ -125,7 +136,7 @@ describe("which Barbie character are you?", () => {
       );
 
       it("shows at least two answers to every question", () => {
-        for (const question of BARBIE_QUIZ.questions) {
+        for (const question of questionsFor(BARBIE_QUIZ, eras)) {
           expect(
             question.answers.filter((answer) =>
               counts(BARBIE_QUIZ, answer, eras)
@@ -152,4 +163,89 @@ describe("which Barbie character are you?", () => {
       });
     }
   );
+
+  describe("Malibu and Brooklyn on their own", () => {
+    const eras = ["malibu-brooklyn"];
+    const own = questionsFor(BARBIE_QUIZ, eras);
+
+    /** The answer in each question giving exactly these points. */
+    const picksOf = (...kinds: Record<string, number>[]) =>
+      own.map((question, i) =>
+        question.answers.findIndex(
+          (answer) =>
+            JSON.stringify(answer.points) ===
+            JSON.stringify(kinds[i % kinds.length])
+        )
+      );
+
+    it("asks twelve questions of its own, about their films, in both languages", () => {
+      expect(aloneEra(BARBIE_QUIZ, eras)).toBeDefined();
+      expect(own).toHaveLength(12);
+      expect(questionsFor(BARBIE_QUIZ, ["heroines", "malibu-brooklyn"])).toBe(
+        BARBIE_QUIZ.questions
+      );
+
+      for (const question of own) {
+        expect(question.prompt.fr).not.toBe(question.prompt.en);
+
+        for (const answer of question.answers) {
+          expect(answer.text.fr).not.toBe(answer.text.en);
+        }
+      }
+    });
+
+    it("leans every answer to one of them, from very Malibu to very Brooklyn", () => {
+      for (const question of own) {
+        expect(question.answers.map((answer) => answer.points)).toEqual(
+          expect.arrayContaining([
+            { malibu: 3 },
+            { brooklyn: 1, malibu: 2 },
+            { brooklyn: 2, malibu: 1 },
+            { brooklyn: 3 },
+          ])
+        );
+      }
+
+      expect(fullMarks(BARBIE_QUIZ, "malibu", own)).toBe(36);
+      expect(fullMarks(BARBIE_QUIZ, "brooklyn", own)).toBe(36);
+    });
+
+    it("gives the split between them", () => {
+      const scores = eraScores(
+        BARBIE_QUIZ,
+        picksOf({ brooklyn: 2, malibu: 1 }, { brooklyn: 3 }),
+        eras
+      );
+
+      expect(
+        pieSlices(BARBIE_QUIZ, scores).map((slice) => [
+          slice.id,
+          percent(slice.share),
+        ])
+      ).toEqual([
+        ["brooklyn", 83],
+        ["malibu", 17],
+      ]);
+      expect(outcome(BARBIE_QUIZ, scores, eras)?.name.en).toBe(
+        "Barbie “Brooklyn” Roberts"
+      );
+    });
+
+    it("calls a tie half Malibu, half Brooklyn", () => {
+      const scores = eraScores(
+        BARBIE_QUIZ,
+        picksOf({ malibu: 3 }, { brooklyn: 3 }),
+        eras
+      );
+
+      expect(scores).toEqual({ brooklyn: 50, malibu: 50 });
+      expect(outcome(BARBIE_QUIZ, scores, eras)?.name.en).toBe(
+        "Half Malibu, half Brooklyn"
+      );
+      // Among other eras, a tie still goes to the first name, as everywhere.
+      expect(outcome(BARBIE_QUIZ, scores, allEras(BARBIE_QUIZ))?.name.en).toBe(
+        "Barbie “Brooklyn” Roberts"
+      );
+    });
+  });
 });
