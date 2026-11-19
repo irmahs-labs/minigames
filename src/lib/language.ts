@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from "react";
 
+import { readRaw, writeRaw } from "./storage";
+
 /**
  * English or French. Every irmahs.dev app reads and writes the same choice:
  * a `lang` cookie on irmahs.dev, so picking French on one app opens the others
@@ -51,14 +53,6 @@ const readCookie = (): string | null => {
   }
 };
 
-const readStorage = (): string | null => {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
-};
-
 /** The shared cookie first, as the latest choice on any app, then this app's own. */
 export const savedLanguage = (): Language | null => {
   const cookie = readCookie();
@@ -67,7 +61,7 @@ export const savedLanguage = (): Language | null => {
     return cookie;
   }
 
-  const saved = readStorage();
+  const saved = readRaw(STORAGE_KEY);
 
   return isLanguage(saved) ? saved : null;
 };
@@ -117,11 +111,8 @@ export const useCopy = <T>(copy: Record<Language, T>): T => copy[useLanguage()];
 
 /** Switches the page, and remembers the choice here and on every irmahs.dev app. */
 export const chooseLanguage = (language: Language) => {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, language);
-  } catch {
-    // Not saved, but the page still switches for this visit.
-  }
+  // Not saved when storage is blocked, but the page still switches for this visit.
+  writeRaw(STORAGE_KEY, language);
 
   if (onSharedDomain()) {
     // oxlint-disable-next-line unicorn/no-document-cookie -- the one cookie every irmahs.dev app shares

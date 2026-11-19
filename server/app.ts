@@ -31,34 +31,36 @@ import type { IsAdmin, SessionAccount, WhoIs } from "./session";
 const HEARTBEAT_MS = 30_000;
 
 /**
+ * A request's JSON body as `schema` reads it, or null when it is not JSON or
+ * not of that shape.
+ */
+const readBody = async <T>(
+  request: Request,
+  schema: z.ZodMiniType<T>
+): Promise<T | null> =>
+  parseMessage(schema, await request.text().catch(() => ""));
+
+/**
  * The note a request asks to stick up, tidied, or null when it is not JSON,
  * not a note, or a note that cannot go up: empty or too long.
  */
 const readNote = async (request: Request): Promise<NoteRequest | null> => {
-  try {
-    const parsed = noteRequest.safeParse(await request.json());
+  const parsed = await readBody(request, noteRequest);
 
-    if (!parsed.success) {
-      return null;
-    }
-
-    const body = tidy(parsed.data.body);
-
-    return isValidBody(body) ? { body, colour: parsed.data.colour } : null;
-  } catch {
+  if (!parsed) {
     return null;
   }
+
+  const body = tidy(parsed.body);
+
+  return isValidBody(body) ? { body, colour: parsed.colour } : null;
 };
 
 /** The vote a request gives, or null when it is not one. */
 const readVote = async (request: Request): Promise<Vote | null> => {
-  try {
-    const parsed = voteRequest.safeParse(await request.json());
+  const parsed = await readBody(request, voteRequest);
 
-    return parsed.success ? parsed.data.vote : null;
-  } catch {
-    return null;
-  }
+  return parsed ? parsed.vote : null;
 };
 
 /** Plenty for anyone reading the board; too few to stuff a count. */
@@ -73,13 +75,9 @@ const profileQuiz = (slug: string): Quiz | null =>
 
 /** The result a request asks to keep, or null when it is not JSON or not one. */
 const readResultRequest = async (request: Request, quiz: Quiz) => {
-  try {
-    const parsed = resultRequest.safeParse(await request.json());
+  const parsed = await readBody(request, resultRequest);
 
-    return parsed.success ? keepable(quiz, parsed.data) : null;
-  } catch {
-    return null;
-  }
+  return parsed ? keepable(quiz, parsed) : null;
 };
 
 /** A note's id as the database has it: a bigint, so at most 18 digits. */

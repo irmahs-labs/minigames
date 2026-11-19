@@ -7,7 +7,7 @@ import type { ZodMiniType } from "zod/mini";
  * back as the fallback, and a write that fails is dropped while the game plays
  * on from memory.
  */
-const readRaw = (key: string): string | null => {
+export const readRaw = (key: string): string | null => {
   try {
     return window.localStorage.getItem(key);
   } catch {
@@ -35,10 +35,14 @@ export const readStored = <T>(
   }
 };
 
-export const writeStored = <T>(key: string, value: T): void => {
+/** Writes `value` as it is, for a key also read outside the app (index.html). */
+export const writeRaw = (key: string, value: string): void => {
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    window.localStorage.setItem(key, value);
   } catch {
     // Nothing to do: the current session keeps its state in memory.
   }
 };
+
+export const writeStored = <T>(key: string, value: T): void =>
+  writeRaw(key, JSON.stringify(value));

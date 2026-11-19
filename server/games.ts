@@ -49,5 +49,3 @@ export const oukChaktrang: Rules<ouk.Game, ouk.Move, ouk.Side, ouk.Ending> = {
   timeout: "timeout",
   turn: (game) => game.turn,
 };
-
-export type OukChaktrangGame = FinishedGame<ouk.Move, ouk.Side, ouk.Ending>;
