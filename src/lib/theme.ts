@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from "react";
 
+import { readRaw, writeRaw } from "./storage";
+
 /**
  * Light or Dark Matcha. The page always carries one on <html data-theme>:
  * the inline script in index.html sets it before the first paint, from the
@@ -13,13 +15,9 @@ const STORAGE_KEY = "theme";
 const darkQuery = () => window.matchMedia?.("(prefers-color-scheme: dark)");
 
 const savedTheme = (): Theme | null => {
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
+  const saved = readRaw(STORAGE_KEY);
 
-    return saved === "light" || saved === "dark" ? saved : null;
-  } catch {
-    return null;
-  }
+  return saved === "light" || saved === "dark" ? saved : null;
 };
 
 const currentTheme = (): Theme =>
@@ -59,11 +57,7 @@ export const useTheme = () => useSyncExternalStore(subscribe, currentTheme);
 
 /** Switches the page and remembers the choice in this browser. */
 export const chooseTheme = (theme: Theme) => {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // Not saved, but the page still switches for this visit.
-  }
-
+  // Not saved when storage is blocked, but the page still switches for this visit.
+  writeRaw(STORAGE_KEY, theme);
   apply(theme);
 };

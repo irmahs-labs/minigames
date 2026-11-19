@@ -2,10 +2,13 @@ import { board } from "./api";
 import type { Board, NoteRequest } from "./api";
 import type { Vote } from "./rules";
 
-/** The board as the server shows this reader, or null when it can't be reached. */
-export const fetchBoard = async (): Promise<Board | null> => {
+/** The board the server answers `path` with, or null when it can't be reached. */
+const boardAt = async (
+  path: string,
+  init?: RequestInit
+): Promise<Board | null> => {
   try {
-    const response = await fetch("/api/board");
+    const response = await fetch(path, init);
 
     if (!response.ok) {
       return null;
@@ -18,6 +21,9 @@ export const fetchBoard = async (): Promise<Board | null> => {
     return null;
   }
 };
+
+/** The board as the server shows this reader, or null when it can't be reached. */
+export const fetchBoard = () => boardAt("/api/board");
 
 export type Stuck = { ok: true; board: Board } | { ok: false; message: string };
 
@@ -48,31 +54,12 @@ export const stickNote = async (note: NoteRequest): Promise<Stuck> => {
 };
 
 /** Gives a thumbs up (1), down (-1) or neither (0); the board after, or null. */
-export const voteOnNote = async (
-  id: string,
-  vote: Vote
-): Promise<Board | null> => {
-  try {
-    const response = await fetch(
-      `/api/board/notes/${encodeURIComponent(id)}/vote`,
-      {
-        body: JSON.stringify({ vote }),
-        headers: { "content-type": "application/json" },
-        method: "PUT",
-      }
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const parsed = board.safeParse(await response.json());
-
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
-};
+export const voteOnNote = (id: string, vote: Vote) =>
+  boardAt(`/api/board/notes/${encodeURIComponent(id)}/vote`, {
+    body: JSON.stringify({ vote }),
+    headers: { "content-type": "application/json" },
+    method: "PUT",
+  });
 
 /** Takes a note down, for an admin; false when it did not happen. */
 export const takeDownNote = async (id: string): Promise<boolean> => {

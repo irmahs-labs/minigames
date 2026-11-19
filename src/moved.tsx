@@ -5,6 +5,8 @@ import { MiniGamesIcon } from "./components/app-icons";
 import { Header } from "./components/header";
 import { APP_NAME } from "./lib/brand";
 import { useCopy } from "./lib/language";
+import { parseMessage } from "./lib/parse-message";
+import { readRaw } from "./lib/storage";
 
 /**
  * The Book of Shadows, Booster Potion (now Potion Brewing) and Spell
@@ -43,27 +45,11 @@ const toBase64Url = (bytes: Uint8Array) =>
  * object, carries nothing; Realms checks the rest against its own schema.
  */
 export const bookFragment = (saved: string | null): string => {
-  if (!saved) {
-    return "";
-  }
-
-  try {
-    if (!savedBookSchema.safeParse(JSON.parse(saved)).success) {
-      return "";
-    }
-  } catch {
+  if (!(saved && parseMessage(savedBookSchema, saved))) {
     return "";
   }
 
   return `#book=${toBase64Url(new TextEncoder().encode(saved))}`;
-};
-
-const savedBook = (): string | null => {
-  try {
-    return window.localStorage.getItem(BOOK_KEY);
-  } catch {
-    return null;
-  }
 };
 
 /**
@@ -72,7 +58,7 @@ const savedBook = (): string | null => {
  */
 export const movedTo = (
   path: string,
-  saved: string | null = savedBook()
+  saved: string | null = readRaw(BOOK_KEY)
 ): string | null => {
   const there = MOVED.get(path);
 
