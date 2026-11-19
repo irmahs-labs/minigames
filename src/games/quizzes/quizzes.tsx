@@ -2,7 +2,7 @@ import { Icon } from "../../lib/icon";
 import { useCopy, useLanguage } from "../../lib/language";
 import { Link, usePath } from "../../lib/router";
 import { QUIZZES } from "./all-quizzes";
-import { winner } from "./quiz";
+import { outcome } from "./quiz";
 import { QuizRunner } from "./quiz-runner";
 import { loadSaved } from "./saved";
 
@@ -28,8 +28,10 @@ const QuizList = () => {
       <ul className="games">
         {QUIZZES.map((quiz) => {
           const saved = loadSaved(quiz);
-          const id = saved ? winner(quiz, saved.scores) : null;
-          const result = id ? quiz.results[id] : undefined;
+
+          const result = saved
+            ? outcome(quiz, saved.scores, saved.eras)
+            : undefined;
 
           return (
             <li key={quiz.slug}>

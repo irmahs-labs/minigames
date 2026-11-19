@@ -163,6 +163,7 @@ export const GAMES: readonly Game[] = [
     inside: [
       { en: "Witch", fr: "Sorcière" },
       { en: "Life partner", fr: "Partenaire de vie" },
+      { en: "Barbie", fr: "Barbie" },
     ],
     legend: "quizzes.exe",
     name: { en: "Quizzes", fr: "Quiz" },
@@ -176,6 +177,10 @@ export const GAMES: readonly Game[] = [
       {
         name: { en: "Life partner?", fr: "Partenaire de vie ?" },
         slug: "are-they-your-life-partner",
+      },
+      {
+        name: { en: "Which Barbie?", fr: "Quelle Barbie ?" },
+        slug: "which-barbie-character",
       },
     ],
     slug: "quizzes",

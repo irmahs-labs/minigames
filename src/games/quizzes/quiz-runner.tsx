@@ -5,15 +5,26 @@ import { LOCALES, useCopy, useLanguage } from "../../lib/language";
 import { Link } from "../../lib/router";
 import { PieChart } from "./pie-chart";
 import { ProfileNote } from "./profile-note";
-import { tally, winner } from "./quiz";
+import {
+  aloneEra,
+  counts,
+  eraScores,
+  outcome,
+  percent,
+  pieSlices,
+  questionsFor,
+  tally,
+} from "./quiz";
 import type { Quiz } from "./quiz";
-import { loadSaved, saveResult } from "./saved";
+import { loadEras, loadSaved, saveEras, saveResult } from "./saved";
 import type { Saved } from "./saved";
 
 const COPY = {
   en: {
     allQuizzes: "all quizzes",
     back: "Back",
+    eras: "Which eras?",
+    noEra: "Pick at least one era.",
     of: (n: number, total: number) => `Question ${n} of ${total}`,
     questions: (n: number) => `${n} questions`,
     retake: "retake the quiz",
@@ -24,6 +35,8 @@ const COPY = {
   fr: {
     allQuizzes: "tous les quiz",
     back: "Retour",
+    eras: "Quelles époques ?",
+    noEra: "Choisissez au moins une époque.",
     of: (n: number, total: number) => `Question ${n} sur ${total}`,
     questions: (n: number) => `${n} questions`,
     retake: "refaire le quiz",
@@ -48,11 +61,13 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
     return saved ? { fresh: false, saved, step: "result" } : { step: "intro" };
   });
 
+  const [eras, setEras] = useState(() => loadEras(quiz));
   const language = useLanguage();
   const t = useCopy(COPY);
   const heading = useRef<HTMLHeadingElement>(null);
   const asked = phase.step === "asking" ? phase.picks.length : -1;
-  const total = quiz.questions.length;
+  const questions = questionsFor(quiz, eras);
+  const total = questions.length;
 
   // Each new question, and the result, take the focus, so a keyboard or a
   // screen reader carries on from the top of what changed.
@@ -73,9 +88,23 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
 
     setPhase({
       fresh: true,
-      saved: saveResult(quiz, tally(quiz, next)),
+      saved: quiz.eras
+        ? saveResult(quiz, eraScores(quiz, next, eras), new Date(), eras)
+        : saveResult(quiz, tally(quiz, next)),
       step: "result",
     });
+  };
+
+  const chooseEra = (id: string, on: boolean) => {
+    const next = (quiz.eras ?? [])
+      .map((era) => era.id)
+      .filter((era) => (era === id ? on : eras.includes(era)));
+
+    setEras(next);
+
+    if (next.length > 0) {
+      saveEras(quiz, next);
+    }
   };
 
   if (phase.step === "intro") {
@@ -85,22 +114,46 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
         <p className="kicker">{t.questions(total)}</p>
         <h2 className="display quiz__title">{quiz.title[language]}</h2>
         <p className="quiz__about">{quiz.blurb[language]}</p>
+        {quiz.eras ? (
+          <fieldset className="quiz__eras">
+            <legend className="kicker">{t.eras}</legend>
+            {quiz.eras.map((era) => (
+              <label key={era.id} className="quiz__era">
+                <input
+                  type="checkbox"
+                  checked={eras.includes(era.id)}
+                  onChange={(event) => chooseEra(era.id, event.target.checked)}
+                />
+                <span>
+                  <strong>{era.name[language]}</strong>
+                  <span className="quiz__era-about">{era.about[language]}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        ) : null}
         <div className="quiz__actions">
           <button
             type="button"
             className="btn btn--primary"
+            disabled={eras.length === 0 && Boolean(quiz.eras)}
             onClick={() => setPhase({ picks: [], step: "asking" })}
           >
             {t.start}
           </button>
         </div>
+        {quiz.eras && eras.length === 0 ? (
+          <p className="hint" aria-live="polite">
+            {t.noEra}
+          </p>
+        ) : null}
       </section>
     );
   }
 
   if (phase.step === "asking") {
     const { picks } = phase;
-    const question = quiz.questions[picks.length];
+    const question = questions[picks.length];
 
     if (!question) {
       return null;
@@ -123,20 +176,23 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
           {question.prompt[language]}
         </h2>
         <ol className="quiz__answers">
-          {question.answers.map((answer, i) => (
-            <li key={answer.text.en}>
-              <button
-                type="button"
-                className="quiz__answer"
-                onClick={() => pick(picks, i)}
-              >
-                <span aria-hidden="true" className="quiz__letter">
-                  {LETTERS[i]}
-                </span>
-                {answer.text[language]}
-              </button>
-            </li>
-          ))}
+          {question.answers
+            .map((answer, i) => ({ answer, i }))
+            .filter(({ answer }) => !quiz.eras || counts(quiz, answer, eras))
+            .map(({ answer, i }, shown) => (
+              <li key={answer.text.en}>
+                <button
+                  type="button"
+                  className="quiz__answer"
+                  onClick={() => pick(picks, i)}
+                >
+                  <span aria-hidden="true" className="quiz__letter">
+                    {LETTERS[shown]}
+                  </span>
+                  {answer.text[language]}
+                </button>
+              </li>
+            ))}
         </ol>
         <div className="quiz__actions">
           <button
@@ -159,8 +215,11 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
   }
 
   const { fresh, saved } = phase;
-  const id = winner(quiz, saved.scores);
-  const result = id ? quiz.results[id] : undefined;
+  const result = outcome(quiz, saved.scores, saved.eras);
+
+  // An era played alone with questions of its own shows its split: 57% / 43%.
+  const split = aloneEra(quiz, saved.eras) ? pieSlices(quiz, saved.scores) : [];
+
   const takenAt = new Date(saved.takenAt);
 
   return (
@@ -171,12 +230,26 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
         <h2 ref={heading} tabIndex={-1} className="display quiz__title">
           {result?.name[language]}
         </h2>
+        {split.length > 0 ? (
+          <p className="quiz__split">
+            {split
+              .map(
+                (slice) =>
+                  `${percent(slice.share)}% ${quiz.results[slice.id]?.name[language] ?? ""}`
+              )
+              .join(" · ")}
+          </p>
+        ) : null}
         <p className="quiz__about">{result?.about[language]}</p>
         <div className="quiz__actions">
           <button
             type="button"
             className="btn btn--primary"
-            onClick={() => setPhase({ picks: [], step: "asking" })}
+            onClick={() =>
+              setPhase(
+                quiz.eras ? { step: "intro" } : { picks: [], step: "asking" }
+              )
+            }
           >
             <Icon name="spin" size={18} />
             {t.retake}
