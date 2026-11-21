@@ -48,6 +48,9 @@ const COPY = {
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
+/** How long a picked answer stays lit before the next question: long enough to see it. */
+const PICKED_MS = 350;
+
 type Phase =
   | { step: "intro" }
   | { step: "asking"; picks: number[] }
@@ -62,6 +65,8 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
   });
 
   const [eras, setEras] = useState(() => loadEras(quiz));
+  /** The answer just clicked, lit for a moment before the quiz moves on. */
+  const [chosen, setChosen] = useState<number | null>(null);
   const language = useLanguage();
   const t = useCopy(COPY);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -94,6 +99,20 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
       step: "result",
     });
   };
+
+  // The picked answer shows as picked, then the quiz goes on
+  useEffect(() => {
+    if (chosen === null || phase.step !== "asking") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setChosen(null);
+      pick(phase.picks, chosen);
+    }, PICKED_MS);
+
+    return () => window.clearTimeout(timer);
+  });
 
   const chooseEra = (id: string, on: boolean) => {
     const next = (quiz.eras ?? [])
@@ -184,7 +203,9 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
                 <button
                   type="button"
                   className="quiz__answer"
-                  onClick={() => pick(picks, i)}
+                  aria-pressed={chosen === i}
+                  disabled={chosen !== null && chosen !== i}
+                  onClick={() => setChosen((current) => current ?? i)}
                 >
                   <span aria-hidden="true" className="quiz__letter">
                     {LETTERS[shown]}
@@ -198,6 +219,7 @@ export const QuizRunner = ({ quiz }: { quiz: Quiz }) => {
           <button
             type="button"
             className="btn btn--quiet"
+            disabled={chosen !== null}
             onClick={() =>
               setPhase(
                 picks.length === 0
