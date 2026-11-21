@@ -1606,6 +1606,20 @@ a:hover {
     box-shadow: var(--shadow-soft);
   }
 }
+/* The answer just picked, lit for a moment before the next question */
+.quiz__answer[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--on-selected);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-soft);
+}
+.quiz__answer[aria-pressed="true"] .quiz__letter {
+  background: var(--on-selected);
+  color: var(--selected);
+}
+.quiz__answer:disabled:not([aria-pressed="true"]) {
+  opacity: 0.55;
+}
 .quiz__letter {
   flex: none;
   display: inline-flex;
