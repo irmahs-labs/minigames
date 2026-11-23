@@ -12,6 +12,7 @@ const COPY = {
   en: {
     all: "all games",
     close: "Close the menu",
+    home: "Mini Games home: every game",
     games: "Every game",
     menu: "Menu",
     pages: (game: string) => `${game}: its pages`,
@@ -19,6 +20,7 @@ const COPY = {
   fr: {
     all: "tous les jeux",
     close: "Fermer le menu",
+    home: "Accueil de Mini Games : tous les jeux",
     games: "Tous les jeux",
     menu: "Menu",
     pages: (game: string) => `${game} : ses pages`,
@@ -122,7 +124,7 @@ const GameMenu = ({ slug, here }: { slug: string; here: string }) => {
 };
 
 /**
- * Every game's header: its icon and name, "Mini Games · by Irma HS" under
+ * Every game's header: a house button back to the hub, its icon and name, "Mini Games · by Irma HS" under
  * it, and the shared pills, nothing more. Under it, a quiet way back to
  * every game, then its tabs: a game with pages of its own (Quizzes) has one
  * each, any other one tab of its own name; the open one lifted in lime.
@@ -152,6 +154,7 @@ export const GameHeader = ({
         name={name}
         href={`/${game.slug}`}
         app={APP_NAME}
+        home={t.home}
         lead={<GameMenu slug={slug} here={here} />}
       />
       <nav className="game-tabs" aria-label={t.pages(name)}>

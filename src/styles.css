@@ -205,6 +205,12 @@ a:hover {
   background: var(--header);
   border-bottom: var(--line);
 }
+/* On a sub-page: the round house button back to the hub, before the name */
+.app-header .app-header__hub {
+  color: var(--text);
+  border: var(--line);
+  background: var(--raised);
+}
 .app-header__home {
   flex: 1 1 0;
   min-width: max-content;
