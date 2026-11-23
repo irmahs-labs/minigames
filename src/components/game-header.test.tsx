@@ -47,12 +47,18 @@ describe("GameHeader", () => {
     ).toBe("The Arena");
   });
 
-  it("keeps the header to the game's name and the shared pills", () => {
-    const back = [
-      ...drawn("the-arena").querySelectorAll("header a[href='/']"),
-    ].filter((link) => !link.closest("dialog"));
+  it("puts a house button back to the hub before the game's name", () => {
+    const page = drawn("the-arena");
 
-    expect(back).toEqual([]);
+    // Besides the phone's menu, a dialog, only the house button goes to "/"
+    const back = [...page.querySelectorAll("header a[href='/']")].filter(
+      (link) => !link.closest("dialog")
+    );
+
+    expect(back.map((link) => link.getAttribute("aria-label"))).toEqual([
+      "Mini Games home: every game",
+    ]);
+    expect(back[0]?.nextElementSibling?.querySelector("h1")).not.toBeNull();
   });
 
   it("gives Quizzes a tab per quiz, the open one marked", () => {

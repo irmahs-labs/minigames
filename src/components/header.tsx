@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Icon } from "../lib/icon";
 import { useCopy } from "../lib/language";
 import { Link } from "../lib/router";
 import { AccountButton } from "./account-button";
@@ -21,12 +22,15 @@ interface HeaderProps {
   children?: ReactNode;
   /** Before the icon: the phone's menu button, on a game's pages. */
   lead?: ReactNode;
+  /** On a sub-page: the label of the house button back to the hub, at "/". */
+  home?: string;
   /** What the name belongs to, before "by Irma HS": "Mini Games" on a game's pages. */
   app?: string;
 }
 
 /**
- * Cute Matcha's app Header: the icon, the name with "by Irma HS" under it,
+ * Cute Matcha's app Header: on a sub-page a house button back to the hub,
+ * then the icon, the name with "by Irma HS" under it,
  * the page's actions in the middle, and the language pill, the theme toggle
  * and the account pill at the end. The
  * name is the page's heading.
@@ -37,6 +41,7 @@ export const Header = ({
   href,
   children,
   lead,
+  home,
   app,
 }: HeaderProps) => {
   const t = useCopy(COPY);
@@ -44,6 +49,16 @@ export const Header = ({
   return (
     <header className="app-header">
       {lead}
+      {home ? (
+        <Link
+          href="/"
+          className="icon-btn app-header__hub"
+          aria-label={home}
+          title={home}
+        >
+          <Icon name="home" size={22} />
+        </Link>
+      ) : null}
       <Link href={href} className="app-header__home">
         {icon}
         <span>
