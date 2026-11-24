@@ -14,17 +14,15 @@ const bestPicksFor = (id: string) =>
   });
 
 describe("what type of witch are you?", () => {
-  it("has the ten witches, and the Eclectic witch for a bit of everything", () => {
+  it("has the eight witches, and the Eclectic witch for a bit of everything", () => {
     expect(ids).toEqual([
+      "adventure",
       "chaos",
-      "fire",
       "green",
       "hearth",
       "hedge",
       "kitchen",
       "love",
-      "sea",
-      "storm",
       "tinkering",
     ]);
     expect(WITCH_QUIZ.blend?.result.name.en).toBe("Eclectic witch");
@@ -75,13 +73,13 @@ describe("what type of witch are you?", () => {
     }
   });
 
-  it("is fair: every witch is worth 48 points over all the answers", () => {
+  it("is fair: every witch is worth 55 points over all the answers", () => {
     for (const id of ids) {
       const worth = WITCH_QUIZ.questions.flatMap((question) =>
         question.answers.map((answer) => answer.points[id] ?? 0)
       );
 
-      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(48);
+      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(55);
     }
   });
 

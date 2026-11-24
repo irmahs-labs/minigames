@@ -640,7 +640,7 @@ describe("/api/quizzes/:slug/result", () => {
   });
 
   it("takes a result off, from the site itself", async () => {
-    await keep("session=ana", { scores: { sea: 12 }, takenAt });
+    await keep("session=ana", { scores: { green: 12 }, takenAt });
 
     expect(await takeWitchOff("https://evil.irmahs.dev")).toBe(403);
     expect(await takeWitchOff(ORIGIN)).toBe(200);

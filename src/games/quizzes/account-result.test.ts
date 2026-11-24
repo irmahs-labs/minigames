@@ -20,7 +20,11 @@ describe("keepable", () => {
 
   it("keeps the quiz's own results, dropping the ones at zero", () => {
     expect(
-      keepable(WITCH_QUIZ, { scores: { sea: 0, tinkering: 12 }, takenAt }, NOW)
+      keepable(
+        WITCH_QUIZ,
+        { scores: { green: 0, tinkering: 12 }, takenAt },
+        NOW
+      )
     ).toEqual({ scores: { tinkering: 12 }, takenAt: new Date(takenAt) });
   });
 
@@ -37,7 +41,7 @@ describe("keepable", () => {
     expect(
       keepable(
         WITCH_QUIZ,
-        { scores: { tinkering: most, sea: 1 }, takenAt },
+        { scores: { tinkering: most, green: 1 }, takenAt },
         NOW
       )
     ).toBeNull();
@@ -89,7 +93,7 @@ describe("accountResultOf", () => {
 
   it("puts the Eclectic witch first when no witch is clearly ahead", () => {
     const result = accountResultOf(WITCH_QUIZ, {
-      scores: { green: 10, kitchen: 10, love: 9, sea: 3 },
+      scores: { green: 10, hedge: 3, kitchen: 10, love: 9 },
       takenAt: NOW,
     });
 
@@ -98,7 +102,7 @@ describe("accountResultOf", () => {
       "green",
       "kitchen",
       "love",
-      "sea",
+      "hedge",
     ]);
     expect(result.ranked[0]?.name.en).toBe("Eclectic witch");
   });
