@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { tally, winner } from "./quiz";
+import { isBlend, outcome, tally, winner } from "./quiz";
 import { WITCH_QUIZ } from "./witch";
 
 const ids = Object.keys(WITCH_QUIZ.results);
@@ -14,8 +14,32 @@ const bestPicksFor = (id: string) =>
   });
 
 describe("what type of witch are you?", () => {
-  it("has the sixteen witches", () => {
-    expect(ids).toHaveLength(16);
+  it("has the ten witches, and the Eclectic witch for a bit of everything", () => {
+    expect(ids).toEqual([
+      "chaos",
+      "fire",
+      "green",
+      "hearth",
+      "hedge",
+      "kitchen",
+      "love",
+      "sea",
+      "storm",
+      "tinkering",
+    ]);
+    expect(WITCH_QUIZ.blend?.result.name.en).toBe("Eclectic witch");
+  });
+
+  it("names no country in any answer", () => {
+    const countries =
+      /Iceland|Italy|Hawaii|Finland|Islande|Italie|Hawaï|Finlande/u;
+
+    for (const question of WITCH_QUIZ.questions) {
+      for (const answer of question.answers) {
+        expect(answer.text.en).not.toMatch(countries);
+        expect(answer.text.fr).not.toMatch(countries);
+      }
+    }
   });
 
   it("has thirty-two questions of six answers, each in English and French", () => {
@@ -51,13 +75,13 @@ describe("what type of witch are you?", () => {
     }
   });
 
-  it("is fair: every witch is worth 35 points over all the answers", () => {
+  it("is fair: every witch is worth 48 points over all the answers", () => {
     for (const id of ids) {
       const worth = WITCH_QUIZ.questions.flatMap((question) =>
         question.answers.map((answer) => answer.points[id] ?? 0)
       );
 
-      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(35);
+      expect(worth.reduce((sum, points) => sum + points, 0)).toBe(48);
     }
   });
 
@@ -73,6 +97,19 @@ describe("what type of witch are you?", () => {
   });
 
   it.each(ids)("can make you a %s witch", (id) => {
-    expect(winner(WITCH_QUIZ, tally(WITCH_QUIZ, bestPicksFor(id)))).toBe(id);
+    const scores = tally(WITCH_QUIZ, bestPicksFor(id));
+
+    expect(winner(WITCH_QUIZ, scores)).toBe(id);
+    expect(outcome(WITCH_QUIZ, scores)).toBe(WITCH_QUIZ.results[id]);
+  });
+
+  it("makes you the Eclectic witch when the top three are within a point", () => {
+    const even = { chaos: 9, green: 10, kitchen: 10, love: 4 };
+    const clear = { chaos: 8, green: 10, kitchen: 10, love: 4 };
+
+    expect(isBlend(WITCH_QUIZ, even)).toBe(true);
+    expect(outcome(WITCH_QUIZ, even)).toBe(WITCH_QUIZ.blend?.result);
+    expect(isBlend(WITCH_QUIZ, clear)).toBe(false);
+    expect(outcome(WITCH_QUIZ, clear)?.name.en).toBe("Green witch");
   });
 });

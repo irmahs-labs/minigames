@@ -59,6 +59,17 @@ export interface Quiz {
    * gives none of them points is left out.
    */
   eras?: readonly Era[];
+  /**
+   * What you are when no result is clearly ahead: the witch quiz's Eclectic
+   * witch, a bit of everything. It comes out when the top `top` results are
+   * within `within` points of each other. No answer gives it points.
+   */
+  blend?: {
+    id: string;
+    result: QuizResult;
+    top: number;
+    within: number;
+  };
   /** The words before its result, if not "You are a": "Verdict:". */
   verdict?: Words;
   /**
@@ -216,9 +227,25 @@ export const eraScores = (
   );
 };
 
+/** Whether no result is clearly ahead, so the quiz's `blend` result is what you are. */
+export const isBlend = (quiz: Quiz, scores: Scores): boolean => {
+  if (!quiz.blend) {
+    return false;
+  }
+
+  const all = ranked(quiz, scores);
+  const [first] = all;
+  const last = all[quiz.blend.top - 1];
+
+  return Boolean(
+    first && last && first.points - last.points <= quiz.blend.within
+  );
+};
+
 /**
- * What the scores make you: the top result, or the era's `even` result when
- * an era with questions of its own was played alone and its top two tie.
+ * What the scores make you: the top result, the era's `even` result when an
+ * era with questions of its own was played alone and its top two tie, or the
+ * quiz's `blend` result when no result is clearly ahead.
  */
 export const outcome = (
   quiz: Quiz,
@@ -230,6 +257,10 @@ export const outcome = (
 
   if (even && first && second && first.points === second.points) {
     return even;
+  }
+
+  if (quiz.blend && isBlend(quiz, scores)) {
+    return quiz.blend.result;
   }
 
   return first ? quiz.results[first.id] : undefined;
