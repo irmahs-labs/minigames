@@ -578,14 +578,17 @@ describe("/api/quizzes/:slug/result", () => {
 
   it("keeps a signed-in visitor's witch result, named, for their profile", async () => {
     expect(
-      await keep("session=ben", { scores: { cosmic: 20, tech: 41 }, takenAt })
+      await keep("session=ben", {
+        scores: { hedge: 20, tinkering: 41 },
+        takenAt,
+      })
     ).toBe(200);
 
     expect(await bodyAs("session=ben")).toMatchObject({
       result: {
         ranked: [
-          { id: "tech", name: { en: "Tech witch" }, points: 41 },
-          { id: "cosmic", points: 20 },
+          { id: "tinkering", name: { en: "Tinkering witch" }, points: 41 },
+          { id: "hedge", points: 20 },
         ],
         takenAt,
       },
@@ -599,20 +602,20 @@ describe("/api/quizzes/:slug/result", () => {
   });
 
   it("refuses results the quiz can't give, from elsewhere, or signed out", async () => {
-    const tech = { scores: { tech: 4 }, takenAt };
+    const tinkering = { scores: { tinkering: 4 }, takenAt };
 
-    expect(await keep("", tech)).toBe(401);
+    expect(await keep("", tinkering)).toBe(401);
     expect(
-      await keep("session=cy", tech, { origin: "https://evil.irmahs.dev" })
+      await keep("session=cy", tinkering, { origin: "https://evil.irmahs.dev" })
     ).toBe(403);
 
     const refused: SentResult[] = [
       { scores: { necromancer: 4 }, takenAt },
-      { scores: { tech: 0 }, takenAt },
-      { scores: { tech: 9000 }, takenAt },
-      { scores: { tech: 4 }, takenAt: "2019-01-01T00:00:00Z" },
-      { scores: { tech: 4 }, takenAt: "2099-01-01T00:00:00Z" },
-      { scores: { tech: 4 } },
+      { scores: { tinkering: 0 }, takenAt },
+      { scores: { tinkering: 9000 }, takenAt },
+      { scores: { tinkering: 4 }, takenAt: "2019-01-01T00:00:00Z" },
+      { scores: { tinkering: 4 }, takenAt: "2099-01-01T00:00:00Z" },
+      { scores: { tinkering: 4 } },
     ];
 
     const statuses = await Promise.all(
@@ -637,7 +640,7 @@ describe("/api/quizzes/:slug/result", () => {
   });
 
   it("takes a result off, from the site itself", async () => {
-    await keep("session=ana", { scores: { moon: 12 }, takenAt });
+    await keep("session=ana", { scores: { green: 12 }, takenAt });
 
     expect(await takeWitchOff("https://evil.irmahs.dev")).toBe(403);
     expect(await takeWitchOff(ORIGIN)).toBe(200);

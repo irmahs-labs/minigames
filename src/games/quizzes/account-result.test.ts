@@ -20,8 +20,12 @@ describe("keepable", () => {
 
   it("keeps the quiz's own results, dropping the ones at zero", () => {
     expect(
-      keepable(WITCH_QUIZ, { scores: { sea: 0, tech: 12 }, takenAt }, NOW)
-    ).toEqual({ scores: { tech: 12 }, takenAt: new Date(takenAt) });
+      keepable(
+        WITCH_QUIZ,
+        { scores: { green: 0, tinkering: 12 }, takenAt },
+        NOW
+      )
+    ).toEqual({ scores: { tinkering: 12 }, takenAt: new Date(takenAt) });
   });
 
   it("refuses results it doesn't have, nothing scored, or more than the answers give", () => {
@@ -32,33 +36,37 @@ describe("keepable", () => {
       keepable(WITCH_QUIZ, { scores: { necro: 3 }, takenAt }, NOW)
     ).toBeNull();
     expect(
-      keepable(WITCH_QUIZ, { scores: { tech: 0 }, takenAt }, NOW)
-    ).toBeNull();
-    expect(
-      keepable(WITCH_QUIZ, { scores: { tech: most, sea: 1 }, takenAt }, NOW)
-    ).toBeNull();
-    expect(
-      keepable(WITCH_QUIZ, { scores: { tech: most }, takenAt }, NOW)
-    ).not.toBeNull();
-  });
-
-  it("refuses a day it can't read, years back, or ahead of now", () => {
-    const tech = { tech: 3 };
-
-    expect(
-      keepable(WITCH_QUIZ, { scores: tech, takenAt: "soon" }, NOW)
+      keepable(WITCH_QUIZ, { scores: { tinkering: 0 }, takenAt }, NOW)
     ).toBeNull();
     expect(
       keepable(
         WITCH_QUIZ,
-        { scores: tech, takenAt: "2023-01-01T00:00:00Z" },
+        { scores: { tinkering: most, green: 1 }, takenAt },
+        NOW
+      )
+    ).toBeNull();
+    expect(
+      keepable(WITCH_QUIZ, { scores: { tinkering: most }, takenAt }, NOW)
+    ).not.toBeNull();
+  });
+
+  it("refuses a day it can't read, years back, or ahead of now", () => {
+    const tinkering = { tinkering: 3 };
+
+    expect(
+      keepable(WITCH_QUIZ, { scores: tinkering, takenAt: "soon" }, NOW)
+    ).toBeNull();
+    expect(
+      keepable(
+        WITCH_QUIZ,
+        { scores: tinkering, takenAt: "2023-01-01T00:00:00Z" },
         NOW
       )
     ).toBeNull();
     expect(
       keepable(
         WITCH_QUIZ,
-        { scores: tech, takenAt: "2026-11-17T00:00:00Z" },
+        { scores: tinkering, takenAt: "2026-11-17T00:00:00Z" },
         NOW
       )
     ).toBeNull();
@@ -68,15 +76,34 @@ describe("keepable", () => {
 describe("accountResultOf", () => {
   it("names the results, most points first, in both languages", () => {
     const result = accountResultOf(WITCH_QUIZ, {
-      scores: { cosmic: 9, tech: 20 },
+      scores: { hedge: 9, tinkering: 20 },
       takenAt: NOW,
     });
 
-    expect(result.ranked.map((entry) => entry.id)).toEqual(["tech", "cosmic"]);
+    expect(result.ranked.map((entry) => entry.id)).toEqual([
+      "tinkering",
+      "hedge",
+    ]);
     expect(result.ranked[0]?.name).toEqual({
-      en: "Tech witch",
+      en: "Tinkering witch",
       fr: expect.any(String),
     });
     expect(result.takenAt).toBe(NOW.toISOString());
+  });
+
+  it("puts the Eclectic witch first when no witch is clearly ahead", () => {
+    const result = accountResultOf(WITCH_QUIZ, {
+      scores: { green: 10, hedge: 3, kitchen: 10, love: 9 },
+      takenAt: NOW,
+    });
+
+    expect(result.ranked.map((entry) => entry.id)).toEqual([
+      "eclectic",
+      "green",
+      "kitchen",
+      "love",
+      "hedge",
+    ]);
+    expect(result.ranked[0]?.name.en).toBe("Eclectic witch");
   });
 });

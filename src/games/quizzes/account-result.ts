@@ -1,6 +1,6 @@
 import * as z from "zod/mini";
 
-import { ranked } from "./quiz";
+import { isBlend, ranked } from "./quiz";
 import type { Quiz, Scores } from "./quiz";
 
 /**
@@ -107,14 +107,32 @@ export const keepable = (
 export const accountResultOf = (
   quiz: Quiz,
   kept: { scores: Scores; takenAt: Date }
-): AccountResult => ({
-  ranked: ranked(quiz, kept.scores).flatMap(({ id, points }) => {
+): AccountResult => {
+  const all = ranked(quiz, kept.scores).flatMap(({ id, points }) => {
     const result = quiz.results[id];
 
     return result
       ? [{ about: result.about, id, name: result.name, points }]
       : [];
-  }),
-  scores: kept.scores,
-  takenAt: kept.takenAt.toISOString(),
-});
+  });
+
+  // With no result clearly ahead, the blend comes first: Realms shows the
+  // first as theirs, and the rest as what they have a little of
+  const blend =
+    quiz.blend && all[0] && isBlend(quiz, kept.scores)
+      ? [
+          {
+            about: quiz.blend.result.about,
+            id: quiz.blend.id,
+            name: quiz.blend.result.name,
+            points: all[0].points,
+          },
+        ]
+      : [];
+
+  return {
+    ranked: [...blend, ...all],
+    scores: kept.scores,
+    takenAt: kept.takenAt.toISOString(),
+  };
+};
