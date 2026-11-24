@@ -25,8 +25,8 @@ export const WITCH_QUIZ: Quiz = {
     result: result(
       { en: "Eclectic witch", fr: "Sorcière éclectique" },
       {
-        en: "A bit of everything. No one path is enough for you: a little kitchen, a little chaos, a little of all of it, and you make it your own.",
-        fr: "Un peu de tout. Aucune voie ne vous suffit : un peu cuisine, un peu chaos, un peu de tout, et vous en faites quelque chose de bien à vous.",
+        en: "You’re a bit of everything, and that’s your strength. One weekend you’re baking, the next you’re hiking, and you’re always picking up something new from everyone you meet.",
+        fr: "Vous êtes un peu de tout, et c’est votre force. Un week-end vous pâtissez, le suivant vous partez en randonnée, et vous apprenez toujours quelque chose de chaque personne que vous rencontrez.",
       }
     ),
     top: 3,
@@ -1194,57 +1194,57 @@ export const WITCH_QUIZ: Quiz = {
     adventure: result(
       { en: "Adventure witch", fr: "Sorcière de l’aventure" },
       {
-        en: "Always up for the next adventure. You plan trips, say yes to new things, try the food you can’t pronounce, and come home with stories and a pocketful of souvenirs.",
-        fr: "Toujours partante pour la prochaine aventure. Vous planifiez des voyages, dites oui à la nouveauté, goûtez les plats au nom imprononçable, et rentrez avec des histoires plein la tête et des souvenirs plein les poches.",
+        en: "You’re always planning the next trip, even if it’s just a new café across town. You say yes to last-minute plans, order the dish you’ve never tried, and come home with a story every time.",
+        fr: "Vous préparez toujours le prochain voyage, même si c’est juste un nouveau café à l’autre bout de la ville. Vous dites oui aux plans de dernière minute, commandez le plat que vous n’avez jamais goûté et rentrez chaque fois avec une histoire à raconter.",
       }
     ),
     chaos: result(
       { en: "Chaos witch", fr: "Sorcière du chaos" },
       {
-        en: "Spontaneous and full of surprises. You improvise, change plans at the last minute and make something good out of the mess: rules are more of a suggestion.",
-        fr: "Spontanée et pleine de surprises. Vous improvisez, changez de plan au dernier moment et tirez quelque chose de bon du désordre : les règles, pour vous, sont des suggestions.",
+        en: "Your plans change by the hour and somehow it always works out. Your bag is a mess but has everything in it, you start three hobbies a month, and your friends never know what you’ll suggest next.",
+        fr: "Vos plans changent d’heure en heure, et pourtant tout finit toujours par s’arranger. Votre sac est en désordre mais contient tout, vous commencez trois loisirs par mois, et vos amis ne savent jamais ce que vous allez proposer.",
       }
     ),
     green: result(
       { en: "Green witch", fr: "Sorcière verte" },
       {
-        en: "Plants and nature. Your windowsill is a jungle, you know the trees on your street by name, and an hour outside fixes almost anything.",
-        fr: "Les plantes et la nature. Votre rebord de fenêtre est une jungle, vous connaissez les arbres de votre rue par leur nom, et une heure dehors règle presque tout.",
+        en: "Your windowsill is full of plants you talk to, and you can’t walk past a garden centre. You take the long way through the park, know which herb goes in which tea, and feel better after an hour outside.",
+        fr: "Votre rebord de fenêtre déborde de plantes à qui vous parlez, et vous ne passez jamais devant une jardinerie sans entrer. Vous faites le détour par le parc, savez quelle herbe mettre dans quelle tisane, et allez mieux après une heure dehors.",
       }
     ),
     hearth: result(
       { en: "Hearth witch", fr: "Sorcière du foyer" },
       {
-        en: "Home and the people in it. Your home is a cosy little haven, you treasure your quiet time, and you look after your family, your friends and the people you love.",
-        fr: "La maison et ceux qui l’habitent. Votre foyer est un petit refuge douillet, vous chérissez vos moments au calme, et vous prenez soin de votre famille, de vos amis et de ceux que vous aimez.",
+        en: "Your home is your safe place: soft blankets, candles, everything where it belongs. You love a quiet night in, you remember everyone’s birthday, and the people close to you know your door is always open.",
+        fr: "Votre maison est votre refuge : des plaids moelleux, des bougies, chaque chose à sa place. Vous adorez les soirées tranquilles chez vous, n’oubliez aucun anniversaire, et vos proches savent que votre porte est toujours ouverte.",
       }
     ),
     hedge: result(
       { en: "Hedge witch", fr: "Sorcière des haies" },
       {
-        en: "Ancestors, spirits and old ways. You keep family stories and old remedies alive, trust your gut, and feel close to those who came before you.",
-        fr: "Les ancêtres, les esprits et les traditions. Vous faites vivre les histoires de famille et les vieux remèdes, écoutez votre intuition et vous sentez proche de ceux qui étaient là avant vous.",
+        en: "You keep your family’s stories alive: your grandmother’s recipes, old photo albums, the remedies she swore by. You trust your gut, love anything with a bit of history, and feel close to the people who came before you.",
+        fr: "Vous faites vivre l’histoire de votre famille : les recettes de votre grand-mère, les vieux albums photo, les remèdes auxquels elle croyait dur comme fer. Vous écoutez votre intuition, aimez tout ce qui a une histoire, et vous sentez proche de ceux qui étaient là avant vous.",
       }
     ),
     kitchen: result(
       { en: "Kitchen witch", fr: "Sorcière de cuisine" },
       {
-        en: "Healing with food. A soup for a cold, a cake for a bad day: you show your love by feeding people, and your kitchen is where the magic happens.",
-        fr: "Soigner par la cuisine. Une soupe pour un rhume, un gâteau pour un mauvais jour : vous montrez votre amour en nourrissant les gens, et c’est dans votre cuisine que la magie opère.",
+        en: "Food is how you take care of people. Someone’s ill, you bring soup; someone’s sad, you bake. Your fridge is full of leftovers you’ll turn into something good, and everyone ends up in your kitchen at parties.",
+        fr: "La cuisine, c’est votre façon de prendre soin des gens. Quelqu’un est malade, vous apportez de la soupe ; quelqu’un est triste, vous faites un gâteau. Votre frigo est plein de restes que vous transformerez en bon plat, et en soirée tout le monde finit dans votre cuisine.",
       }
     ),
     love: result(
       { en: "Love witch", fr: "Sorcière de l’amour" },
       {
-        en: "In tune with how people feel. You notice someone is sad before they say a word, give the best hugs and the best advice, and love with your whole heart.",
-        fr: "À l’écoute de ce que ressentent les autres. Vous voyez qu’on est triste avant qu’on dise un mot, faites les meilleurs câlins et donnez les meilleurs conseils, et vous aimez de tout votre cœur.",
+        en: "You can tell how someone feels before they say a word. Friends call you first when something goes wrong, you send the message that makes their day, and you never forget the little things people tell you.",
+        fr: "Vous savez ce que ressent quelqu’un avant qu’il dise un mot. Vos amis vous appellent en premier quand ça ne va pas, vous envoyez le message qui illumine leur journée, et vous n’oubliez jamais les petites choses qu’on vous confie.",
       }
     ),
     tinkering: result(
       { en: "Tinkering witch", fr: "Sorcière bricoleuse" },
       {
-        en: "Practical and logical. You fix what’s broken, take things apart to see how they work and always have the right tool: your magic is making things work.",
-        fr: "Pratique et logique. Vous réparez ce qui est cassé, démontez les choses pour voir comment elles marchent et avez toujours le bon outil : votre magie, c’est de faire fonctionner les choses.",
+        en: "When something breaks, you’d rather fix it than buy a new one. You read the instructions (then improve on them), have a drawer full of useful bits, and you’re the one everyone calls when the Wi-Fi goes down.",
+        fr: "Quand quelque chose casse, vous préférez le réparer plutôt que d’en racheter. Vous lisez le mode d’emploi (puis l’améliorez), avez un tiroir plein de petites pièces utiles, et c’est vous qu’on appelle quand le wifi ne marche plus.",
       }
     ),
   },
